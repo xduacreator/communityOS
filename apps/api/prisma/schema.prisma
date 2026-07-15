@@ -1,0 +1,261 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String
+  name         String
+  isSuperAdmin Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships        CommunityMember[]
+  eventRegistrations EventRegistration[]
+  userMemberships    UserMembership[]
+  sessionWallets     SessionWallet[]
+}
+
+model Community {
+  id                    String   @id @default(uuid())
+  slug                  String   @unique
+  name                  String
+  domain                String?  @unique
+  logo                  String?
+  theme                 String?
+  heroBanner            String?
+  about                 String?
+  contactInfo           String?
+  isActive              Boolean  @default(true)
+  statMembersValue      String?
+  statEventsValue       String?
+  statCitiesValue       String?
+  statAchievementsValue String?
+  welcomeMessage        String?
+  menuHomeLabel         String?
+  menuEventsLabel       String?
+  menuGalleryLabel      String?
+  menuAboutLabel        String?
+  menuContactLabel      String?
+  packagesHeadingLabel  String?
+  seoTitle              String?
+  seoDescription        String?
+  seoKeywords           String?
+  registrationFields    String?
+  registrationMode      String   @default("FREE")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  members         CommunityMember[]
+  events          Event[]
+  galleryImages   GalleryImage[]
+  memberships     Membership[]
+  userMemberships UserMembership[]
+  activities      Activity[]
+  sessionWallets  SessionWallet[]
+}
+
+model CommunityMember {
+  id               String           @id @default(uuid())
+  membershipNumber String?          @unique
+  userId           String
+  communityId      String
+  role             Role             @default(MEMBER)
+  status           MembershipStatus @default(PENDING)
+  customFieldsData String?
+  paymentProofUrl  String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id])
+  community Community @relation(fields: [communityId], references: [id])
+
+  @@unique([userId, communityId])
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  communityId String
+  title       String
+  description String?
+  date        DateTime
+  location    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  community     Community           @relation(fields: [communityId], references: [id])
+  registrations EventRegistration[]
+}
+
+model EventRegistration {
+  id        String             @id @default(uuid())
+  eventId   String
+  userId    String
+  status    RegistrationStatus @default(REGISTERED)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([eventId, userId])
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  ATTENDED
+  CANCELLED
+}
+
+enum Role {
+  SUPER_ADMIN
+  COMMUNITY_ADMIN
+  MEMBER
+}
+
+enum MembershipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model GalleryImage {
+  id          String   @id @default(uuid())
+  communityId String
+  url         String
+  caption     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id])
+}
+
+model Membership {
+  id           String   @id @default(uuid())
+  communityId  String
+  name         String
+  durationDays Int
+  price        Float
+  benefit      String?
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  community       Community        @relation(fields: [communityId], references: [id])
+  userMemberships UserMembership[]
+}
+
+model UserMembership {
+  id           String   @id @default(uuid())
+  userId       String
+  communityId  String
+  membershipId String
+  startDate    DateTime
+  endDate      DateTime
+  status       String   @default("ACTIVE")
+  paymentProofUrl String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id])
+  community      Community       @relation(fields: [communityId], references: [id])
+  membership     Membership      @relation(fields: [membershipId], references: [id])
+  sessionWallets SessionWallet[]
+}
+
+model Activity {
+  id          String   @id @default(uuid())
+  communityId String
+  name        String
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  community  Community  @relation(fields: [communityId], references: [id])
+  categories Category[]
+}
+
+model Category {
+  id         String   @id @default(uuid())
+  activityId String
+  name       String
+  minAge     Int?
+  maxAge     Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  activity        Activity         @relation(fields: [activityId], references: [id])
+  sessionPackages SessionPackage[]
+}
+
+model SessionPackage {
+  id           String   @id @default(uuid())
+  categoryId   String
+  name         String
+  description  String?
+  image        String?
+  totalSession Int
+  validDays    Int
+  memberPrice  Float
+  vipPrice     Float?
+  status       String   @default("ACTIVE")
+  accessRule   String   @default("PUBLIC")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  category       Category        @relation(fields: [categoryId], references: [id])
+  sessionWallets SessionWallet[]
+}
+
+model SessionWallet {
+  id               String    @id @default(uuid())
+  userId           String
+  communityId      String
+  packageId        String
+  userMembershipId String?
+  walletStatus     String    @default("DRAFT")
+  totalSession     Int
+  remainingSession Int
+  purchaseDate     DateTime?
+  startDate        DateTime?
+  expiredDate      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user           User                 @relation(fields: [userId], references: [id])
+  community      Community            @relation(fields: [communityId], references: [id])
+  package        SessionPackage       @relation(fields: [packageId], references: [id])
+  userMembership UserMembership?      @relation(fields: [userMembershipId], references: [id])
+  transactions   SessionTransaction[]
+}
+
+model SessionTransaction {
+  id              String   @id @default(uuid())
+  walletId        String
+  transactionType String
+  attendanceId    String?
+  beforeSession   Int
+  changeSession   Int
+  afterSession    Int
+  remarks         String?
+  createdBy       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  wallet SessionWallet @relation(fields: [walletId], references: [id])
+}
+
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
