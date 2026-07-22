@@ -36,7 +36,7 @@ services:
     container_name: community-os-web
     restart: always
     ports:
-      - "3000:3000"
+      - "80:3000"
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
       # Add other Web environment variables here
