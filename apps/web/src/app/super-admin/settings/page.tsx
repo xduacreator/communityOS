@@ -126,7 +126,7 @@ export default function SettingsPage() {
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all font-medium text-slate-700"
                 placeholder="Ubah Audiens Anda Menjadi Bisnis Kelas & Aktivitas yang Laris Manis"
               />
-              <p className="text-xs text-slate-500 mt-2">Gunakan &lt;span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-500 to-cyan-500"&gt; untuk teks gradien.</p>
+              <p className="text-xs text-slate-500 mt-2">Gunakan &lt;span className=&quot;text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-500 to-cyan-500&quot;&gt; untuk teks gradien.</p>
             </div>
 
             <div>
