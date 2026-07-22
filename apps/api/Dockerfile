@@ -1,5 +1,14 @@
 FROM node:20-alpine AS builder
+# Set working directory
+WORKDIR /app
+# Install turbo globally
+RUN npm install -g turbo
+COPY . .
+# Prune the workspace for api
+RUN turbo prune @repo/api --docker
 
+# Installer phase
+FROM node:20-alpine AS installer
 WORKDIR /app
 
 # Enable turbo cache
@@ -8,34 +17,36 @@ ENV TURBO_TEAM=$TURBO_TEAM
 ARG TURBO_TOKEN
 ENV TURBO_TOKEN=$TURBO_TOKEN
 
-# First install dependencies for caching
-COPY package*.json ./
-COPY turbo.json ./
-COPY apps/api/package*.json ./apps/api/
+# First install dependencies
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/package-lock.json ./package-lock.json
 RUN npm install
 
-# Then copy the rest of the application
-COPY apps/api ./apps/api
+# Build the project
+COPY --from=builder /app/out/full/ .
 
-# Generate prisma client and build
+# Generate prisma client before build
 WORKDIR /app/apps/api
 RUN npx prisma generate
-RUN npm run build
-
-# Production image
-FROM node:20-alpine
-
 WORKDIR /app
 
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/api/package*.json ./apps/api/
-COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
-COPY --from=builder /app/apps/api/dist ./apps/api/dist
-COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+RUN npx turbo run build --filter=@repo/api...
+
+# Production image
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+# We only need the api files in production
+COPY --from=installer /app/package*.json ./
+COPY --from=installer /app/node_modules ./node_modules
+COPY --from=installer /app/apps/api/package*.json ./apps/api/
+COPY --from=installer /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=installer /app/apps/api/dist ./apps/api/dist
+COPY --from=installer /app/apps/api/prisma ./apps/api/prisma
 
 WORKDIR /app/apps/api
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "npx prisma generate && npm run start:prod"]
+# Push the schema and run the production build
+CMD ["sh", "-c", "npx prisma db push && npx prisma generate && npm run start:prod"]
