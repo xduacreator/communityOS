@@ -25,7 +25,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-community_os}?schema=public
       - JWT_SECRET=${JWT_SECRET:-super_secret_jwt_key}
-      # Add other API environment variables here
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
     depends_on:
       - db
 
