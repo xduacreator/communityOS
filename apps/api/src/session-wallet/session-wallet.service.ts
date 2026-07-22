@@ -76,7 +76,7 @@ export class SessionWalletService {
       throw new BadRequestException('No active session wallet found or wallet expired/empty');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: any) => {
       const updatedWallet = await tx.sessionWallet.update({
         where: { id: activeWallet.id },
         data: {
@@ -145,7 +145,7 @@ export class SessionWalletService {
       throw new BadRequestException('You are already checked in. Please check out first.');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: any) => {
       const updatedWallet = await tx.sessionWallet.update({
         where: { id: activeWallet.id },
         data: {
@@ -236,7 +236,7 @@ export class SessionWalletService {
     const newExpiredDate = new Date(wallet.expiredDate);
     newExpiredDate.setDate(newExpiredDate.getDate() + days);
 
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: any) => {
       const updatedWallet = await tx.sessionWallet.update({
         where: { id: walletId },
         data: {
@@ -312,7 +312,7 @@ export class SessionWalletService {
     });
 
     // Unique buyers
-    const buyerIds = new Set(activeWallets.map(w => w.userId));
+    const buyerIds = new Set(activeWallets.map((w: any) => w.userId));
     const totalPackageBuyers = buyerIds.size;
 
     // Packages bought distribution
@@ -330,21 +330,21 @@ export class SessionWalletService {
     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
     
     const expiringSoon = activeWallets
-      .filter(w => w.expiredDate && new Date(w.expiredDate) <= thirtyDaysFromNow)
-      .sort((a, b) => new Date(a.expiredDate!).getTime() - new Date(b.expiredDate!).getTime());
+      .filter((w: any) => w.expiredDate && new Date(w.expiredDate) <= thirtyDaysFromNow)
+      .sort((a: any, b: any) => new Date(a.expiredDate!).getTime() - new Date(b.expiredDate!).getTime());
 
     // Calculate revenues
     const approvedMemberships = await this.prisma.userMembership.findMany({
       where: { communityId, status: { in: ['ACTIVE', 'EXPIRED'] } },
       include: { membership: true }
     });
-    const membershipRevenue = approvedMemberships.reduce((sum, m) => sum + (m.membership?.price || 0), 0);
+    const membershipRevenue = approvedMemberships.reduce((sum: number, m: any) => sum + (m.membership?.price || 0), 0);
 
     const approvedWallets = await this.prisma.sessionWallet.findMany({
       where: { communityId, walletStatus: { in: ['ACTIVE', 'EXPIRED'] } },
       include: { package: true }
     });
-    const sessionRevenue = approvedWallets.reduce((sum, w) => sum + (w.package?.memberPrice || 0), 0);
+    const sessionRevenue = approvedWallets.reduce((sum: number, w: any) => sum + (w.package?.memberPrice || 0), 0);
     const totalRevenue = membershipRevenue + sessionRevenue;
 
     // Daily check-ins last 7 days
@@ -366,7 +366,7 @@ export class SessionWalletService {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-      const count = checkins.filter(c => c.createdAt.toISOString().split('T')[0] === dateStr).length;
+      const count = checkins.filter((c: any) => c.createdAt.toISOString().split('T')[0] === dateStr).length;
       dailyCheckins.push({ date: dateStr, count });
     }
 
@@ -436,7 +436,7 @@ export class SessionWalletService {
       include: { package: true }
     });
     
-    const revenueMtd = mtdWallets.reduce((sum, w) => sum + (w.package?.memberPrice || 0), 0);
+    const revenueMtd = mtdWallets.reduce((sum: number, w: any) => sum + (w.package?.memberPrice || 0), 0);
 
     const expiredFrozenCount = await this.prisma.sessionWallet.count({
       where: { walletStatus: { in: ['EXPIRED', 'FROZEN'] } }
