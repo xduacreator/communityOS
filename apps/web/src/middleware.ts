@@ -42,7 +42,10 @@ export default function middleware(req: NextRequest) {
   // we rewrite to our dynamic route `/[domain]/...`
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
   
-  if (hostname !== rootDomain && !hostname.includes('localhost')) {
+  // Cek apakah hostname adalah IP Address (contoh: 123.45.67.89 atau 123.45.67.89:3000)
+  const isIP = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}(:\d+)?$/.test(hostname);
+  
+  if (hostname !== rootDomain && !hostname.includes('localhost') && !isIP) {
     // Custom domain rewrite
     return NextResponse.rewrite(new URL(`/_sites/${hostname}${path}`, req.url));
   }
