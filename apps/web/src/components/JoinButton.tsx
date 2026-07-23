@@ -28,7 +28,8 @@ export default function JoinButton({
   registrationMode,
   memberships,
   className,
-  label
+  label,
+  icon
 }: { 
   communityId: string; 
   slug: string; 
@@ -37,6 +38,7 @@ export default function JoinButton({
   memberships?: Membership[];
   className?: string;
   label?: string;
+  icon?: React.ReactNode;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -159,7 +161,7 @@ export default function JoinButton({
         {loading ? 'Joining...' : (
           <>
             {label || 'Gabung Komunitas'}
-            <LogIn className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            {icon ? icon : <LogIn className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />}
           </>
         )}
       </button>

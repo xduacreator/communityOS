@@ -7,7 +7,7 @@ import ProfileSettings from './ProfileSettings';
 import { Home, Info, Phone, Calendar, Clock, MapPin, CheckCircle, Image as ImageIcon, Users, Trophy, Sun, ArrowRight, X, LayoutGrid, Shield, CreditCard, Activity, Zap, Plus, LogOut } from 'lucide-react';
 import { getAuthHeaders, removeToken } from '../lib/auth';
 import { useRouter } from 'next/navigation';
-import { Community, SessionPackage, GalleryImage, CommunityMember, SessionWallet, UserMembershipWithMembership, Membership, User } from '../types';
+import { Community, SessionPackage, GalleryImage, CommunityMember, SessionWallet, UserMembershipWithMembership, Membership, User, Event } from '../types';
 
 interface ActiveWalletView {
   packageName: string;
@@ -30,6 +30,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
   const [loadingSessions, setLoadingSessions] = useState(false);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [loadingGallery, setLoadingGallery] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
   const [purchasingMap, setPurchasingMap] = useState<Record<string, boolean>>({});
   const [selectedPackage, setSelectedPackage] = useState<SessionPackage | null>(null);
   const router = useRouter();
@@ -159,6 +161,9 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     if (activeTab === 'gallery') {
       fetchGallery();
     }
+    if (activeTab === 'home' || activeTab === 'events') {
+      fetchEvents();
+    }
     if (activeTab === 'dashboard') {
       fetchDashboardData();
     }
@@ -236,6 +241,21 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       console.error(e);
     } finally {
       setLoadingSessions(false);
+    }
+  };
+
+  const fetchEvents = async () => {
+    setLoadingEvents(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/events/community/${community.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setEvents(data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingEvents(false);
     }
   };
 
@@ -369,9 +389,45 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
   return (
     <div className="min-h-screen bg-[#fafafc] font-sans">
       
-      {/* Top Navigation */}
-      <nav className="flex items-center justify-between px-4 md:px-8 py-3 md:py-4 bg-white/80 backdrop-blur-md sticky top-0 z-[100] border-b border-slate-100 pointer-events-auto">
-        <div className="flex items-center gap-2 md:gap-3">
+      {/* Mobile Top Navigation (Mockup) */}
+      <nav className="flex md:hidden items-center justify-between px-4 py-4 bg-white sticky top-0 z-[100] pointer-events-auto shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shrink-0">
+            {community.logo ? (
+              <img src={community.logo} alt="Logo" className="w-full h-full object-cover rounded-full" />
+            ) : (
+              <Users className="w-5 h-5" />
+            )}
+          </div>
+          <div className="flex flex-col">
+            <span className="font-extrabold text-base text-slate-900 leading-tight">{community.name}</span>
+            <span className="text-xs text-slate-500">Komunitas Bahasa Indonesia</span>
+          </div>
+        </div>
+        {(!isLoggedIn || !status) ? (
+          <JoinButton 
+            communityId={community.id} 
+            slug={slug} 
+            registrationFields={community.registrationFields} 
+            registrationMode={community.registrationMode}
+            memberships={community.memberships}
+            label="Gabung Komunitas"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md transition-colors text-xs flex items-center gap-1"
+            icon={<ArrowRight className="w-3 h-3 ml-1" />}
+          />
+        ) : (
+          <button 
+            onClick={() => handleTabChange('dashboard')}
+            className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-2xl shadow-md text-xs"
+          >
+            Dashboard
+          </button>
+        )}
+      </nav>
+
+      {/* Desktop Top Navigation */}
+      <nav className="hidden md:flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-md sticky top-0 z-[100] border-b border-slate-100 pointer-events-auto">
+        <div className="flex items-center gap-3">
           <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-tr from-indigo-100 to-purple-100 text-indigo-600 flex items-center justify-center font-bold text-lg md:text-xl shadow-inner overflow-hidden border border-slate-100">
             {community.logo ? (
               <img src={community.logo} alt="Logo" className="w-full h-full object-cover" />
@@ -438,9 +494,166 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* Mobile Layout (Mockup) */}
       {activeTab === 'home' && (
-        <div className="relative pt-16 md:pt-24 pb-20 md:pb-32 px-4 overflow-hidden z-0">
+        <div className="md:hidden flex flex-col pb-24 animate-in fade-in">
+          {/* Mobile Hero Card */}
+          <div className="mx-4 mt-6 p-6 rounded-[32px] bg-gradient-to-br from-[#f8f9ff] to-white border border-indigo-50 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-100 rounded-bl-[100px] opacity-30 pointer-events-none"></div>
+            
+            <div className="w-12 h-12 bg-white rounded-2xl border border-indigo-100 flex items-center justify-center text-indigo-600 mb-6 shadow-sm">
+              <Users className="w-6 h-6" />
+            </div>
+            
+            <h1 className="text-2xl font-extrabold text-slate-900 leading-tight mb-3">
+              Selamat datang di <br/>
+              <span className="text-indigo-600">{community.name}</span>
+            </h1>
+            
+            <p className="text-sm text-slate-500 leading-relaxed max-w-[200px] mb-6">
+              {community.about || 'Komunitas yang menghubungkan orang, berbagi pengetahuan, menciptakan pengalaman bermakna, dan tumbuh bersama.'}
+            </p>
+            
+            {(!isLoggedIn || !status) ? (
+              <JoinButton 
+                communityId={community.id} 
+                slug={slug} 
+                registrationFields={community.registrationFields} 
+                registrationMode={community.registrationMode}
+                memberships={community.memberships}
+                label="Gabung Komunitas"
+                className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-md text-sm flex items-center justify-center w-max mb-4"
+                icon={<ArrowRight className="w-4 h-4 ml-2" />}
+              />
+            ) : (
+              <button 
+                onClick={() => handleTabChange('dashboard')}
+                className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-md text-sm flex items-center justify-center w-max mb-4"
+              >
+                Dashboard <ArrowRight className="w-4 h-4 ml-2" />
+              </button>
+            )}
+            
+            <button onClick={() => handleTabChange('sessions')} className="text-indigo-600 font-bold text-sm flex items-center">
+              Lihat Paket <ArrowRight className="w-4 h-4 ml-1" />
+            </button>
+            
+            {/* Illustration Placeholder */}
+            {community.heroBanner && (
+              <div className="absolute bottom-4 right-4 w-32 h-32 opacity-80 pointer-events-none">
+                <img src={community.heroBanner} alt="Hero" className="w-full h-full object-contain" />
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Stats Carousel */}
+          <div className="flex overflow-x-auto gap-4 px-4 py-6 scrollbar-none snap-x snap-mandatory">
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex-shrink-0 w-28 flex flex-col items-center justify-center snap-center">
+              <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2">
+                <Users className="w-5 h-5" />
+              </div>
+              <div className="text-lg font-black text-slate-900">{community.statMembersValue || '12.5K'}</div>
+              <div className="text-[10px] text-slate-500 font-medium">Members</div>
+            </div>
+            
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex-shrink-0 w-28 flex flex-col items-center justify-center snap-center">
+              <div className="w-10 h-10 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center mb-2">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <div className="text-lg font-black text-slate-900">{community.statEventsValue || sessions.length || '256'}</div>
+              <div className="text-[10px] text-slate-500 font-medium">Packages</div>
+            </div>
+            
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex-shrink-0 w-28 flex flex-col items-center justify-center snap-center">
+              <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div className="text-lg font-black text-slate-900">{community.statCitiesValue || '48'}</div>
+              <div className="text-[10px] text-slate-500 font-medium">Cities</div>
+            </div>
+            
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex-shrink-0 w-28 flex flex-col items-center justify-center snap-center">
+              <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-2">
+                <Trophy className="w-5 h-5" />
+              </div>
+              <div className="text-lg font-black text-slate-900">{community.statAchievementsValue || '120'}</div>
+              <div className="text-[10px] text-slate-500 font-medium">Achievements</div>
+            </div>
+          </div>
+
+          {/* Event Terdekat */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between px-4 mb-4">
+              <h2 className="text-base font-bold text-slate-900">Event Terdekat</h2>
+              <button onClick={() => handleTabChange('events')} className="text-indigo-600 text-xs font-semibold">Lihat semua</button>
+            </div>
+            
+            {loadingEvents ? (
+               <div className="px-4 py-8 flex justify-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div></div>
+            ) : events.length > 0 ? (
+              <div className="flex overflow-x-auto gap-4 px-4 pb-4 scrollbar-none snap-x snap-mandatory">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {events.slice(0, 3).map((event: any) => (
+                  <div key={event.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 flex-shrink-0 w-[280px] snap-center overflow-hidden flex">
+                    <div className="w-28 bg-slate-100 relative shrink-0">
+                      {event.image ? (
+                        <img src={event.image} alt={event.title || event.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-indigo-50 flex items-center justify-center"><Calendar className="w-8 h-8 text-indigo-300" /></div>
+                      )}
+                      <div className="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center">
+                        <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-1"></span> {event.isOnline || event.location === 'Online' ? 'Online' : 'Offline'}
+                      </div>
+                    </div>
+                    <div className="p-3 flex flex-col justify-center flex-1">
+                      <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full w-max mb-1.5">{event.category || 'Event'}</span>
+                      <h3 className="font-bold text-slate-900 text-sm leading-tight mb-2 line-clamp-2">{event.title || event.name}</h3>
+                      <div className="flex items-center text-[10px] text-slate-500 mb-1">
+                        <Calendar className="w-3 h-3 mr-1" /> {new Date(event.date || event.startDate).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })}
+                      </div>
+                      <div className="flex items-center text-[10px] text-slate-500">
+                        <Clock className="w-3 h-3 mr-1" /> {new Date(event.date || event.startDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="px-4 py-6 mx-4 bg-slate-50 rounded-2xl text-center text-xs text-slate-400 border border-slate-100">Belum ada event terdekat.</div>
+            )}
+          </div>
+
+          {/* Paket Populer */}
+          <div className="mt-6 mb-8">
+            <div className="flex items-center justify-between px-4 mb-4">
+              <h2 className="text-base font-bold text-slate-900">Paket Populer</h2>
+              <button onClick={() => handleTabChange('sessions')} className="text-indigo-600 text-xs font-semibold">Lihat semua</button>
+            </div>
+            
+            {sessions.length > 0 ? (
+              <div className="flex overflow-x-auto gap-4 px-4 pb-4 scrollbar-none snap-x snap-mandatory">
+                {sessions.slice(0, 3).map(pkg => (
+                  <div key={pkg.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 flex-shrink-0 w-[280px] snap-center p-4 flex gap-4">
+                    <div className="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                      <CreditCard className="w-6 h-6" />
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <h3 className="font-bold text-slate-900 text-sm leading-tight mb-1">{pkg.name}</h3>
+                      <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full w-max">{pkg.totalSession} Materi</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="px-4 py-6 mx-4 bg-slate-50 rounded-2xl text-center text-xs text-slate-400 border border-slate-100">Belum ada paket tersedia.</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Hero Section */}
+      {activeTab === 'home' && (
+        <div className="hidden md:block relative pt-16 md:pt-24 pb-20 md:pb-32 px-4 overflow-hidden z-0">
           {/* Subtle Background Elements */}
           {community.heroBanner ? (
             <div className="absolute inset-0 -z-10 pointer-events-none">
@@ -1722,6 +1935,29 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
           </div>
         </div>
       )}
+      {/* Mobile Floating Bottom Navigation */}
+      <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 flex items-center justify-between px-6 py-3 z-[100] animate-in slide-in-from-bottom-8">
+        {[
+          { id: 'home', label: 'Home', icon: Home },
+          { id: 'sessions', label: 'Paket', icon: CreditCard },
+          { id: 'events', label: 'Event', icon: Calendar },
+          { id: 'dashboard', label: 'Profil', icon: Users }
+        ].map(item => (
+          <button 
+            key={item.id}
+            onClick={() => handleTabChange(item.id)}
+            className="flex flex-col items-center justify-center relative w-12"
+          >
+            <item.icon className={`w-6 h-6 mb-1 transition-colors ${activeTab === item.id ? 'text-indigo-600' : 'text-slate-400'}`} />
+            <span className={`text-[10px] font-bold transition-colors ${activeTab === item.id ? 'text-indigo-600' : 'text-slate-400'}`}>
+              {item.label}
+            </span>
+            {activeTab === item.id && (
+              <span className="absolute -bottom-2 w-1 h-1 bg-indigo-600 rounded-full"></span>
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
