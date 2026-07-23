@@ -580,11 +580,9 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
               <div className="text-[10px] text-slate-500 font-medium">Achievements</div>
             </div>
           </div>
-
-            </div>
-          </div>
         </div>
       )}
+
 
       {/* Desktop Hero Section */}
       {activeTab === 'home' && (
