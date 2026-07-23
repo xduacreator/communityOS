@@ -581,72 +581,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
             </div>
           </div>
 
-          {/* Event Terdekat */}
-          <div className="mt-4">
-            <div className="flex items-center justify-between px-4 mb-4">
-              <h2 className="text-base font-bold text-slate-900">Event Terdekat</h2>
-              <button onClick={() => handleTabChange('events')} className="text-indigo-600 text-xs font-semibold">Lihat semua</button>
             </div>
-            
-            {loadingEvents ? (
-               <div className="px-4 py-8 flex justify-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div></div>
-            ) : events.length > 0 ? (
-              <div className="flex overflow-x-auto gap-4 px-4 pb-4 scrollbar-none snap-x snap-mandatory">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {events.slice(0, 3).map((event: any) => (
-                  <div key={event.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 flex-shrink-0 w-[280px] snap-center overflow-hidden flex">
-                    <div className="w-28 bg-slate-100 relative shrink-0">
-                      {event.image ? (
-                        <img src={event.image} alt={event.title || event.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-indigo-50 flex items-center justify-center"><Calendar className="w-8 h-8 text-indigo-300" /></div>
-                      )}
-                      <div className="absolute bottom-2 left-2 bg-slate-900/80 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center">
-                        <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-1"></span> {event.isOnline || event.location === 'Online' ? 'Online' : 'Offline'}
-                      </div>
-                    </div>
-                    <div className="p-3 flex flex-col justify-center flex-1">
-                      <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full w-max mb-1.5">{event.category || 'Event'}</span>
-                      <h3 className="font-bold text-slate-900 text-sm leading-tight mb-2 line-clamp-2">{event.title || event.name}</h3>
-                      <div className="flex items-center text-[10px] text-slate-500 mb-1">
-                        <Calendar className="w-3 h-3 mr-1" /> {new Date(event.date || event.startDate).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })}
-                      </div>
-                      <div className="flex items-center text-[10px] text-slate-500">
-                        <Clock className="w-3 h-3 mr-1" /> {new Date(event.date || event.startDate).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="px-4 py-6 mx-4 bg-slate-50 rounded-2xl text-center text-xs text-slate-400 border border-slate-100">Belum ada event terdekat.</div>
-            )}
-          </div>
-
-          {/* Paket Populer */}
-          <div className="mt-6 mb-8">
-            <div className="flex items-center justify-between px-4 mb-4">
-              <h2 className="text-base font-bold text-slate-900">Paket Populer</h2>
-              <button onClick={() => handleTabChange('sessions')} className="text-indigo-600 text-xs font-semibold">Lihat semua</button>
-            </div>
-            
-            {sessions.length > 0 ? (
-              <div className="flex overflow-x-auto gap-4 px-4 pb-4 scrollbar-none snap-x snap-mandatory">
-                {sessions.slice(0, 3).map(pkg => (
-                  <div key={pkg.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 flex-shrink-0 w-[280px] snap-center p-4 flex gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md">
-                      <CreditCard className="w-6 h-6" />
-                    </div>
-                    <div className="flex flex-col justify-center">
-                      <h3 className="font-bold text-slate-900 text-sm leading-tight mb-1">{pkg.name}</h3>
-                      <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full w-max">{pkg.totalSession} Materi</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="px-4 py-6 mx-4 bg-slate-50 rounded-2xl text-center text-xs text-slate-400 border border-slate-100">Belum ada paket tersedia.</div>
-            )}
           </div>
         </div>
       )}
@@ -1936,27 +1871,34 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
         </div>
       )}
       {/* Mobile Floating Bottom Navigation */}
-      <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 flex items-center justify-between px-6 py-3 z-[100] animate-in slide-in-from-bottom-8">
-        {[
-          { id: 'home', label: 'Home', icon: Home },
-          { id: 'sessions', label: 'Paket', icon: CreditCard },
-          { id: 'events', label: 'Event', icon: Calendar },
-          { id: 'dashboard', label: 'Profil', icon: Users }
-        ].map(item => (
-          <button 
-            key={item.id}
-            onClick={() => handleTabChange(item.id)}
-            className="flex flex-col items-center justify-center relative w-12"
-          >
-            <item.icon className={`w-6 h-6 mb-1 transition-colors ${activeTab === item.id ? 'text-indigo-600' : 'text-slate-400'}`} />
-            <span className={`text-[10px] font-bold transition-colors ${activeTab === item.id ? 'text-indigo-600' : 'text-slate-400'}`}>
-              {item.label}
-            </span>
-            {activeTab === item.id && (
-              <span className="absolute -bottom-2 w-1 h-1 bg-indigo-600 rounded-full"></span>
-            )}
-          </button>
-        ))}
+      <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 flex items-center gap-2 px-6 py-3 z-[100] animate-in slide-in-from-bottom-8 overflow-x-auto scrollbar-none scroll-smooth">
+        {(isLoggedIn ? ['home', 'about', 'sessions', 'gallery', 'contact', 'dashboard'] : ['home', 'about', 'sessions', 'gallery', 'contact']).map(tab => {
+          let label = tab;
+          if (tab === 'home' && community.menuHomeLabel) label = community.menuHomeLabel;
+          if (tab === 'about' && community.menuAboutLabel) label = community.menuAboutLabel;
+          if (tab === 'sessions' && community.menuEventsLabel) label = community.menuEventsLabel;
+          if (tab === 'gallery' && community.menuGalleryLabel) label = community.menuGalleryLabel;
+          if (tab === 'contact' && community.menuContactLabel) label = community.menuContactLabel;
+          if (tab === 'dashboard') label = 'Profil';
+
+          return (
+            <button 
+              key={tab}
+              onClick={() => handleTabChange(tab)}
+              className="flex flex-col items-center justify-center relative w-14 shrink-0"
+            >
+              <div className={`mb-1 transition-colors flex items-center justify-center ${activeTab === tab ? 'text-indigo-600' : 'text-slate-400'}`}>
+                {getTabIcon(tab)}
+              </div>
+              <span className={`text-[9px] font-bold transition-colors capitalize text-center ${activeTab === tab ? 'text-indigo-600' : 'text-slate-400'}`}>
+                {label}
+              </span>
+              {activeTab === tab && (
+                <span className="absolute -bottom-2 w-1 h-1 bg-indigo-600 rounded-full"></span>
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
