@@ -1,14 +1,15 @@
 'use client';
 
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ShieldAlert, Globe, Users, LogOut, LayoutGrid, Fingerprint, Settings } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { ShieldAlert, Globe, Users, LogOut, LayoutGrid, Fingerprint, Settings, Menu, X } from 'lucide-react';
 import { removeToken } from '../../lib/auth';
-import { useRouter } from 'next/navigation';
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     removeToken();
@@ -25,9 +26,27 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="min-h-screen bg-slate-100 flex font-sans selection:bg-indigo-500/30">
+      {/* Mobile Menu Backdrop */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar - One UI Style (Floating / Bubbly) */}
-      <aside className="w-[280px] hidden md:flex flex-col fixed h-screen p-6 z-20">
-        <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 h-full flex flex-col border border-slate-100/50 overflow-hidden">
+      <aside className={`w-[280px] flex flex-col fixed h-screen p-4 md:p-6 z-40 transition-transform duration-300 ${
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      }`}>
+        <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 h-full flex flex-col border border-slate-100/50 overflow-hidden relative">
+          {/* Mobile Close Button */}
+          <button 
+            className="absolute top-6 right-6 p-2 bg-slate-100 rounded-full text-slate-500 md:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <X className="w-5 h-5" />
+          </button>
+
           <div className="h-24 flex items-center px-8">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 mr-3">
               <ShieldAlert className="w-5 h-5 text-white" />
@@ -45,6 +64,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                 <Link 
                   key={item.name} 
                   href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center px-5 py-4 rounded-2xl transition-all duration-300 ${
                     isActive 
                       ? 'bg-indigo-50 text-indigo-700 font-bold' 
@@ -71,11 +91,17 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 md:ml-[280px] flex flex-col min-h-screen relative">
+      <main className="flex-1 md:ml-[280px] flex flex-col min-h-screen relative w-full overflow-hidden">
         {/* Top Header */}
-        <header className="h-24 flex items-center justify-between px-8 md:px-12 sticky top-0 z-10 bg-slate-100/80 backdrop-blur-xl">
+        <header className="h-20 md:h-24 flex items-center justify-between px-4 sm:px-8 md:px-12 sticky top-0 z-10 bg-slate-100/80 backdrop-blur-xl">
           <div className="flex items-center md:hidden">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center mr-3">
+            <button 
+              className="p-2 mr-3 bg-white rounded-xl shadow-sm border border-slate-200/60 text-slate-700"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
               <ShieldAlert className="w-5 h-5 text-white" />
             </div>
           </div>
@@ -91,7 +117,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         </header>
 
         {/* Page Content - One UI Viewing Area */}
-        <div className="flex-1 px-8 md:px-12 pb-12 pt-4">
+        <div className="flex-1 px-4 sm:px-8 md:px-12 pb-12 pt-4 w-full">
           {children}
         </div>
       </main>
