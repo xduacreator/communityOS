@@ -36,7 +36,7 @@ async function bootstrap() {
 
   // Restrict CORS origins in production
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: true,
     credentials: true,
   });
 
