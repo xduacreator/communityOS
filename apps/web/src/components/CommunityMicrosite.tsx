@@ -401,7 +401,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
           </div>
           <div className="flex flex-col">
             <span className="font-extrabold text-base text-slate-900 leading-tight">{community.name}</span>
-            <span className="text-xs text-slate-500">Komunitas Bahasa Indonesia</span>
+            {community.tagline && <span className="text-xs text-slate-500">{community.tagline}</span>}
           </div>
         </div>
         {(!isLoggedIn || !status) ? (
@@ -506,7 +506,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
             </div>
             
             <h1 className="text-2xl font-extrabold text-slate-900 leading-tight mb-3">
-              Selamat datang di <br/>
+              {community.welcomeMessage || 'Selamat datang di'} <br/>
               <span className="text-indigo-600">{community.name}</span>
             </h1>
             

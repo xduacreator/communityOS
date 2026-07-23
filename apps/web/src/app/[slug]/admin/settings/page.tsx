@@ -167,6 +167,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
         headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify({
           name: community.name,
+          tagline: community.tagline,
           slug: community.slug,
           domain: community.domain,
           about: community.about,
@@ -279,6 +280,18 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                   onChange={(e) => setCommunity({ ...community, name: e.target.value })}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Tagline (Subtext)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Komunitas Pecinta Alam Indonesia"
+                  value={community.tagline || ''}
+                  onChange={(e) => setCommunity({ ...community, tagline: e.target.value })}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
+                />
+                <p className="text-xs text-slate-500 mt-2">Short text displayed under your community name (on mobile header).</p>
               </div>
 
               <div>

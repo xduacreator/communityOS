@@ -32,6 +32,7 @@ export interface Community {
   id: string;
   slug: string;
   name: string;
+  tagline?: string | null;
   domain?: string | null;
   logo?: string | null;
   theme?: string | null;

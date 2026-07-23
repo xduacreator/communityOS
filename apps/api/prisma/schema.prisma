@@ -27,6 +27,7 @@ model Community {
   id                    String   @id @default(uuid())
   slug                  String   @unique
   name                  String
+  tagline               String?
   domain                String?  @unique
   logo                  String?
   theme                 String?
