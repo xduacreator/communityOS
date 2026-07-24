@@ -60,13 +60,13 @@ export default async function Home() {
               </div>
               
               <h2 
-                className="text-5xl md:text-[4rem] font-bold text-slate-900 tracking-tight mb-8 leading-[1.1]"
+                className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 tracking-tight mb-8 leading-[1.1]"
                 dangerouslySetInnerHTML={{
                   __html: settings['landing.hero.headline'] || 'Ubah Audiens Anda<br />Menjadi Bisnis Kelas<br />& Aktivitas yang<br /><span className="text-indigo-600">Laris Manis</span>'
                 }}
               />
               
-              <p className="text-lg md:text-xl text-slate-500 mb-10 leading-relaxed max-w-xl">
+              <p className="text-base md:text-lg text-slate-500 mb-10 leading-relaxed max-w-xl">
                 {settings['landing.hero.subheadline'] || (
                   <>Platform <i>all-in-one</i> untuk membangun, mengelola, dan mengelola bisnis kelas Anda. Luncurkan microsite kustom, kelola jadwal acara dengan cerdas, atur keanggotaan/kelas berbayar, dan dapatkan analisis real-time dengan mudah.</>
                 )}
@@ -136,7 +136,7 @@ export default async function Home() {
         <section id="fitur" className="py-24 px-6 lg:px-8 max-w-[1200px] mx-auto relative z-10">
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <h3 className="text-indigo-600 font-bold tracking-widest uppercase text-xs mb-4">FITUR UNGGULAN</h3>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
               {settings['landing.features.headline'] || (
                 <>Semua yang Anda butuhkan untuk<br />mengelola kelas, dalam satu platform.</>
               )}
@@ -221,7 +221,7 @@ export default async function Home() {
         <section id="showcase" className="py-24 px-6 lg:px-8 max-w-[1400px] mx-auto relative z-10">
            <div className="text-center mb-16 max-w-3xl mx-auto">
             <h3 className="text-indigo-600 font-bold tracking-widest uppercase text-xs mb-4">JELAJAHI</h3>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight mb-6">
               {settings['landing.showcase.headline'] || 'Kelas & Aktivitas yang Telah Bergabung'}
             </h2>
             <p className="text-slate-500 text-sm leading-relaxed max-w-2xl mx-auto">
@@ -273,7 +273,7 @@ export default async function Home() {
             
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between text-left gap-10">
               <div className="flex-1">
-                <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white tracking-tight mb-4">
                   {settings['landing.cta.headline'] || 'Siap Melejitkan Bisnis Kelas & Aktivitas Anda?'}
                 </h2>
                 <p className="text-indigo-200 text-sm md:text-base max-w-xl leading-relaxed">
