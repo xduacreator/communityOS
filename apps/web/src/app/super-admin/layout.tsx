@@ -35,7 +35,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       )}
 
       {/* Sidebar - One UI Style (Floating / Bubbly) */}
-      <aside className={`w-[280px] flex flex-col fixed h-screen p-4 md:p-6 z-40 transition-transform duration-300 ${
+      <aside className={`w-[280px] flex flex-col fixed top-0 left-0 h-screen p-4 md:p-6 z-40 transition-transform duration-300 ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}>
         <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 h-full flex flex-col border border-slate-100/50 overflow-hidden relative">
