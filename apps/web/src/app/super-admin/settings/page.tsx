@@ -59,7 +59,10 @@ export default function SettingsPage() {
         method: 'POST',
         body: formData,
       });
-      if (!res.ok) throw new Error('Failed to upload file');
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Failed to upload file (Status ${res.status}): ${errorText}`);
+      }
       const data = await res.json();
       handleChange(key, data.url);
     } catch (err) {
