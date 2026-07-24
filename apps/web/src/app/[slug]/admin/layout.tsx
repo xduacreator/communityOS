@@ -44,10 +44,10 @@ export default function AdminLayout({
       )}
 
       {/* Sidebar - One UI Style */}
-      <aside className={`w-72 bg-white flex flex-col fixed top-0 left-0 h-full z-40 border-r border-slate-100 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ${
+      <aside className={`w-72 bg-white flex flex-col fixed top-0 left-0 bottom-0 z-40 border-r border-slate-100 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}>
-        <div className="h-20 flex items-center px-8 border-b border-slate-50 relative">
+        <div className="h-20 shrink-0 flex items-center px-8 border-b border-slate-50 relative">
           {/* Mobile Close Button */}
           <button 
             className="absolute top-6 right-6 p-2 bg-slate-100 rounded-full text-slate-500 md:hidden"
@@ -62,7 +62,7 @@ export default function AdminLayout({
           <span className="text-xl font-extrabold tracking-tight text-slate-900">Admin Panel</span>
         </div>
         
-        <div className="flex-1 min-h-0 py-8 px-6 space-y-2 overflow-y-auto">
+        <div className="flex-1 h-0 py-8 px-6 space-y-2 overflow-y-auto">
           <div className="px-3 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-4">
             Manage /{resolvedParams.slug}
           </div>
@@ -90,7 +90,7 @@ export default function AdminLayout({
           })}
         </div>
 
-        <div className="p-6 border-t border-slate-50 space-y-2">
+        <div className="p-6 shrink-0 border-t border-slate-50 space-y-2">
           <Link 
             href={`/${resolvedParams.slug}`}
             className="flex items-center w-full px-4 py-4 text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold rounded-2xl transition-colors group"
