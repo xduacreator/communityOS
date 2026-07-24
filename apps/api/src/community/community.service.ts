@@ -42,6 +42,7 @@ export class CommunityService {
         data: {
           slug: data.slug,
           name: data.name,
+          tagline: data.tagline,
           domain: data.domain,
           logo: data.logo,
           theme: data.theme,
@@ -121,6 +122,7 @@ export class CommunityService {
         data: {
           slug: data.slug,
           name: data.name,
+          tagline: data.tagline,
           domain: data.domain,
           logo: data.logo,
           theme: data.theme,
@@ -140,6 +142,7 @@ export class CommunityService {
           seoTitle: data.seoTitle,
           seoDescription: data.seoDescription,
           seoKeywords: data.seoKeywords,
+          registrationFields: data.registrationFields,
           registrationMode: data.registrationMode || "FREE",
         },
       });
