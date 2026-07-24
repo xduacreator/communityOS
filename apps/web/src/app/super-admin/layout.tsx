@@ -35,10 +35,10 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       )}
 
       {/* Sidebar - One UI Style (Floating / Bubbly) */}
-      <aside className={`w-[280px] flex flex-col fixed top-0 bottom-0 left-0 p-4 md:p-6 z-40 transition-transform duration-300 ${
+      <aside className={`w-[280px] grid grid-rows-[auto_1fr_auto] fixed top-0 left-0 h-[100dvh] p-4 md:p-6 z-40 transition-transform duration-300 ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}>
-        <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 h-full flex flex-col border border-slate-100/50 overflow-hidden relative">
+        <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 h-full grid grid-rows-[auto_1fr_auto] border border-slate-100/50 overflow-hidden relative">
           {/* Mobile Close Button */}
           <button 
             className="absolute top-6 right-6 p-2 bg-slate-100 rounded-full text-slate-500 md:hidden"
@@ -47,14 +47,14 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             <X className="w-5 h-5" />
           </button>
 
-          <div className="h-24 shrink-0 flex items-center px-8">
+          <div className="h-24 flex items-center px-8">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 mr-3">
               <ShieldAlert className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-extrabold tracking-tight text-slate-900">Console</span>
           </div>
           
-          <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="overflow-y-auto">
             <div className="px-4 py-4 space-y-2">
               <div className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">
                 Super Admin Menu
@@ -80,7 +80,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             </div>
           </div>
 
-          <div className="p-4 shrink-0">
+          <div className="p-4">
             <button 
               onClick={handleLogout}
               className="flex items-center w-full px-5 py-4 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-2xl transition-all duration-300 font-medium group"
