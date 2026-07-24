@@ -24,10 +24,18 @@ export default async function Home() {
       <header className="fixed top-0 inset-x-0 bg-white/80 backdrop-blur-xl z-50 border-b border-slate-100">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-8 h-20 flex justify-between items-center">
           <div className="flex items-center space-x-3 group cursor-pointer">
-            <div className="w-10 h-10 rounded-[14px] bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-105 transition-transform duration-300">
-              <Layers className="w-5 h-5 text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">CommunityOS</h1>
+            {settings['platform.logo'] ? (
+              <div className="w-10 h-10 rounded-[14px] flex items-center justify-center overflow-hidden bg-white shadow-sm border border-slate-100 group-hover:scale-105 transition-transform duration-300">
+                <img src={settings['platform.logo']} alt="Platform Logo" className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-[14px] bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/20 group-hover:scale-105 transition-transform duration-300">
+                <Layers className="w-5 h-5 text-white" />
+              </div>
+            )}
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+              {settings['platform.name'] || 'CommunityOS'}
+            </h1>
           </div>
           <nav className="hidden md:flex flex-1 justify-center">
             <ul className="flex items-center space-x-10">
@@ -315,10 +323,18 @@ export default async function Home() {
       <footer className="border-t border-slate-100 bg-white py-10">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-              <Layers className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-slate-900 text-lg">CommunityOS</span>
+            {settings['platform.logo'] ? (
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden bg-white shadow-sm border border-slate-100">
+                <img src={settings['platform.logo']} alt="Platform Logo" className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+                <Layers className="w-4 h-4 text-white" />
+              </div>
+            )}
+            <span className="font-bold text-slate-900 text-lg">
+              {settings['platform.name'] || 'CommunityOS'}
+            </span>
           </div>
           
           <div className="flex items-center gap-8 text-xs font-medium text-slate-500">
@@ -327,7 +343,7 @@ export default async function Home() {
             <a href="#" className="hover:text-indigo-600 transition-colors">Syarat & Ketentuan</a>
           </div>
 
-          <p className="text-xs text-slate-400">© 2026 CommunityOS. Hak Cipta Dilindungi.</p>
+          <p className="text-xs text-slate-400">© {new Date().getFullYear()} {settings['platform.name'] || 'CommunityOS'}. Hak Cipta Dilindungi.</p>
         </div>
       </footer>
     </div>
