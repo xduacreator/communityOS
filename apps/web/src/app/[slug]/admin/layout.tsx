@@ -44,7 +44,7 @@ export default function AdminLayout({
       )}
 
       {/* Sidebar - One UI Style */}
-      <aside className={`w-72 bg-white flex-col fixed h-full z-40 border-r border-slate-100 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ${
+      <aside className={`w-72 bg-white flex flex-col fixed h-full z-40 border-r border-slate-100 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}>
         <div className="h-20 flex items-center px-8 border-b border-slate-50 relative">
