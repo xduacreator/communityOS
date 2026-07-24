@@ -76,7 +76,9 @@ export default function SettingsPage() {
     setSuccess(false);
 
     try {
-      const payload = Object.entries(settings).map(([key, value]) => ({ key, value }));
+      const payload = Object.entries(settings)
+        .filter(([key, value]) => key && value !== null && value !== undefined)
+        .map(([key, value]) => ({ key, value: String(value) }));
 
       const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/system-settings', {
         method: 'PUT',
