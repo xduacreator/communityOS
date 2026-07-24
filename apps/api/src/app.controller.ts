@@ -29,7 +29,7 @@ export class AppController {
       throw new BadRequestException('No file uploaded');
     }
     return {
-      url: `http://localhost:3001/uploads/${file.filename}`
+      url: `/api/uploads/${file.filename}`
     };
   }
 }

@@ -27,6 +27,7 @@ import { APP_GUARD } from '@nestjs/core';
     ScheduleModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'public'),
+      serveRoot: '/api',
     }),
     ThrottlerModule.forRoot([{
       ttl: 60000,

@@ -26,6 +26,8 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-community_os}?schema=public
       - JWT_SECRET=${JWT_SECRET:-super_secret_jwt_key}
       - CORS_ORIGIN=${CORS_ORIGIN:-*}
+    volumes:
+      - api_uploads:/app/apps/api/public/uploads
     depends_on:
       - db
 
@@ -59,3 +61,4 @@ services:
 
 volumes:
   postgres_data:
+  api_uploads:
