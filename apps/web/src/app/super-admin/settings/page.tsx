@@ -50,6 +50,25 @@ export default function SettingsPage() {
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleImageUpload = async (key: string, file: File) => {
+    try {
+      setSaving(true);
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Failed to upload file');
+      const data = await res.json();
+      handleChange(key, data.url);
+    } catch (err) {
+      alert('Error uploading image: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -375,14 +394,22 @@ export default function SettingsPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-600 mb-1">Image URL</label>
+                        <label className="block text-xs font-bold text-slate-600 mb-1">Image Upload</label>
                         <input
-                          type="text"
-                          value={settings[`landing.showcase.${num}.image`] || ''}
-                          onChange={(e) => handleChange(`landing.showcase.${num}.image`, e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
-                          placeholder="/images/example.png or https://..."
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              handleImageUpload(`landing.showcase.${num}.image`, e.target.files[0]);
+                            }
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                         />
+                        {settings[`landing.showcase.${num}.image`] && (
+                          <div className="mt-2 text-xs text-emerald-600 font-medium break-all">
+                            ✓ Terupload: {settings[`landing.showcase.${num}.image`]}
+                          </div>
+                        )}
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-xs font-bold text-slate-600 mb-1">Description</label>
