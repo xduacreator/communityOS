@@ -54,28 +54,30 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             <span className="text-xl font-extrabold tracking-tight text-slate-900">Console</span>
           </div>
           
-          <div className="flex-1 h-0 px-4 py-4 space-y-2 overflow-y-auto">
-            <div className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">
-              Super Admin Menu
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="px-4 py-4 space-y-2">
+              <div className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">
+                Super Admin Menu
+              </div>
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link 
+                    key={item.name} 
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center px-5 py-4 rounded-2xl transition-all duration-300 ${
+                      isActive 
+                        ? 'bg-indigo-50 text-indigo-700 font-bold' 
+                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium'
+                    }`}
+                  >
+                    <item.icon className={`w-5 h-5 mr-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                    <span className="text-[15px]">{item.name}</span>
+                  </Link>
+                );
+              })}
             </div>
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link 
-                  key={item.name} 
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center px-5 py-4 rounded-2xl transition-all duration-300 ${
-                    isActive 
-                      ? 'bg-indigo-50 text-indigo-700 font-bold' 
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium'
-                  }`}
-                >
-                  <item.icon className={`w-5 h-5 mr-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
-                  <span className="text-[15px]">{item.name}</span>
-                </Link>
-              );
-            })}
           </div>
 
           <div className="p-4 shrink-0">

@@ -62,32 +62,34 @@ export default function AdminLayout({
           <span className="text-xl font-extrabold tracking-tight text-slate-900">Admin Panel</span>
         </div>
         
-        <div className="flex-1 h-0 py-8 px-6 space-y-2 overflow-y-auto">
-          <div className="px-3 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-4">
-            Manage /{resolvedParams.slug}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="py-8 px-6 space-y-2">
+            <div className="px-3 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-4">
+              Manage /{resolvedParams.slug}
+            </div>
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link 
+                  key={item.name} 
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center px-4 py-4 rounded-2xl transition-all duration-200 group ${
+                    isActive 
+                      ? 'bg-indigo-50 text-indigo-700 font-bold' 
+                      : 'text-slate-500 hover:bg-slate-50 font-semibold hover:text-slate-900'
+                  }`}
+                >
+                  <div className={`p-2 rounded-xl mr-3 transition-colors ${
+                    isActive ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600'
+                  }`}>
+                    <item.icon className="w-4 h-4" />
+                  </div>
+                  <span className="text-[15px]">{item.name}</span>
+                </Link>
+              );
+            })}
           </div>
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link 
-                key={item.name} 
-                href={item.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center px-4 py-4 rounded-2xl transition-all duration-200 group ${
-                  isActive 
-                    ? 'bg-indigo-50 text-indigo-700 font-bold' 
-                    : 'text-slate-500 hover:bg-slate-50 font-semibold hover:text-slate-900'
-                }`}
-              >
-                <div className={`p-2 rounded-xl mr-3 transition-colors ${
-                  isActive ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600'
-                }`}>
-                  <item.icon className="w-4 h-4" />
-                </div>
-                <span className="text-[15px]">{item.name}</span>
-              </Link>
-            );
-          })}
         </div>
 
         <div className="p-6 shrink-0 border-t border-slate-50 space-y-2">
