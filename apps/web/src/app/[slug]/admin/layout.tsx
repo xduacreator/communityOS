@@ -62,26 +62,6 @@ export default function AdminLayout({
           <span className="text-xl font-extrabold tracking-tight text-slate-900">Admin Panel</span>
         </div>
 
-        <div className="p-6 border-b border-slate-50 space-y-2">
-          <Link 
-            href={`/${resolvedParams.slug}`}
-            className="flex items-center w-full px-4 py-4 text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold rounded-2xl transition-colors group"
-          >
-            <div className="p-2 rounded-xl bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600 mr-3 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-            </div>
-            <span className="text-[15px]">View Site</span>
-          </Link>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center w-full px-4 py-4 text-slate-500 hover:bg-red-50 hover:text-red-600 font-semibold rounded-2xl transition-colors group"
-          >
-            <div className="p-2 rounded-xl bg-slate-100 text-slate-400 group-hover:bg-red-100 group-hover:text-red-500 mr-3 transition-colors">
-              <LogOut className="w-4 h-4" />
-            </div>
-            <span className="text-[15px]">Logout</span>
-          </button>
-        </div>
         
         <div className="overflow-y-auto">
           <div className="py-8 px-6 space-y-2">
@@ -112,6 +92,28 @@ export default function AdminLayout({
             })}
           </div>
         </div>
+
+        <div className="p-6 border-t border-slate-50 space-y-2">
+          <Link 
+            href={`/${resolvedParams.slug}`}
+            className="flex items-center w-full px-4 py-4 text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold rounded-2xl transition-colors group"
+          >
+            <div className="p-2 rounded-xl bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600 mr-3 transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="text-[15px]">View Site</span>
+          </Link>
+          <button 
+            onClick={handleLogout}
+            className="flex items-center w-full px-4 py-4 text-slate-500 hover:bg-red-50 hover:text-red-600 font-semibold rounded-2xl transition-colors group"
+          >
+            <div className="p-2 rounded-xl bg-slate-100 text-slate-400 group-hover:bg-red-100 group-hover:text-red-500 mr-3 transition-colors">
+              <LogOut className="w-4 h-4" />
+            </div>
+            <span className="text-[15px]">Logout</span>
+          </button>
+        </div>
+
 
 
       </aside>

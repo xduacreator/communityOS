@@ -54,16 +54,6 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             <span className="text-xl font-extrabold tracking-tight text-slate-900">Console</span>
           </div>
 
-          <div className="p-4 border-b border-slate-100/50">
-            <button 
-              onClick={handleLogout}
-              className="flex items-center w-full px-5 py-4 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-2xl transition-all duration-300 font-medium group"
-            >
-              <LogOut className="w-5 h-5 mr-4 text-slate-400 group-hover:text-red-500 transition-colors" />
-              <span className="text-[15px]">Logout</span>
-            </button>
-          </div>
-          
           <div className="overflow-y-auto">
             <div className="px-4 py-4 space-y-2">
               <div className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">
@@ -90,7 +80,15 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             </div>
           </div>
 
-
+          <div className="p-4">
+            <button 
+              onClick={handleLogout}
+              className="flex items-center w-full px-5 py-4 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-2xl transition-all duration-300 font-medium group"
+            >
+              <LogOut className="w-5 h-5 mr-4 text-slate-400 group-hover:text-red-500 transition-colors" />
+              <span className="text-[15px]">Logout</span>
+            </button>
+          </div>
         </div>
       </aside>
 
