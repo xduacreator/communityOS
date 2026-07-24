@@ -54,7 +54,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             <span className="text-xl font-extrabold tracking-tight text-slate-900">Console</span>
           </div>
           
-          <div className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
+          <div className="flex-1 min-h-0 px-4 py-4 space-y-2 overflow-y-auto">
             <div className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">
               Super Admin Menu
             </div>

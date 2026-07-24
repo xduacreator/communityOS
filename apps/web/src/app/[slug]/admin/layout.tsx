@@ -62,7 +62,7 @@ export default function AdminLayout({
           <span className="text-xl font-extrabold tracking-tight text-slate-900">Admin Panel</span>
         </div>
         
-        <div className="flex-1 py-8 px-6 space-y-2 overflow-y-auto">
+        <div className="flex-1 min-h-0 py-8 px-6 space-y-2 overflow-y-auto">
           <div className="px-3 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-4">
             Manage /{resolvedParams.slug}
           </div>
