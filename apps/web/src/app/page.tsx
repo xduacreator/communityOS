@@ -236,9 +236,27 @@ export default async function Home() {
             
             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { id: 'jakartarunners', name: 'Jakarta Runners', type: 'Komunitas Lari', desc: 'Klub olahraga yang mengedukasi sekaligus aktif dalam penggunaan data absensi berbayar.', image: '/images/jakarta-runners.png' },
-                { id: 'tech-enthusiasts', name: 'Tech Enthusiasts', type: 'Komunitas Teknologi', desc: 'Penyelenggara bootcamp dan kompetisi hackathon rutin untuk para developer.', image: '/images/tech-enthusiasts.png' },
-                { id: 'art-club', name: 'Art Studio Club', type: 'Studio & Kelas Seni', desc: 'Studio kreatif yang sukses menjual berbagai paket kelas seni eksklusif.', image: '/images/art-studio.png' }
+                { 
+                  id: settings['landing.showcase.1.id'] || 'jakartarunners', 
+                  name: settings['landing.showcase.1.name'] || 'Jakarta Runners', 
+                  type: settings['landing.showcase.1.type'] || 'Komunitas Lari', 
+                  desc: settings['landing.showcase.1.desc'] || 'Klub olahraga yang mengedukasi sekaligus aktif dalam penggunaan data absensi berbayar.', 
+                  image: settings['landing.showcase.1.image'] || '/images/jakarta-runners.png' 
+                },
+                { 
+                  id: settings['landing.showcase.2.id'] || 'tech-enthusiasts', 
+                  name: settings['landing.showcase.2.name'] || 'Tech Enthusiasts', 
+                  type: settings['landing.showcase.2.type'] || 'Komunitas Teknologi', 
+                  desc: settings['landing.showcase.2.desc'] || 'Penyelenggara bootcamp dan kompetisi hackathon rutin untuk para developer.', 
+                  image: settings['landing.showcase.2.image'] || '/images/tech-enthusiasts.png' 
+                },
+                { 
+                  id: settings['landing.showcase.3.id'] || 'art-club', 
+                  name: settings['landing.showcase.3.name'] || 'Art Studio Club', 
+                  type: settings['landing.showcase.3.type'] || 'Studio & Kelas Seni', 
+                  desc: settings['landing.showcase.3.desc'] || 'Studio kreatif yang sukses menjual berbagai paket kelas seni eksklusif.', 
+                  image: settings['landing.showcase.3.image'] || '/images/art-studio.png' 
+                }
               ].map((community) => (
                 <div key={community.id} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col">
                   <div className="h-48 overflow-hidden relative">

@@ -337,6 +337,67 @@ export default function SettingsPage() {
                 placeholder="Lihat bagaimana para owner dan kreator memanfaatkan platform kami..."
               />
             </div>
+
+            <div className="pt-6 border-t border-slate-100">
+              <h3 className="text-sm font-bold text-slate-800 mb-4">Featured Communities (Max 3)</h3>
+              
+              <div className="space-y-6">
+                {[1, 2, 3].map((num) => (
+                  <div key={num} className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="font-bold text-slate-800 mb-4">Community {num}</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-600 mb-1">Slug / ID (URL Path)</label>
+                        <input
+                          type="text"
+                          value={settings[`landing.showcase.${num}.id`] || ''}
+                          onChange={(e) => handleChange(`landing.showcase.${num}.id`, e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                          placeholder="Misal: jakartarunners"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-600 mb-1">Name</label>
+                        <input
+                          type="text"
+                          value={settings[`landing.showcase.${num}.name`] || ''}
+                          onChange={(e) => handleChange(`landing.showcase.${num}.name`, e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-600 mb-1">Type / Category</label>
+                        <input
+                          type="text"
+                          value={settings[`landing.showcase.${num}.type`] || ''}
+                          onChange={(e) => handleChange(`landing.showcase.${num}.type`, e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-600 mb-1">Image URL</label>
+                        <input
+                          type="text"
+                          value={settings[`landing.showcase.${num}.image`] || ''}
+                          onChange={(e) => handleChange(`landing.showcase.${num}.image`, e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                          placeholder="/images/example.png or https://..."
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-bold text-slate-600 mb-1">Description</label>
+                        <textarea
+                          rows={2}
+                          value={settings[`landing.showcase.${num}.desc`] || ''}
+                          onChange={(e) => handleChange(`landing.showcase.${num}.desc`, e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
