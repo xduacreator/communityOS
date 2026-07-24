@@ -1,8 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { IsArray, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class SettingItemDto {
+  @IsString()
+  key: string;
+
+  @IsString()
+  value: string;
+}
 
 export class UpdateSettingsDto {
-  settings: { key: string; value: string }[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SettingItemDto)
+  settings: SettingItemDto[];
 }
 
 @Injectable()
