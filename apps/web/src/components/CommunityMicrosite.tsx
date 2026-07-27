@@ -408,7 +408,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
   return (
     <div 
       className={isDarkMode ? 'dark' : ''} 
-      style={community.theme ? { '--color-primary': community.theme } as React.CSSProperties : undefined}
+      style={community.theme ? { '--primary': community.theme, '--color-primary': community.theme } as React.CSSProperties : undefined}
     >
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-primary selection:text-white transition-colors duration-300">
       
