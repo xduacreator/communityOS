@@ -28,6 +28,7 @@ model Community {
   slug                  String   @unique
   name                  String
   tagline               String?
+  shortDescription      String?
   domain                String?  @unique
   logo                  String?
   theme                 String?

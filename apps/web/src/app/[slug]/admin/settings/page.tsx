@@ -170,6 +170,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
           tagline: community.tagline,
           slug: community.slug,
           domain: community.domain,
+          shortDescription: community.shortDescription,
           about: community.about,
           contactInfo: community.contactInfo,
           whatsappNumber: community.whatsappNumber,
@@ -411,13 +412,26 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">About (Description)</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Short Description</label>
+                <textarea
+                  rows={2}
+                  value={community.shortDescription || ''}
+                  onChange={(e) => setCommunity({ ...community, shortDescription: e.target.value })}
+                  placeholder="Komunitas yang menghubungkan orang, berbagi pengetahuan..."
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium resize-none"
+                />
+                <p className="text-xs text-slate-500 mt-2">Teks singkat yang akan tampil di halaman utama (Home) Landing Profile.</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Full Description (About)</label>
                 <textarea
                   rows={4}
                   value={community.about || ''}
                   onChange={(e) => setCommunity({ ...community, about: e.target.value })}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium resize-none"
                 />
+                <p className="text-xs text-slate-500 mt-2">Teks penjelasan lengkap yang akan tampil di tab About.</p>
               </div>
 
               <div>

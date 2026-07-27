@@ -511,7 +511,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
             </h1>
             
             <p className="text-sm text-slate-500 leading-relaxed max-w-[200px] mb-6">
-              {community.about || 'Komunitas yang menghubungkan orang, berbagi pengetahuan, menciptakan pengalaman bermakna, dan tumbuh bersama.'}
+              {community.shortDescription || 'Komunitas yang menghubungkan orang, berbagi pengetahuan, menciptakan pengalaman bermakna, dan tumbuh bersama.'}
             </p>
             
             {(!isLoggedIn || !status) ? (
@@ -616,7 +616,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
             </h1>
             
             <p className="text-base sm:text-lg lg:text-xl text-slate-500 max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed px-2">
-              {community.about ? community.about : 'We are a community that connects people, shares knowledge, creates meaningful experiences, and grows together.'}
+              {community.shortDescription ? community.shortDescription : 'We are a community that connects people, shares knowledge, creates meaningful experiences, and grows together.'}
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -1021,7 +1021,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                     onClick={async () => {
                       removeToken();
                       setIsLoggedIn(false);
-                      router.push(`/${slug}`);
+                      handleTabChange('home');
                     }}
                     className="px-4 py-3 rounded-xl text-xs font-bold text-rose-300 hover:text-rose-100 hover:bg-white/5 transition-all flex items-center gap-1.5"
                   >
