@@ -42,6 +42,7 @@ model Community {
   statCitiesValue       String?
   statAchievementsValue String?
   welcomeMessage        String?
+  joinCtaLabel          String?
   menuHomeLabel         String?
   menuEventsLabel       String?
   menuGalleryLabel      String?

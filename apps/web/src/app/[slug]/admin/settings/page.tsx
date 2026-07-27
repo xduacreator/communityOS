@@ -181,6 +181,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
           statCitiesValue: community.statCitiesValue,
           statAchievementsValue: community.statAchievementsValue,
           welcomeMessage: community.welcomeMessage,
+          joinCtaLabel: community.joinCtaLabel,
           menuHomeLabel: community.menuHomeLabel,
           menuEventsLabel: community.menuEventsLabel,
           menuGalleryLabel: community.menuGalleryLabel,
@@ -409,6 +410,18 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                 />
                 <p className="text-xs text-slate-500 mt-2">The text displayed above the community name on the profile page.</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Tombol Gabung (Join CTA)</label>
+                <input
+                  type="text"
+                  value={community.joinCtaLabel || ''}
+                  onChange={(e) => setCommunity({ ...community, joinCtaLabel: e.target.value })}
+                  placeholder="Gabung Komunitas"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
+                />
+                <p className="text-xs text-slate-500 mt-2">Teks yang ditampilkan pada tombol utama untuk mendaftar atau gabung.</p>
               </div>
 
               <div>

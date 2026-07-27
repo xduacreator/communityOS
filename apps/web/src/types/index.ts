@@ -47,6 +47,7 @@ export interface Community {
   statCitiesValue?: string | null;
   statAchievementsValue?: string | null;
   welcomeMessage?: string | null;
+  joinCtaLabel?: string | null;
   menuHomeLabel?: string | null;
   menuEventsLabel?: string | null;
   menuGalleryLabel?: string | null;

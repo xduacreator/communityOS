@@ -412,7 +412,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
             registrationFields={community.registrationFields} 
             registrationMode={community.registrationMode}
             memberships={community.memberships}
-            label="Gabung Komunitas"
+            label={community.joinCtaLabel || undefined}
             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md transition-colors text-xs flex items-center gap-1"
             icon={<ArrowRight className="w-3 h-3 ml-1" />}
           />
@@ -479,6 +479,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
               registrationFields={community.registrationFields} 
               registrationMode={community.registrationMode}
               memberships={community.memberships}
+              label={community.joinCtaLabel || undefined}
               className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full shadow-md transition-colors text-sm flex items-center gap-1"
             />
           )}
@@ -522,7 +523,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 registrationFields={community.registrationFields} 
                 registrationMode={community.registrationMode}
                 memberships={community.memberships}
-                label="Gabung Komunitas"
+                label={community.joinCtaLabel || undefined}
                 className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-md text-sm flex items-center justify-center w-max mb-4"
                 icon={<ArrowRight className="w-4 h-4 ml-2" />}
               />
@@ -628,7 +629,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   registrationFields={community.registrationFields} 
                   registrationMode={community.registrationMode}
                   memberships={community.memberships}
-                  label="Pelajari Selengkapnya"
+                  label={community.joinCtaLabel || undefined}
                   className="w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white font-bold rounded-full shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 hover:scale-105 transition-all flex items-center justify-center gap-2"
                 />
               ) : status.status === 'PENDING' ? (
