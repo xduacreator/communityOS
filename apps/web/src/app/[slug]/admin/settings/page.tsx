@@ -172,6 +172,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
           domain: community.domain,
           about: community.about,
           contactInfo: community.contactInfo,
+          whatsappNumber: community.whatsappNumber,
           logo: finalLogoUrl,
           heroBanner: finalBannerUrl,
           statMembersValue: community.statMembersValue,
@@ -431,6 +432,18 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium resize-y min-h-[120px]"
                 />
                 <p className="text-xs text-slate-500 mt-2">Enter any contact details (email, phone, address). This will be shown on the Contact tab.</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">WhatsApp Number</label>
+                <input
+                  type="text"
+                  value={community.whatsappNumber || ''}
+                  onChange={(e) => setCommunity({ ...community, whatsappNumber: e.target.value })}
+                  placeholder="e.g. 6281234567890 (Gunakan kode negara tanpa +)"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
+                />
+                <p className="text-xs text-slate-500 mt-2">Will be displayed as a clickable wa.me link on the Contact tab.</p>
               </div>
             </div>
           </div>

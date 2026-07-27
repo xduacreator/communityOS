@@ -39,6 +39,7 @@ export interface Community {
   heroBanner?: string | null;
   about?: string | null;
   contactInfo?: string | null;
+  whatsappNumber?: string;
   isActive: boolean;
   statMembersValue?: string | null;
   statEventsValue?: string | null;

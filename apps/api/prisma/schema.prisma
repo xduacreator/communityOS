@@ -34,6 +34,7 @@ model Community {
   heroBanner            String?
   about                 String?
   contactInfo           String?
+  whatsappNumber        String?
   isActive              Boolean  @default(true)
   statMembersValue      String?
   statEventsValue       String?
