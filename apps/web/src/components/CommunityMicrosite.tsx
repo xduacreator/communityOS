@@ -788,7 +788,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
       {/* Other Tabs Wrapper */}
       {activeTab !== 'home' && (
-        <div className="max-w-6xl mx-auto w-full p-4 sm:p-6 lg:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="max-w-6xl mx-auto w-full p-4 pb-32 md:p-6 lg:p-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           
           {activeTab === 'sessions' && (
             <div className="bg-white p-6 md:p-8 lg:p-12 rounded-3xl md:rounded-[2.5rem] shadow-sm border border-slate-100">
