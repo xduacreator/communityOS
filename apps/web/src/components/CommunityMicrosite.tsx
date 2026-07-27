@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import JoinButton from './JoinButton';
 import ProfileSettings from './ProfileSettings';
 import { Home, Info, Phone, Calendar, Clock, MapPin, CheckCircle, Image as ImageIcon, Users, Trophy, Sun, ArrowRight, X, LayoutGrid, Shield, CreditCard, Activity, Zap, Plus, LogOut } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
 import { getAuthHeaders, removeToken } from '../lib/auth';
 import { useRouter } from 'next/navigation';
 import { Community, SessionPackage, GalleryImage, CommunityMember, SessionWallet, UserMembershipWithMembership, Membership, User, Event } from '../types';
@@ -1154,6 +1155,17 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                     <button
                                       type="button"
                                       onClick={() => {
+                                        if (userMemberships.length > 0) {
+                                          const activeMem = userMemberships[0];
+                                          const end = new Date(activeMem.endDate);
+                                          const now = new Date();
+                                          const diffTime = end.getTime() - now.getTime();
+                                          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                          if (diffDays > 7) {
+                                            alert(`Anda baru bisa memperpanjang membership 7 hari sebelum masa berlaku habis. (Sisa: ${diffDays} hari)`);
+                                            return;
+                                          }
+                                        }
                                         setSelectedRenewalTierId(community.memberships?.[0]?.id || '');
                                         setRenewalProofUrl('');
                                         setShowRenewalModal(true);
@@ -1350,8 +1362,10 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                             if (e.target.files && e.target.files[0]) {
                                               const file = e.target.files[0];
                                               try {
+                                                const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+                                                const compressedFile = await imageCompression(file, options);
                                                 const formData = new FormData();
-                                                formData.append('file', file);
+                                                formData.append('file', compressedFile);
                                                 const headers = getAuthHeaders();
                                                 const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
                                                   method: 'POST',
@@ -1628,10 +1642,13 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                     required
                     onChange={async (e) => {
                       if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
+                        setUploadingRenewal(true);
                         try {
+                          const file = e.target.files[0];
+                          const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+                          const compressedFile = await imageCompression(file, options);
                           const formData = new FormData();
-                          formData.append('file', file);
+                          formData.append('file', compressedFile);
                           const headers = getAuthHeaders();
                           const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
                             method: 'POST',
@@ -1645,6 +1662,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                           setRenewalProofUrl(uploadData.url);
                         } catch (err) {
                           alert(err instanceof Error ? err.message : 'Gagal mengunggah');
+                        } finally {
+                          setUploadingRenewal(false);
                         }
                       }
                     }}
@@ -1838,10 +1857,13 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                     required
                     onChange={async (e) => {
                       if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
+                        setUploadingBundle(true);
                         try {
+                          const file = e.target.files[0];
+                          const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+                          const compressedFile = await imageCompression(file, options);
                           const formData = new FormData();
-                          formData.append('file', file);
+                          formData.append('file', compressedFile);
                           const headers = getAuthHeaders();
                           const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
                             method: 'POST',
@@ -1855,6 +1877,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                           setBundleProofUrl(uploadData.url);
                         } catch (err) {
                           alert(err instanceof Error ? err.message : 'Gagal mengunggah');
+                        } finally {
+                          setUploadingBundle(false);
                         }
                       }
                     }}
