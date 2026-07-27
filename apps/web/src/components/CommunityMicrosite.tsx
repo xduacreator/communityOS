@@ -439,7 +439,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
           <span className="font-extrabold text-lg md:text-xl text-slate-900 tracking-tight truncate max-w-[120px] md:max-w-xs">{community.name}</span>
         </div>
 
-        <div className="flex items-center gap-1 md:gap-2 bg-white rounded-full p-1.5 shadow-sm border border-slate-100 overflow-x-auto max-w-[55%] md:max-w-2xl scrollbar-none shrink-0">
+        <div className="flex items-center gap-1 md:gap-4 shrink-0">
           {(isLoggedIn ? ['home', 'about', 'sessions', 'gallery', 'contact', 'dashboard'] : ['home', 'about', 'sessions', 'gallery', 'contact']).map((tab) => {
             let label = tab;
             if (tab === 'home' && community.menuHomeLabel) label = community.menuHomeLabel;
@@ -455,10 +455,10 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 type="button"
                 onClick={() => handleTabChange(tab)}
                 className={`
-                  cursor-pointer flex items-center px-4 md:px-5 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-semibold capitalize transition-all duration-300 whitespace-nowrap
+                  cursor-pointer flex items-center px-3 py-2 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-semibold capitalize transition-all duration-300 whitespace-nowrap
                   ${activeTab === tab 
                     ? 'bg-indigo-50 text-indigo-700' 
-                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}
+                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}
                 `}
               >
                 {getTabIcon(tab)}
@@ -1019,9 +1019,12 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   </button>
                   <button
                     type="button"
-                    onClick={async () => {
+                    onClick={() => {
                       removeToken();
                       setIsLoggedIn(false);
+                      setStatus(null);
+                      setActiveWallet(null);
+                      setHistory([]);
                       handleTabChange('home');
                     }}
                     className="px-4 py-3 rounded-xl text-xs font-bold text-rose-300 hover:text-rose-100 hover:bg-white/5 transition-all flex items-center gap-1.5"
