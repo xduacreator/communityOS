@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuthHeaders } from '../../../../lib/auth';
-import { Settings, Save, Globe, Type, Info, Phone, Image as ImageIcon, BarChart2, Search, X } from 'lucide-react';
+import { Settings, Save, Globe, Type, Info, Phone, Image as ImageIcon, BarChart2, Search, X, Trash2 } from 'lucide-react';
 import { Community, Membership } from '../../../../types';
+import imageCompression from 'browser-image-compression';
 
 export default function AdminSettings({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = React.use(params);
@@ -159,6 +160,9 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
       }
       if (bannerFile) {
         finalBannerUrl = await uploadFile(bannerFile);
+      } else if (community.heroBanner === '') {
+        // Allow removing banner if it was explicitly cleared
+        finalBannerUrl = '';
       }
 
       const headers = getAuthHeaders();
@@ -524,23 +528,49 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Hero Banner Upload</label>
                 {(bannerFile || community.heroBanner) && (
-                  <img 
-                    src={bannerFile ? URL.createObjectURL(bannerFile) : (community.heroBanner || undefined)} 
-                    alt="Banner Preview" 
-                    className="w-full h-32 object-cover rounded-xl mb-4 shadow-sm border border-slate-200"
-                  />
+                  <div className="relative mb-4">
+                    <img 
+                      src={bannerFile ? URL.createObjectURL(bannerFile) : (community.heroBanner || undefined)} 
+                      alt="Banner Preview" 
+                      className="w-full h-32 object-cover rounded-xl shadow-sm border border-slate-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBannerFile(null);
+                        setCommunity({ ...community, heroBanner: '' });
+                      }}
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-sm transition-colors"
+                      title="Hapus Banner"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 )}
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     if (e.target.files && e.target.files[0]) {
-                      setBannerFile(e.target.files[0]);
+                      const file = e.target.files[0];
+                      try {
+                        const compressedFile = await imageCompression(file, {
+                          maxSizeMB: 1,
+                          maxWidthOrHeight: 1200,
+                          useWebWorker: true
+                        });
+                        setBannerFile(compressedFile);
+                      } catch (error) {
+                        console.error('Error compressing image:', error);
+                        setBannerFile(file);
+                      }
                     }
                   }}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                 />
-                <p className="text-xs text-slate-500 mt-2">Background image for the profile header</p>
+                <p className="text-xs text-slate-500 mt-2">
+                  Direkomendasikan: Resolusi 1200 x 400px (Rasio 3:1). Gambar akan dikompres secara otomatis.
+                </p>
               </div>
             </div>
 

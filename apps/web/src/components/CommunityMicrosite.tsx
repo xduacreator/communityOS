@@ -524,9 +524,18 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
       {/* Mobile Layout (Mockup) */}
       {activeTab === 'home' && (
-        <div className="md:hidden flex flex-col pb-24 animate-in fade-in">
+        <div className="md:hidden flex flex-col pb-24 animate-in fade-in relative">
+          
+          {/* Mobile Background Banner */}
+          {community.heroBanner && (
+            <div className="absolute top-0 left-0 right-0 h-64 -z-10 pointer-events-none">
+              <img src={community.heroBanner} alt="Hero Banner" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-b from-slate-50/10 via-slate-50/80 to-slate-50 dark:from-slate-950/10 dark:via-slate-950/80 dark:to-slate-950 pointer-events-none"></div>
+            </div>
+          )}
+
           {/* Mobile Hero Card */}
-          <div className="mx-4 mt-6 p-6 rounded-[32px] bg-gradient-to-br from-[#f8f9ff] to-white dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 shadow-sm relative overflow-hidden">
+          <div className="mx-4 mt-6 p-6 rounded-[32px] bg-gradient-to-br from-[#f8f9ff]/90 to-white/90 dark:from-slate-900/90 dark:to-slate-900/90 backdrop-blur-sm border border-indigo-50 dark:border-slate-800 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-bl-[100px] opacity-30 pointer-events-none"></div>
             
             <div className="w-12 h-12 bg-white dark:bg-slate-950 rounded-2xl border border-primary/20 flex items-center justify-center text-primary mb-6 shadow-sm">
@@ -565,13 +574,6 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
             <button onClick={() => handleTabChange('sessions')} className="text-primary font-bold text-sm flex items-center">
               Lihat Paket <ArrowRight className="w-4 h-4 ml-1" />
             </button>
-            
-            {/* Illustration Placeholder */}
-            {community.heroBanner && (
-              <div className="absolute bottom-4 right-4 w-32 h-32 opacity-80 pointer-events-none">
-                <img src={community.heroBanner} alt="Hero" className="w-full h-full object-contain" />
-              </div>
-            )}
           </div>
 
           {/* Mobile Stats Carousel */}
