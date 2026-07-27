@@ -148,7 +148,7 @@ export default function JoinButton({
     submitJoin(formAnswers);
   };
 
-  const defaultButtonClass = "group w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50";
+  const defaultButtonClass = "group w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-semibold text-white bg-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50";
 
   return (
     <>
@@ -170,29 +170,29 @@ export default function JoinButton({
       {/* Modal Dialog */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="bg-white dark:bg-slate-950 w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
             {/* Header */}
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-bold text-slate-950">Formulir Pendaftaran</h3>
-                <p className="text-sm text-slate-500 mt-1">Silakan lengkapi data profil komunitas Anda.</p>
+                <h3 className="text-xl font-bold text-slate-950 dark:text-slate-50">Formulir Pendaftaran</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Silakan lengkapi data profil komunitas Anda.</p>
               </div>
               <button 
                 onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500 hover:text-slate-800"
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {registrationMode === 'PAID' && (
-              <div className="mx-6 mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-2xl text-indigo-800 text-xs font-semibold flex items-center gap-2.5 shadow-sm text-left">
-                <svg className="w-5 h-5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="mx-6 mt-4 p-4 bg-primary/5 border border-primary/20 rounded-2xl text-primary text-xs font-semibold flex items-center gap-2.5 shadow-sm text-left">
+                <svg className="w-5 h-5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <div>
-                  <div className="font-extrabold text-indigo-950">Pendaftaran Berbayar</div>
-                  <div className="text-[10px] text-indigo-700/90 font-medium mt-0.5">Komunitas ini mewajibkan pemilihan paket membership aktif untuk mendaftar.</div>
+                  <div className="font-extrabold">Pendaftaran Berbayar</div>
+                  <div className="text-[10px] opacity-80 font-medium mt-0.5">Komunitas ini mewajibkan pemilihan paket membership aktif untuk mendaftar.</div>
                 </div>
               </div>
             )}
@@ -202,16 +202,16 @@ export default function JoinButton({
               
               {/* Membership Tier select radio group if paid registration is active */}
               {registrationMode === 'PAID' && memberships && memberships.length > 0 && (
-                <div className="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100 space-y-3">
-                  <label className="block text-sm font-bold text-slate-700">
+                <div className="bg-primary/5 p-5 rounded-2xl border border-primary/10 space-y-3">
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
                     Pilih Paket Membership <span className="text-red-500">*</span>
                   </label>
                   <div className="space-y-2">
                     {memberships.map((m) => (
                       <label 
                         key={m.id} 
-                        className={`flex items-center justify-between p-3 bg-white border rounded-xl cursor-pointer transition-all hover:border-indigo-400 ${
-                          selectedMembershipId === m.id ? 'border-indigo-500 ring-2 ring-indigo-500/10' : 'border-slate-200'
+                        className={`flex items-center justify-between p-3 bg-white dark:bg-slate-900 border rounded-xl cursor-pointer transition-all hover:border-primary/50 ${
+                          selectedMembershipId === m.id ? 'border-primary ring-2 ring-primary/10' : 'border-slate-200 dark:border-slate-700'
                         }`}
                       >
                         <div className="flex items-center gap-2">
@@ -220,14 +220,14 @@ export default function JoinButton({
                             name="joinMembershipTier"
                             checked={selectedMembershipId === m.id}
                             onChange={() => setSelectedMembershipId(m.id)}
-                            className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300"
+                            className="w-4 h-4 text-primary focus:ring-primary border-slate-300 dark:border-slate-600 dark:bg-slate-800"
                           />
                           <div className="text-left">
-                            <div className="font-bold text-slate-900 text-xs">{m.name}</div>
+                            <div className="font-bold text-slate-900 dark:text-slate-100 text-xs">{m.name}</div>
                             <div className="text-[10px] font-semibold text-slate-400">Durasi: {m.durationDays} hari</div>
                           </div>
                         </div>
-                        <div className="font-black text-indigo-600 text-xs">
+                        <div className="font-black text-primary text-xs">
                           Rp {m.price?.toLocaleString('id-ID') || 0}
                         </div>
                       </label>
@@ -238,7 +238,7 @@ export default function JoinButton({
 
               {fields.map((field) => (
                 <div key={field.id} className="space-y-2 text-left">
-                  <label className="block text-sm font-bold text-slate-700">
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
                   </label>
@@ -249,14 +249,14 @@ export default function JoinButton({
                       rows={3}
                       value={formAnswers[field.id] || ''}
                       onChange={(e) => setFormAnswers({ ...formAnswers, [field.id]: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium text-sm resize-none"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-medium text-sm resize-none dark:text-white"
                     />
                   ) : field.type === 'select' ? (
                     <select
                       required={field.required}
                       value={formAnswers[field.id] || ''}
                       onChange={(e) => setFormAnswers({ ...formAnswers, [field.id]: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-semibold text-sm"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-semibold text-sm dark:text-white"
                     >
                       {(field.options || []).map((opt) => (
                         <option key={opt} value={opt}>{opt}</option>
@@ -268,25 +268,25 @@ export default function JoinButton({
                       required={field.required}
                       value={formAnswers[field.id] || ''}
                       onChange={(e) => setFormAnswers({ ...formAnswers, [field.id]: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium text-sm"
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-medium text-sm dark:text-white"
                     />
                   )}
                 </div>
               ))}
 
               {/* Actions */}
-              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100 mt-6">
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 mt-6">
                 <button 
                   type="button" 
                   onClick={() => setShowModal(false)}
-                  className="px-5 py-3 font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all text-sm"
+                  className="px-5 py-3 font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all text-sm"
                 >
                   Batal
                 </button>
                 <button 
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 transition-all text-sm disabled:opacity-50"
+                  className="px-6 py-3 bg-primary hover:opacity-90 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all text-sm disabled:opacity-50"
                 >
                   {loading ? 'Mengirim...' : 'Kirim Pendaftaran'}
                 </button>

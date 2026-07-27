@@ -176,6 +176,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
           whatsappNumber: community.whatsappNumber,
           logo: finalLogoUrl,
           heroBanner: finalBannerUrl,
+          theme: community.theme,
           statMembersValue: community.statMembersValue,
           statEventsValue: community.statEventsValue,
           statCitiesValue: community.statCitiesValue,
@@ -502,6 +503,22 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                 />
                 <p className="text-xs text-slate-500 mt-2">Recommended size: 256x256px</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Primary Color Theme</label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="color"
+                    value={community.theme || '#4f46e5'}
+                    onChange={(e) => setCommunity({ ...community, theme: e.target.value })}
+                    className="w-14 h-14 p-1 bg-white border border-slate-200 rounded-xl cursor-pointer"
+                  />
+                  <div className="text-xs text-slate-500">
+                    <p className="font-semibold text-slate-700 mb-1">Pick a custom color</p>
+                    <p>This color will be applied to the public community profile.</p>
+                  </div>
+                </div>
               </div>
 
               <div>
