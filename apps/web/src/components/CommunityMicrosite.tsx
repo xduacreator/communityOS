@@ -1645,7 +1645,6 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                     required
                     onChange={async (e) => {
                       if (e.target.files && e.target.files[0]) {
-                        setUploadingRenewal(true);
                         try {
                           const file = e.target.files[0];
                           const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
@@ -1665,8 +1664,6 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                           setRenewalProofUrl(uploadData.url);
                         } catch (err) {
                           alert(err instanceof Error ? err.message : 'Gagal mengunggah');
-                        } finally {
-                          setUploadingRenewal(false);
                         }
                       }
                     }}
@@ -1860,7 +1857,6 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                     required
                     onChange={async (e) => {
                       if (e.target.files && e.target.files[0]) {
-                        setUploadingBundle(true);
                         try {
                           const file = e.target.files[0];
                           const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
@@ -1880,8 +1876,6 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                           setBundleProofUrl(uploadData.url);
                         } catch (err) {
                           alert(err instanceof Error ? err.message : 'Gagal mengunggah');
-                        } finally {
-                          setUploadingBundle(false);
                         }
                       }
                     }}
