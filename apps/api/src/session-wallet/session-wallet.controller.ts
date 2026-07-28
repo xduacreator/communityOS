@@ -8,12 +8,12 @@ export class SessionWalletController {
 
   @Post('purchase')
   purchasePackage(@Body() body: { userId: string; communityId: string; packageId: string; isPrivate?: boolean; userMembershipId?: string }) {
-    return this.sessionWalletService.purchasePackage(body.userId, body.communityId, body.packageId, body.userMembershipId);
+    return this.sessionWalletService.purchasePackage(body.userId, body.communityId, body.packageId, body.isPrivate, body.userMembershipId);
   }
 
   @Post('purchase-bundle')
   purchaseBundle(@Body() body: { userId: string; communityId: string; packageId: string; isPrivate?: boolean; membershipId: string; paymentProofUrl: string }) {
-    return this.sessionWalletService.purchaseBundle(body.userId, body.communityId, body.packageId, body.membershipId, body.paymentProofUrl);
+    return this.sessionWalletService.purchaseBundle(body.userId, body.communityId, body.packageId, body.isPrivate, body.membershipId, body.paymentProofUrl);
   }
 
   @UseGuards(JwtAuthGuard)
