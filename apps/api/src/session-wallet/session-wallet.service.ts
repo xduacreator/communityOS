@@ -31,7 +31,7 @@ export class SessionWalletService {
     }
 
     const activeWallets = await this.prisma.sessionWallet.findMany({
-      where: { userId, communityId, walletStatus: 'ACTIVE' }
+      where: { userId, communityId, packageId, walletStatus: 'ACTIVE' }
     });
 
     const initialStatus = activeWallets.length > 0 ? 'WAITING' : 'ACTIVE';
@@ -120,11 +120,12 @@ export class SessionWalletService {
     });
   }
 
-  async memberCheckIn(userId: string, communityId: string, remarks?: string) {
+  async memberCheckIn(userId: string, communityId: string, packageId?: string, remarks?: string) {
     const activeWallet = await this.prisma.sessionWallet.findFirst({
       where: {
         userId,
         communityId,
+        ...(packageId ? { packageId } : {}),
         walletStatus: 'ACTIVE',
         remainingSession: { gt: 0 },
         expiredDate: { gt: new Date() }
@@ -168,7 +169,7 @@ export class SessionWalletService {
 
       if (updatedWallet.walletStatus === 'COMPLETED') {
         const nextWallet = await tx.sessionWallet.findFirst({
-          where: { userId, communityId, walletStatus: 'WAITING' },
+          where: { userId, communityId, packageId: updatedWallet.packageId, walletStatus: 'WAITING' },
           orderBy: { createdAt: 'asc' }
         });
 
@@ -189,11 +190,12 @@ export class SessionWalletService {
     });
   }
 
-  async memberCheckOut(userId: string, communityId: string, remarks?: string) {
+  async memberCheckOut(userId: string, communityId: string, packageId?: string, remarks?: string) {
     const wallet = await this.prisma.sessionWallet.findFirst({
       where: {
         userId,
         communityId,
+        ...(packageId ? { packageId } : {}),
         walletStatus: { in: ['ACTIVE', 'COMPLETED'] }
       },
       orderBy: { createdAt: 'desc' }

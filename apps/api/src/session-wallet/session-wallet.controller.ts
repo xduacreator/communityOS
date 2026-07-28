@@ -18,14 +18,14 @@ export class SessionWalletController {
 
   @UseGuards(JwtAuthGuard)
   @Post('member/check-in')
-  memberCheckIn(@Body() body: { userId: string; communityId: string; remarks?: string }) {
-    return this.sessionWalletService.memberCheckIn(body.userId, body.communityId, body.remarks);
+  memberCheckIn(@Body() body: { userId: string; communityId: string; packageId?: string; remarks?: string }) {
+    return this.sessionWalletService.memberCheckIn(body.userId, body.communityId, body.packageId, body.remarks);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('member/check-out')
-  memberCheckOut(@Body() body: { userId: string; communityId: string; remarks?: string }) {
-    return this.sessionWalletService.memberCheckOut(body.userId, body.communityId, body.remarks);
+  memberCheckOut(@Body() body: { userId: string; communityId: string; packageId?: string; remarks?: string }) {
+    return this.sessionWalletService.memberCheckOut(body.userId, body.communityId, body.packageId, body.remarks);
   }
 
   @Post('check-in')

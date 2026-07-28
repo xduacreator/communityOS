@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Community, SessionPackage, GalleryImage, CommunityMember, SessionWallet, UserMembershipWithMembership, Membership, User, Event } from '../types';
 
 interface ActiveWalletView {
+  packageId: string;
   packageName: string;
   totalSession: number;
   remainingSession: number;
@@ -23,6 +24,7 @@ interface HistoryItem {
   change: number;
   date: Date;
   remarks: string;
+  packageId?: string;
 }
 
 export default function CommunityMicrosite({ community, slug }: { community: Community, slug: string }) {
@@ -40,7 +42,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
   // Dashboard states
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [status, setStatus] = useState<CommunityMember | null>(null);
-  const [activeWallet, setActiveWallet] = useState<ActiveWalletView | null>(null);
+  const [activeWallets, setActiveWallets] = useState<ActiveWalletView[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loadingDashboard, setLoadingDashboard] = useState(false);
   const [errorDashboard, setErrorDashboard] = useState('');
@@ -119,29 +121,35 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
         });
         if (walletRes.ok) {
           const walletData = await walletRes.json();
-          const active = (walletData as SessionWallet[]).find((w) => w.walletStatus === 'ACTIVE' && w.remainingSession > 0);
-          if (active) {
-            setActiveWallet({
-              packageName: active.package?.name || 'Session Package',
-              totalSession: active.totalSession,
-              remainingSession: active.remainingSession,
-              expiredDate: active.expiredDate || null,
-              status: active.walletStatus
-            });
-          } else {
-            const waiting = (walletData as SessionWallet[]).find((w) => w.walletStatus === 'WAITING');
-            if (waiting) {
-              setActiveWallet({
-                packageName: waiting.package?.name || 'Session Package',
-                totalSession: waiting.totalSession,
-                remainingSession: waiting.remainingSession,
-                expiredDate: waiting.expiredDate || null,
-                status: waiting.walletStatus
-              });
-            } else {
-              setActiveWallet(null);
+          const wallets = walletData as SessionWallet[];
+          const groupedWallets = new Map<string, ActiveWalletView>();
+
+          wallets.forEach((w) => {
+            if (w.walletStatus === 'ACTIVE' || w.walletStatus === 'WAITING') {
+              const pid = w.packageId;
+              if (!groupedWallets.has(pid)) {
+                groupedWallets.set(pid, {
+                  packageId: pid,
+                  packageName: w.package?.name || 'Session Package',
+                  totalSession: 0,
+                  remainingSession: 0,
+                  expiredDate: w.expiredDate ? w.expiredDate.toString() : null,
+                  status: w.walletStatus
+                });
+              }
+              const group = groupedWallets.get(pid)!;
+              group.totalSession += w.totalSession;
+              group.remainingSession += w.remainingSession;
+              // If the current wallet has an earlier active expiration, we could use it, 
+              // but we'll stick to the ACTIVE one's expiration if available
+              if (w.walletStatus === 'ACTIVE' && w.expiredDate) {
+                group.expiredDate = w.expiredDate.toString();
+                group.status = 'ACTIVE';
+              }
             }
-          }
+          });
+
+          setActiveWallets(Array.from(groupedWallets.values()));
 
           const allTransactions: HistoryItem[] = [];
           (walletData as SessionWallet[]).forEach((w) => {
@@ -149,7 +157,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
               type: 'PURCHASE',
               change: w.totalSession,
               date: w.purchaseDate ? new Date(w.purchaseDate) : new Date(),
-              remarks: `Purchased ${w.package?.name || 'Package'}`
+              remarks: `Purchased ${w.package?.name || 'Package'}`,
+              packageId: w.packageId
             });
             if (w.transactions && Array.isArray(w.transactions)) {
               w.transactions.forEach((tx) => {
@@ -157,7 +166,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   type: tx.transactionType,
                   change: tx.changeSession,
                   date: new Date(tx.createdAt),
-                  remarks: tx.remarks || (tx.transactionType === 'ATTENDANCE' ? 'Check-in' : tx.transactionType)
+                  remarks: tx.remarks || (tx.transactionType === 'ATTENDANCE' ? 'Check-in' : tx.transactionType),
+                  packageId: w.packageId
                 });
               });
             }
@@ -349,14 +359,16 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     }
   };
 
-  const handleCheckInOut = async () => {
+  const handleCheckInOut = async (packageId: string) => {
     const headers = getAuthHeaders();
     if (!headers.Authorization || !status || !status.userId || !status.communityId) {
       alert('Authentication or membership status missing.');
       return;
     }
     
-    const isCheckedIn = history[0] && history[0].remarks === 'Check-in';
+    // Check if the latest history for THIS package is a check-in.
+    const packageHistory = history.filter(h => h.packageId === packageId);
+    const isCheckedIn = packageHistory.length > 0 && packageHistory[0].remarks === 'Check-in';
     const endpoint = isCheckedIn ? 'member/check-out' : 'member/check-in';
     const actionName = isCheckedIn ? 'checking out' : 'checking in';
     
@@ -375,6 +387,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
         body: JSON.stringify({
           userId: status.userId,
           communityId: status.communityId,
+          packageId,
           remarks: isCheckedIn ? 'Check-out' : 'Check-in'
         })
       });
@@ -1052,7 +1065,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                       removeToken();
                       setIsLoggedIn(false);
                       setStatus(null);
-                      setActiveWallet(null);
+                      setActiveWallets([]);
                       setHistory([]);
                       handleTabChange('home');
                     }}
@@ -1089,55 +1102,59 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                           {/* Left Column: Active Classes, Sessions & Membership details */}
                           <div className="lg:col-span-2 space-y-8">
                             {/* Active Session Wallet Card (Main Stage!) */}
-                            {activeWallet ? (
-                              <div className="bg-white dark:bg-slate-950 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800 p-8 relative overflow-hidden text-left">
-                                <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-50 rounded-full blur-3xl opacity-40 -mr-10 -mt-10"></div>
-                                
-                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
-                                  <div className="space-y-1">
-                                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-[10px] font-black text-emerald-700 uppercase tracking-wider">
-                                      <Activity className="w-3.5 h-3.5" />
-                                      <span>Sesi Aktif</span>
-                                    </div>
-                                    <h3 className="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight mt-2">{activeWallet.packageName}</h3>
-                                    <p className="text-xs text-slate-400 font-semibold flex items-center gap-1">
-                                      <Clock className="w-3.5 h-3.5 text-slate-350" />
-                                      <span>Berlaku s/d: {activeWallet.expiredDate ? new Date(activeWallet.expiredDate).toLocaleDateString() : 'N/A'}</span>
-                                    </p>
-                                  </div>
+                            {activeWallets.length > 0 ? (
+                              <div className="space-y-6">
+                                {activeWallets.map((wallet) => (
+                                  <div key={wallet.packageId} className="bg-white dark:bg-slate-950 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800 p-8 relative overflow-hidden text-left">
+                                    <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-50 rounded-full blur-3xl opacity-40 -mr-10 -mt-10"></div>
+                                    
+                                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
+                                      <div className="space-y-1">
+                                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-[10px] font-black text-emerald-700 uppercase tracking-wider">
+                                          <Activity className="w-3.5 h-3.5" />
+                                          <span>Sesi Aktif</span>
+                                        </div>
+                                        <h3 className="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight mt-2">{wallet.packageName}</h3>
+                                        <p className="text-xs text-slate-400 font-semibold flex items-center gap-1">
+                                          <Clock className="w-3.5 h-3.5 text-slate-350" />
+                                          <span>Berlaku s/d: {wallet.expiredDate ? new Date(wallet.expiredDate).toLocaleDateString() : 'N/A'}</span>
+                                        </p>
+                                      </div>
 
-                                  <div className="shrink-0 flex items-center gap-4">
-                                    <div className="text-right">
-                                      <div className="text-4xl font-black text-emerald-500 tracking-tighter">{activeWallet.remainingSession}</div>
-                                      <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mt-0.5">Sisa dari {activeWallet.totalSession} Sesi</div>
+                                      <div className="shrink-0 flex items-center gap-4">
+                                        <div className="text-right">
+                                          <div className="text-4xl font-black text-emerald-500 tracking-tighter">{wallet.remainingSession}</div>
+                                          <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mt-0.5">Sisa dari {wallet.totalSession} Sesi</div>
+                                        </div>
+                                        <div className="w-px h-10 bg-slate-150"></div>
+                                        <button
+                                          onClick={() => handleCheckInOut(wallet.packageId)}
+                                          disabled={checkingInOut}
+                                          className={`px-8 py-4 font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 active:scale-[0.97] ${
+                                            history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in'
+                                              ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20'
+                                              : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+                                          }`}
+                                        >
+                                          <Zap className="w-4 h-4 fill-current" />
+                                          <span>{checkingInOut
+                                            ? 'Processing...'
+                                            : (history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in')
+                                              ? 'Check Out Sesi'
+                                              : 'Check In Sesi'}</span>
+                                        </button>
+                                      </div>
                                     </div>
-                                    <div className="w-px h-10 bg-slate-150"></div>
-                                    <button
-                                      onClick={handleCheckInOut}
-                                      disabled={checkingInOut}
-                                      className={`px-8 py-4 font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 active:scale-[0.97] ${
-                                        history[0] && history[0].remarks === 'Check-in'
-                                          ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20'
-                                          : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
-                                      }`}
-                                    >
-                                      <Zap className="w-4 h-4 fill-current" />
-                                      <span>{checkingInOut
-                                        ? 'Processing...'
-                                        : (history[0] && history[0].remarks === 'Check-in')
-                                          ? 'Check Out Sesi'
-                                          : 'Check In Sesi'}</span>
-                                    </button>
-                                  </div>
-                                </div>
 
-                                {/* Progress Bar */}
-                                <div className="mt-8 h-3 w-full bg-slate-100 rounded-full overflow-hidden relative z-10">
-                                  <div 
-                                    className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500" 
-                                    style={{ width: `${(activeWallet.remainingSession / activeWallet.totalSession) * 100}%` }}
-                                  ></div>
-                                </div>
+                                    {/* Progress Bar */}
+                                    <div className="mt-8 h-3 w-full bg-slate-100 rounded-full overflow-hidden relative z-10">
+                                      <div 
+                                        className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-500" 
+                                        style={{ width: `${(wallet.remainingSession / wallet.totalSession) * 100}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             ) : (
                               <div className="bg-white dark:bg-slate-950 rounded-[2.5rem] shadow-sm border border-slate-150 p-8 text-center space-y-4 text-left flex flex-col md:flex-row md:items-center md:justify-between gap-6">
