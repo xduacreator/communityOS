@@ -60,11 +60,12 @@ export class SessionWalletService {
     });
   }
 
-  async checkIn(userId: string, communityId: string, adminId: string, remarks?: string) {
+  async checkIn(userId: string, communityId: string, adminId: string, packageId?: string, remarks?: string) {
     const activeWallet = await this.prisma.sessionWallet.findFirst({
       where: {
         userId,
         communityId,
+        ...(packageId ? { packageId } : {}),
         walletStatus: 'ACTIVE',
         remainingSession: { gt: 0 },
         expiredDate: { gt: new Date() }

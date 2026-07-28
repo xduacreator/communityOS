@@ -53,6 +53,36 @@ export default function AdminAttendance({ params }: { params: Promise<{ slug: st
     t.wallet?.package?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleExportCSV = () => {
+    if (filteredAttendance.length === 0) return;
+
+    const headers = ['Member Name', 'Email', 'Date & Time', 'Package', 'Session Change', 'Remaining', 'Remarks'];
+    const csvRows = [headers.join(',')];
+
+    filteredAttendance.forEach(t => {
+      const date = new Date(t.createdAt).toLocaleString('id-ID');
+      const row = [
+        `"${t.wallet?.user?.name || '-'}"`,
+        `"${t.wallet?.user?.email || '-'}"`,
+        `"${date}"`,
+        `"${t.wallet?.package?.name || '-'}"`,
+        t.changeSession,
+        t.afterSession,
+        `"${t.remarks || '-'}"`
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    const csvString = csvRows.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Attendance_Export_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="max-w-6xl mx-auto pb-12 p-8">
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -77,7 +107,10 @@ export default function AdminAttendance({ params }: { params: Promise<{ slug: st
               className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium text-sm shadow-sm"
             />
           </div>
-          <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors font-bold text-sm text-slate-700 w-full sm:w-auto shadow-sm">
+          <button 
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors font-bold text-sm text-slate-700 w-full sm:w-auto shadow-sm"
+          >
             <Download className="w-4 h-4 text-slate-400" />
             Export CSV
           </button>

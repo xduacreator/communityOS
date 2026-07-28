@@ -14,7 +14,7 @@ import {
   X
 } from 'lucide-react';
 import { getAuthHeaders } from '../../../../lib/auth';
-import { Community, SessionPackage, Activity as CommunityActivity } from '../../../../types';
+import { Community, SessionPackage, Activity as CommunityActivity, SessionWallet, CommunityMember } from '../../../../types';
 
 export default function SessionsManagementPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = React.use(params);
@@ -24,6 +24,8 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
   const [community, setCommunity] = useState<Community | null>(null);
   const [packages, setPackages] = useState<SessionPackage[]>([]);
   const [activities, setActivities] = useState<CommunityActivity[]>([]);
+  const [members, setMembers] = useState<CommunityMember[]>([]);
+  const [wallets, setWallets] = useState<SessionWallet[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Modal State
@@ -61,13 +63,31 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
 
       await Promise.all([
         fetchPackages(comm.id),
-        fetchActivities(comm.id)
+        fetchActivities(comm.id),
+        fetchMembers(comm.id),
+        fetchWallets(comm.id)
       ]);
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchMembers = async (commId: string) => {
+    try {
+      const headers = getAuthHeaders();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/memberships/community/${commId}`, { headers });
+      if (res.ok) setMembers(await res.json());
+    } catch (e) { console.error(e); }
+  };
+
+  const fetchWallets = async (commId: string) => {
+    try {
+      const headers = getAuthHeaders();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/admin/community/${commId}/wallets`, { headers });
+      if (res.ok) setWallets(await res.json());
+    } catch (e) { console.error(e); }
   };
 
   const fetchPackages = async (commId: string) => {
@@ -170,13 +190,57 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
         name: '', description: '', image: '', totalSession: 1, validDays: 30, memberPrice: 0, vipPrice: 0,
         accessRule: 'PUBLIC',
       });
-      fetchPackages(community.id);
-      fetchActivities(community.id);
-      
+      if (pkgRes.ok) {
+        setIsModalOpen(false);
+        fetchPackages(community.id);
+      }
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'An error occurred');
+      alert(e instanceof Error ? e.message : 'Error');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const [checkinForm, setCheckinForm] = useState({ userId: '', packageId: '', remarks: '' });
+  const [checkinSubmitting, setCheckinSubmitting] = useState(false);
+
+  const handleManualCheckIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!community || !checkinForm.userId) return;
+    setCheckinSubmitting(true);
+    try {
+      const headers = getAuthHeaders();
+      // Admin checkIn needs adminId. But backend infers it from token if we use a specific endpoint?
+      // Wait, our backend endpoint `/session-wallet/check-in` takes `adminId` from body.
+      // But we can just use the user ID from the token via decoding or sending a placeholder, 
+      // wait, we have `getAuthHeaders()` but `adminId` is required.
+      // Let's decode token or just let backend handle it?
+      const adminId = JSON.parse(atob(headers.Authorization.split('.')[1])).sub || '';
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/check-in`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify({
+          userId: checkinForm.userId,
+          communityId: community.id,
+          adminId: adminId,
+          packageId: checkinForm.packageId || undefined,
+          remarks: checkinForm.remarks || 'Manual Check-in via Admin',
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to check in');
+      }
+      
+      alert('Check-in successful!');
+      setCheckinForm({ userId: '', packageId: '', remarks: '' });
+      fetchWallets(community.id); // Refresh wallets
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error checking in');
+    } finally {
+      setCheckinSubmitting(false);
     }
   };
 
@@ -228,7 +292,7 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
 
       {/* Tabs */}
       <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
-        {['overview', 'packages', 'checkin', 'wallets'].map((tab) => (
+        {['overview', 'packages', 'wallets', 'quick actions'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -381,26 +445,109 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
         </div>
       )}
 
-      {/* Check-in Tab */}
-      {activeTab === 'checkin' && (
-        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100/50 flex flex-col items-center justify-center py-24">
+      {/* Quick Actions Tab */}
+      {activeTab === 'quick actions' && (
+        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100/50 flex flex-col items-center justify-center py-16">
            <div className="w-24 h-24 bg-indigo-50 rounded-[2rem] flex items-center justify-center mb-6">
              <QrCode className="w-12 h-12 text-indigo-500" />
            </div>
            <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Manual Check-in</h2>
-           <p className="text-slate-500 font-medium mb-8 text-center max-w-md">Search for a member or scan their QR code to deduct a session from their active wallet.</p>
+           <p className="text-slate-500 font-medium mb-8 text-center max-w-md">Select a member to manually deduct a session from their active wallet.</p>
            
-           <div className="flex w-full max-w-lg relative">
-             <Search className="w-6 h-6 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-             <input 
-               type="text" 
-               placeholder="Enter Member Name or ID..." 
-               className="w-full pl-14 pr-6 py-5 bg-slate-50 border border-slate-200 rounded-[2rem] font-medium text-lg outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-             />
-             <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-indigo-600 text-white px-6 py-3 rounded-full font-bold hover:bg-indigo-700 shadow-md">
-               Search
+           <form onSubmit={handleManualCheckIn} className="w-full max-w-lg space-y-4">
+             <div>
+               <label className="block text-sm font-bold text-slate-700 mb-2">Select Member</label>
+               <select
+                 required
+                 value={checkinForm.userId}
+                 onChange={(e) => setCheckinForm({ ...checkinForm, userId: e.target.value })}
+                 className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-900 transition-all outline-none"
+               >
+                 <option value="">-- Choose Member --</option>
+                 {members.map(m => (
+                   <option key={m.userId} value={m.userId}>{m.user?.name} ({m.user?.email})</option>
+                 ))}
+               </select>
+             </div>
+             <div>
+               <label className="block text-sm font-bold text-slate-700 mb-2">Select Package (Optional)</label>
+               <select
+                 value={checkinForm.packageId}
+                 onChange={(e) => setCheckinForm({ ...checkinForm, packageId: e.target.value })}
+                 className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-900 transition-all outline-none"
+               >
+                 <option value="">-- Auto-select Active Wallet --</option>
+                 {packages.map(p => (
+                   <option key={p.id} value={p.id}>{p.name}</option>
+                 ))}
+               </select>
+             </div>
+             <div>
+               <label className="block text-sm font-bold text-slate-700 mb-2">Remarks</label>
+               <input 
+                 type="text" 
+                 value={checkinForm.remarks}
+                 onChange={(e) => setCheckinForm({ ...checkinForm, remarks: e.target.value })}
+                 placeholder="Manual check-in by Admin..." 
+                 className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+               />
+             </div>
+             <button 
+               type="submit" 
+               disabled={checkinSubmitting || !checkinForm.userId}
+               className="w-full bg-indigo-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-indigo-700 shadow-md transition-all mt-4 disabled:opacity-50"
+             >
+               {checkinSubmitting ? 'Processing...' : 'Submit Check-in'}
              </button>
-           </div>
+           </form>
+        </div>
+      )}
+
+      {/* Wallets Tab */}
+      {activeTab === 'wallets' && (
+        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100/50">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <div>
+              <h2 className="text-2xl font-extrabold text-slate-900 mb-1">Active Session Wallets</h2>
+              <p className="text-slate-500 font-medium">View all active wallets of members.</p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse whitespace-nowrap">
+              <thead>
+                <tr>
+                  <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Member</th>
+                  <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Package</th>
+                  <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Status</th>
+                  <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Remaining</th>
+                  <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Expiry Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {wallets.length > 0 ? wallets.map((w: SessionWallet) => (
+                  <tr key={w.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-5 font-bold text-slate-900">{w.user?.name || '-'}</td>
+                    <td className="px-6 py-5 font-bold text-slate-700">{w.package?.name || '-'}</td>
+                    <td className="px-6 py-5">
+                      <span className={`px-3 py-1 text-xs font-bold rounded-full ${w.walletStatus === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : w.walletStatus === 'WAITING' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'}`}>
+                        {w.walletStatus}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 font-bold text-slate-900">{w.remainingSession} / {w.totalSession}</td>
+                    <td className="px-6 py-5 text-slate-500 font-medium">
+                      {w.expiredDate ? new Date(w.expiredDate).toLocaleDateString('id-ID') : '-'}
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-slate-400 font-medium">
+                      No active wallets found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

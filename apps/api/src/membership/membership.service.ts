@@ -57,9 +57,35 @@ export class MembershipService {
   }
 
   async updateMember(id: string, data: any) {
-    return this.prisma.communityMember.update({
-      where: { id },
-      data
+    const { name, email, customFieldsData, ...restData } = data;
+    
+    return this.prisma.$transaction(async (tx: any) => {
+      const member = await tx.communityMember.findUnique({
+        where: { id },
+        include: { user: true }
+      });
+      
+      if (!member) {
+        throw new NotFoundException('Member not found');
+      }
+
+      if (name !== undefined || email !== undefined) {
+        await tx.user.update({
+          where: { id: member.userId },
+          data: {
+            ...(name !== undefined && { name }),
+            ...(email !== undefined && { email })
+          }
+        });
+      }
+
+      return tx.communityMember.update({
+        where: { id },
+        data: {
+          ...restData,
+          ...(customFieldsData !== undefined && { customFieldsData })
+        }
+      });
     });
   }
 

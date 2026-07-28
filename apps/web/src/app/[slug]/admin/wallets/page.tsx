@@ -11,6 +11,7 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
   const [loading, setLoading] = useState(true);
   const [communityId, setCommunityId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
 
   useEffect(() => {
     const fetchCommunityId = async () => {
@@ -48,11 +49,16 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
     fetchWallets();
   }, [communityId]);
 
-  const filteredWallets = wallets.filter(w => 
-    w.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    w.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    w.package?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredWallets = wallets.filter(w => {
+    const matchesSearch = 
+      w.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      w.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      w.package?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'ALL' || w.walletStatus === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="max-w-6xl mx-auto pb-12 p-8">
@@ -78,10 +84,18 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
               className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium text-sm shadow-sm"
             />
           </div>
-          <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors font-bold text-sm text-slate-700 w-full sm:w-auto shadow-sm">
-            <Filter className="w-4 h-4 text-slate-400" />
-            Filter
-          </button>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors font-bold text-sm text-slate-700 w-full sm:w-auto shadow-sm outline-none"
+          >
+            <option value="ALL">Semua Status</option>
+            <option value="ACTIVE">Active</option>
+            <option value="WAITING">Waiting</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="EXPIRED">Expired</option>
+            <option value="FROZEN">Frozen</option>
+          </select>
         </div>
 
         <div className="overflow-x-auto">

@@ -42,7 +42,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
   const [deleteData, setDeleteData] = useState<{ id: string, name: string } | null>(null);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editData, setEditData] = useState<{ id: string, name: string, role: string } | null>(null);
+  const [editData, setEditData] = useState<{ id: string, name: string, email: string, role: string, customFields: Record<string, string> } | null>(null);
   const [selectedMember, setSelectedMember] = useState<CommunityMember | null>(null);
 
   const fetchData = async () => {
@@ -141,22 +141,44 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
   };
 
   const openEditModal = (member: CommunityMember) => {
-    setEditData({ id: member.id, name: member.user?.name || '', role: member.role });
+    let customFields: Record<string, string> = {};
+    if (member.customFieldsData) {
+      try {
+        customFields = JSON.parse(member.customFieldsData);
+      } catch (e) {
+        console.error('Failed to parse customFieldsData', e);
+      }
+    }
+    setEditData({ 
+      id: member.id, 
+      name: member.user?.name || '', 
+      email: member.user?.email || '', 
+      role: member.role,
+      customFields
+    });
     setEditModalOpen(true);
   };
 
-  const handleEditRole = async (e: React.FormEvent) => {
+  const handleEditMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editData) return;
     try {
       const headers = getAuthHeaders();
+      const payload = {
+        role: editData.role,
+        name: editData.name,
+        email: editData.email,
+        customFieldsData: JSON.stringify(editData.customFields),
+        communityId: community?.id
+      };
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/memberships/${editData.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...headers },
-        body: JSON.stringify({ role: editData.role, communityId: community?.id }),
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error('Failed to update role');
+      if (!res.ok) throw new Error('Failed to update member data');
       setEditModalOpen(false);
       fetchData();
     } catch (err) {
@@ -418,7 +440,29 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
               <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">Edit Member Role</h3>
               <p className="text-sm text-slate-500 mt-1">Update role for {editData.name}</p>
             </div>
-            <form onSubmit={handleEditRole} className="p-8">
+            <form onSubmit={handleEditMember} className="p-8 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Name</label>
+                <input
+                  type="text"
+                  value={editData.name}
+                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={editData.email}
+                  onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  required
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Role</label>
                 <select
@@ -430,6 +474,22 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                   <option value="COMMUNITY_ADMIN">Community Admin</option>
                 </select>
               </div>
+
+              {/* Dynamic Custom Fields */}
+              {Object.keys(editData.customFields).map(key => (
+                <div key={key}>
+                  <label className="block text-sm font-bold text-slate-700 mb-2 capitalize">{key.replace(/_/g, ' ')}</label>
+                  <input
+                    type="text"
+                    value={editData.customFields[key]}
+                    onChange={(e) => setEditData({ 
+                      ...editData, 
+                      customFields: { ...editData.customFields, [key]: e.target.value } 
+                    })}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  />
+                </div>
+              ))}
               
               <div className="mt-10 flex justify-end">
                 <button type="button" onClick={() => setEditModalOpen(false)} className="px-6 py-3 font-bold text-slate-500 hover:bg-slate-100 rounded-xl mr-4 transition-colors">

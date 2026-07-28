@@ -29,8 +29,8 @@ export class SessionWalletController {
   }
 
   @Post('check-in')
-  checkIn(@Body() body: { userId: string; communityId: string; adminId: string; remarks?: string }) {
-    return this.sessionWalletService.checkIn(body.userId, body.communityId, body.adminId, body.remarks);
+  checkIn(@Body() body: { userId: string; communityId: string; adminId: string; packageId?: string; remarks?: string }) {
+    return this.sessionWalletService.checkIn(body.userId, body.communityId, body.adminId, body.packageId, body.remarks);
   }
 
   @Post('freeze')

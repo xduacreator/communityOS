@@ -35,8 +35,9 @@ export class MembershipController {
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
   @RequireTenantRole('COMMUNITY_ADMIN')
   @Patch(':id')
-  updateMember(@Param('id') id: string, @Body() data: { role: any, communityId: string }) {
-    return this.membershipService.updateMember(id, { role: data.role });
+  updateMember(@Param('id') id: string, @Body() data: { role?: any, name?: string, email?: string, customFieldsData?: string, communityId: string }) {
+    const { communityId, ...updateData } = data;
+    return this.membershipService.updateMember(id, updateData);
   }
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
