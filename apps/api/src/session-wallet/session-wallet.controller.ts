@@ -7,12 +7,12 @@ export class SessionWalletController {
   constructor(private readonly sessionWalletService: SessionWalletService) {}
 
   @Post('purchase')
-  purchasePackage(@Body() body: { userId: string; communityId: string; packageId: string; userMembershipId?: string }) {
+  purchasePackage(@Body() body: { userId: string; communityId: string; packageId: string; isPrivate?: boolean; userMembershipId?: string }) {
     return this.sessionWalletService.purchasePackage(body.userId, body.communityId, body.packageId, body.userMembershipId);
   }
 
   @Post('purchase-bundle')
-  purchaseBundle(@Body() body: { userId: string; communityId: string; packageId: string; membershipId: string; paymentProofUrl: string }) {
+  purchaseBundle(@Body() body: { userId: string; communityId: string; packageId: string; isPrivate?: boolean; membershipId: string; paymentProofUrl: string }) {
     return this.sessionWalletService.purchaseBundle(body.userId, body.communityId, body.packageId, body.membershipId, body.paymentProofUrl);
   }
 

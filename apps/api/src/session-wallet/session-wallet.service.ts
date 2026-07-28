@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class SessionWalletService {
   constructor(private prisma: PrismaService) {}
 
-  async purchasePackage(userId: string, communityId: string, packageId: string, userMembershipId?: string) {
+  async purchasePackage(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, userMembershipId?: string) {
     const pkg = await this.prisma.sessionPackage.findUnique({ where: { id: packageId } });
     if (!pkg) throw new NotFoundException('Package not found');
 
@@ -56,6 +56,7 @@ export class SessionWalletService {
         purchaseDate: new Date(),
         startDate,
         expiredDate,
+        isPrivate,
       }
     });
   }
@@ -454,7 +455,7 @@ export class SessionWalletService {
     };
   }
 
-  async purchaseBundle(userId: string, communityId: string, packageId: string, membershipId: string, paymentProofUrl: string) {
+  async purchaseBundle(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, membershipId: string, paymentProofUrl: string) {
     const pkg = await this.prisma.sessionPackage.findUnique({ where: { id: packageId } });
     if (!pkg) throw new NotFoundException('Package not found');
 
@@ -500,6 +501,7 @@ export class SessionWalletService {
         totalSession: pkg.totalSession,
         remainingSession: pkg.totalSession,
         purchaseDate: new Date(),
+        isPrivate,
       }
     });
 

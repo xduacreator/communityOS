@@ -61,6 +61,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
   const [selectedBundleTierId, setSelectedBundleTierId] = useState('');
   const [bundleProofUrl, setBundleProofUrl] = useState('');
   const [submittingBundle, setSubmittingBundle] = useState(false);
+  const [isPrivateSession, setIsPrivateSession] = useState(false);
 
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -303,6 +304,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       if (pkg) {
         setSelectedPackage(null);
         setBundlePackage(pkg);
+        setIsPrivateSession(false);
         setSelectedBundleTierId(community.memberships && community.memberships.length > 0 ? community.memberships[0].id : '');
         setBundleProofUrl('');
         setShowBundleModal(true);
@@ -315,6 +317,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
           if (target) {
             setSelectedPackage(null);
             setBundlePackage(target);
+            setIsPrivateSession(false);
             setSelectedBundleTierId(community.memberships && community.memberships.length > 0 ? community.memberships[0].id : '');
             setBundleProofUrl('');
             setShowBundleModal(true);
@@ -341,7 +344,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
         body: JSON.stringify({
           userId: meData.id,
           communityId: community.id,
-          packageId: pkgId
+          packageId: pkgId,
+          isPrivate: isPrivateSession,
         }),
       });
 
@@ -805,7 +809,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
                   <div className="mt-auto grid grid-cols-2 gap-2">
                     <button 
-                      onClick={() => setSelectedPackage(pkg)}
+                      onClick={() => { setSelectedPackage(pkg); setIsPrivateSession(false); }}
                       className="w-full py-2 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 border-2 border-slate-900 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900 transition-colors text-sm"
                     >
                       Detail
@@ -903,7 +907,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
                       <div className="mt-auto grid grid-cols-2 gap-2">
                         <button 
-                          onClick={() => setSelectedPackage(pkg)}
+                          onClick={() => { setSelectedPackage(pkg); setIsPrivateSession(false); }}
                           className="w-full py-2 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 border-2 border-slate-900 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900 transition-colors text-sm"
                         >
                           Detail
@@ -1527,6 +1531,23 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
               </div>
             </div>
 
+            {selectedPackage.vipPrice && (
+              <div className="px-8 pt-4 pb-2 relative shrink-0">
+                <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isPrivateSession}
+                    onChange={(e) => setIsPrivateSession(e.target.checked)}
+                    className="w-5 h-5 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
+                  />
+                  <div>
+                    <div className="font-bold text-amber-800 dark:text-amber-400 text-sm">Gunakan Harga Private</div>
+                    <div className="text-xs text-amber-700 dark:text-amber-500/80">Saya ingin mengambil sesi secara private</div>
+                  </div>
+                </label>
+              </div>
+            )}
+
             <div className="px-8 pt-6 relative shrink-0">
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 flex flex-col justify-center items-center text-center border border-slate-100 dark:border-slate-800">
@@ -1785,6 +1806,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                       userId: status?.userId,
                       communityId: status?.communityId,
                       packageId: bundlePackage.id,
+                      isPrivate: isPrivateSession,
                       membershipId: selectedBundleTierId,
                       paymentProofUrl: bundleProofUrl
                     })
@@ -1810,9 +1832,26 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   <div className="text-slate-600 dark:text-slate-400 font-semibold mt-0.5">{bundlePackage.name} ({bundlePackage.totalSession} Sesi)</div>
                 </div>
                 <div className="font-black text-slate-900 dark:text-slate-50">
-                  Rp {bundlePackage.memberPrice?.toLocaleString('id-ID') || 0}
+                  Rp {(isPrivateSession && bundlePackage.vipPrice ? bundlePackage.vipPrice : bundlePackage.memberPrice)?.toLocaleString('id-ID') || 0}
                 </div>
               </div>
+
+              {bundlePackage.vipPrice && (
+                <div className="mt-2">
+                  <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isPrivateSession}
+                      onChange={(e) => setIsPrivateSession(e.target.checked)}
+                      className="w-5 h-5 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
+                    />
+                    <div>
+                      <div className="font-bold text-amber-800 dark:text-amber-400 text-sm">Gunakan Harga Private</div>
+                      <div className="text-xs text-amber-700 dark:text-amber-500/80">Saya ingin mengambil sesi secara private</div>
+                    </div>
+                  </label>
+                </div>
+              )}
 
               {/* Tipe Membership */}
               <div>
@@ -1851,7 +1890,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 <div className="p-4 bg-primary/5 border border-indigo-150 rounded-2xl space-y-2 text-xs">
                   <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 font-bold">
                     <span>Harga Paket Sesi:</span>
-                    <span>Rp {bundlePackage.memberPrice?.toLocaleString('id-ID')}</span>
+                    <span>Rp {(isPrivateSession && bundlePackage.vipPrice ? bundlePackage.vipPrice : bundlePackage.memberPrice)?.toLocaleString('id-ID')}</span>
                   </div>
                   <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 font-bold">
                     <span>Harga Membership:</span>
@@ -1863,7 +1902,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                     <span>Total Transfer:</span>
                     <span className="text-sm">
                       Rp {(
-                        bundlePackage.memberPrice + 
+                        ((isPrivateSession && bundlePackage.vipPrice) ? (bundlePackage.vipPrice || 0) : (bundlePackage.memberPrice || 0)) + 
                         ((community.memberships || []).find((m: Membership) => m.id === selectedBundleTierId)?.price || 0)
                       ).toLocaleString('id-ID')}
                     </span>

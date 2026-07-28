@@ -224,6 +224,8 @@ model SessionWallet {
   communityId      String
   packageId        String
   userMembershipId String?
+  isPrivate        Boolean   @default(false)
+
   walletStatus     String    @default("DRAFT")
   totalSession     Int
   remainingSession Int
