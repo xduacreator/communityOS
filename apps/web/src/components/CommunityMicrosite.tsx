@@ -302,9 +302,9 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     if (days <= 2) {
       const pkg = sessions.find(p => p.id === pkgId) || selectedPackage;
       if (pkg) {
+        if (!selectedPackage) setIsPrivateSession(false);
         setSelectedPackage(null);
         setBundlePackage(pkg);
-        setIsPrivateSession(false);
         setSelectedBundleTierId(community.memberships && community.memberships.length > 0 ? community.memberships[0].id : '');
         setBundleProofUrl('');
         setShowBundleModal(true);
@@ -315,9 +315,9 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
           const list = await pkgRes.json();
           const target = list.find((p: SessionPackage) => p.id === pkgId);
           if (target) {
+            if (!selectedPackage) setIsPrivateSession(false);
             setSelectedPackage(null);
             setBundlePackage(target);
-            setIsPrivateSession(false);
             setSelectedBundleTierId(community.memberships && community.memberships.length > 0 ? community.memberships[0].id : '');
             setBundleProofUrl('');
             setShowBundleModal(true);
@@ -815,7 +815,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                       Detail
                     </button>
                     <button 
-                      onClick={() => handlePurchase(pkg.id)}
+                      onClick={() => pkg.vipPrice ? (setSelectedPackage(pkg), setIsPrivateSession(false)) : handlePurchase(pkg.id)}
                       disabled={purchasingMap[pkg.id]}
                       className="w-full py-2 bg-slate-900 text-white font-bold rounded-xl hover:bg-primary transition-colors shadow-sm text-sm disabled:opacity-50"
                     >
@@ -913,7 +913,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                           Detail
                         </button>
                         <button 
-                          onClick={() => handlePurchase(pkg.id)}
+                          onClick={() => pkg.vipPrice ? (setSelectedPackage(pkg), setIsPrivateSession(false)) : handlePurchase(pkg.id)}
                           disabled={purchasingMap[pkg.id]}
                           className="w-full py-2 bg-slate-900 text-white font-bold rounded-xl hover:bg-primary transition-colors shadow-sm text-sm disabled:opacity-50"
                         >
