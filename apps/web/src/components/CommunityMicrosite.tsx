@@ -1628,7 +1628,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   setSubmittingRenewal(false);
                 }
               }} 
-              className="p-6 space-y-4 overflow-y-auto"
+              className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0"
             >
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Pilih Paket Membership</label>
@@ -1801,7 +1801,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   setSubmittingBundle(false);
                 }
               }} 
-              className="p-6 space-y-4 overflow-y-auto"
+              className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0"
             >
               {/* Detail Paket Sesi */}
               <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-150 flex justify-between items-center text-xs">
