@@ -1521,7 +1521,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 </div>
                 <h2 className="text-3xl font-extrabold text-slate-900 dark:text-slate-50 mb-1 leading-tight">{selectedPackage.name}</h2>
                 <div className="text-3xl font-black text-slate-900 dark:text-slate-50 flex items-end gap-2">
-                  Rp {(selectedPackage.memberPrice || 0).toLocaleString('id-ID')}
+                  Rp {((isPrivateSession && selectedPackage.vipPrice) ? selectedPackage.vipPrice : (selectedPackage.memberPrice || 0)).toLocaleString('id-ID')}
                 </div>
                 {selectedPackage.vipPrice && (
                   <div className="text-sm font-bold text-amber-600 mt-1">
