@@ -1859,7 +1859,6 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   setSubmittingBundle(false);
                 }
               }} 
-              }} 
               className="flex flex-col flex-1 min-h-0"
             >
               <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
