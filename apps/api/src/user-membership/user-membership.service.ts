@@ -50,7 +50,12 @@ export class UserMembershipService {
       },
       include: {
         user: { select: { id: true, name: true, email: true } },
-        membership: true
+        membership: true,
+        sessionWallets: {
+          include: {
+            package: true
+          }
+        }
       }
     });
   }
@@ -108,6 +113,32 @@ export class UserMembershipService {
           }
         });
       }
+    }
+
+    // Ensure the user is an active CommunityMember
+    const member = await this.prisma.communityMember.findUnique({
+      where: {
+        userId_communityId: {
+          userId: pending.userId,
+          communityId: pending.communityId
+        }
+      }
+    });
+
+    if (!member) {
+      await this.prisma.communityMember.create({
+        data: {
+          userId: pending.userId,
+          communityId: pending.communityId,
+          role: 'MEMBER',
+          status: 'ACTIVE'
+        }
+      });
+    } else if (member.status === 'PENDING' || member.status === 'INACTIVE') {
+      await this.prisma.communityMember.update({
+        where: { id: member.id },
+        data: { status: 'ACTIVE' }
+      });
     }
 
     return updated;

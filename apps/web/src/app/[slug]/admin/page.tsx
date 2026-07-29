@@ -352,7 +352,12 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                       <div className="text-[10px] text-slate-400 font-semibold mt-0.5">Durasi: {renewal.membership?.durationDays} hari</div>
                     </td>
                     <td className="px-6 py-4 text-left text-sm font-black text-indigo-600">
-                      Rp {renewal.membership?.price?.toLocaleString('id-ID')}
+                      Rp {
+                        (
+                          (renewal.membership?.price || 0) +
+                          ((renewal as any).sessionWallets?.reduce((sum: number, w: any) => sum + (w.isPrivate ? w.package?.vipPrice : w.package?.memberPrice) || 0, 0) || 0)
+                        ).toLocaleString('id-ID')
+                      }
                     </td>
                     <td className="px-6 py-4 text-left">
                       {renewal.paymentProofUrl ? (

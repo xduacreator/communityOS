@@ -133,7 +133,10 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
                       <span className="font-bold text-slate-700 bg-slate-100 border border-slate-200 px-3 py-1 rounded-xl text-xs inline-block">
                         {wallet.package?.name}
                       </span>
-                      <div className="text-[11px] font-semibold text-slate-400 mt-2 uppercase tracking-wider">
+                      <div className="text-xs font-bold text-indigo-600 mt-2">
+                        Rp {wallet.package ? (wallet.isPrivate ? wallet.package.vipPrice : wallet.package.memberPrice)?.toLocaleString('id-ID') : 0}
+                      </div>
+                      <div className="text-[11px] font-semibold text-slate-400 mt-1 uppercase tracking-wider">
                         Bought: {wallet.purchaseDate ? new Date(wallet.purchaseDate).toLocaleDateString() : 'N/A'}
                       </div>
                     </td>
