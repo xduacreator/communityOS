@@ -779,7 +779,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                       {(qrisFile || community.qrisImageUrl) ? (
                         <>
                           <img
-                            src={qrisFile ? URL.createObjectURL(qrisFile) : community.qrisImageUrl}
+                            src={qrisFile ? URL.createObjectURL(qrisFile) : (community.qrisImageUrl || '')}
                             alt="QRIS Preview"
                             className="w-full h-full object-contain"
                           />
