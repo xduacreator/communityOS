@@ -131,13 +131,13 @@ export class UserMembershipService {
           userId: pending.userId,
           communityId: pending.communityId,
           role: 'MEMBER',
-          status: 'ACTIVE'
+          status: 'APPROVED'
         }
       });
-    } else if (member.status === 'PENDING' || member.status === 'INACTIVE') {
+    } else if (member.status === 'PENDING' || member.status === 'REJECTED') {
       await this.prisma.communityMember.update({
         where: { id: member.id },
-        data: { status: 'ACTIVE' }
+        data: { status: 'APPROVED' }
       });
     }
 
