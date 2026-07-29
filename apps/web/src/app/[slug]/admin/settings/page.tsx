@@ -15,6 +15,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
   const [error, setError] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [qrisFile, setQrisFile] = useState<File | null>(null);
   const [customFields, setCustomFields] = useState<{ id: string; label: string; type: string; required: boolean; options?: string[] }[]>([]);
   const router = useRouter();
 
@@ -154,6 +155,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
     try {
       let finalLogoUrl = community.logo;
       let finalBannerUrl = community.heroBanner;
+      let finalQrisUrl = community.qrisImageUrl;
 
       if (logoFile) {
         finalLogoUrl = await uploadFile(logoFile);
@@ -161,8 +163,12 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
       if (bannerFile) {
         finalBannerUrl = await uploadFile(bannerFile);
       } else if (community.heroBanner === '') {
-        // Allow removing banner if it was explicitly cleared
         finalBannerUrl = '';
+      }
+      if (qrisFile) {
+        finalQrisUrl = await uploadFile(qrisFile);
+      } else if (community.qrisImageUrl === '') {
+        finalQrisUrl = '';
       }
 
       const headers = getAuthHeaders();
@@ -198,6 +204,8 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
           seoKeywords: community.seoKeywords,
           registrationFields: JSON.stringify(customFields),
           registrationMode: community.registrationMode || "FREE",
+          paymentInstructions: community.paymentInstructions,
+          qrisImageUrl: finalQrisUrl,
         }),
       });
 
@@ -732,14 +740,85 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                 <label className="block text-sm font-bold text-slate-700 mb-2">Keywords</label>
                 <input
                   type="text"
-                  placeholder="e.g. tech, community, programming, network"
-                  value={community.seoKeywords || ''}
-                  onChange={(e) => setCommunity({ ...community, seoKeywords: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                />
+                    value={community.seoKeywords || ''}
+                    onChange={(e) => setCommunity({ ...community, seoKeywords: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+            
+            {/* Payment Details Section */}
+            <div className="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-8 border border-slate-100">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                <div className="p-2.5 bg-green-50 text-green-600 rounded-xl">
+                  <Globe className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Instruksi Pembayaran & QRIS</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">Atur instruksi transfer bank / e-wallet dan unggah QRIS (jika ada) untuk pendaftaran berbayar.</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Instruksi Pembayaran</label>
+                  <textarea
+                    value={community.paymentInstructions || ''}
+                    onChange={(e) => setCommunity({ ...community, paymentInstructions: e.target.value })}
+                    placeholder="Contoh:&#10;Silakan transfer ke rekening berikut:&#10;- BCA: 123456789 a/n Kas Komunitas&#10;- Mandiri: 987654321 a/n Kas Komunitas"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all font-medium resize-y min-h-[120px]"
+                  />
+                  <p className="text-xs text-slate-500 mt-2">Instruksi ini akan muncul saat member membeli paket atau memperpanjang membership.</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Upload QRIS (Opsional)</label>
+                  <div className="flex items-start gap-6">
+                    <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center relative group">
+                      {(qrisFile || community.qrisImageUrl) ? (
+                        <>
+                          <img
+                            src={qrisFile ? URL.createObjectURL(qrisFile) : community.qrisImageUrl}
+                            alt="QRIS Preview"
+                            className="w-full h-full object-contain"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => { setQrisFile(null); setCommunity({ ...community, qrisImageUrl: '' }); }}
+                            className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            Hapus
+                          </button>
+                        </>
+                      ) : (
+                        <ImageIcon className="w-8 h-8 text-slate-300" />
+                      )}
+                    </div>
+                    <div className="flex-1 pt-2">
+                      <label className="cursor-pointer px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-bold rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2 max-w-[200px]">
+                        Pilih Gambar QRIS
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              const options = { maxSizeMB: 1, maxWidthOrHeight: 1080, useWebWorker: true };
+                              const compressed = await imageCompression(e.target.files[0], options);
+                              setQrisFile(compressed);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                      <p className="text-xs text-slate-500 mt-3 leading-relaxed">
+                        Format: JPG, PNG. Maksimal 1MB. Gambar QRIS akan ditampilkan di halaman pembayaran.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
           {/* Custom Registration Form Builder */}
           <div className="pt-8 border-t border-slate-100 space-y-6">

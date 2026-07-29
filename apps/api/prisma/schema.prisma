@@ -54,6 +54,8 @@ model Community {
   seoKeywords           String?
   registrationFields    String?
   registrationMode      String   @default("FREE")
+  paymentInstructions   String?
+  qrisImageUrl          String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 

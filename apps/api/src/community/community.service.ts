@@ -67,6 +67,8 @@ export class CommunityService {
           seoKeywords: data.seoKeywords,
           registrationFields: data.registrationFields,
           registrationMode: data.registrationMode,
+          paymentInstructions: data.paymentInstructions,
+          qrisImageUrl: data.qrisImageUrl,
         },
       });
 

@@ -1362,17 +1362,33 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                   <div className="space-y-3">
                                     <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">Langkah Pembayaran & Transfer</h4>
                                     <div className="p-5 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-150/70 space-y-3 text-xs text-slate-650 font-medium">
-                                      <p className="font-bold text-slate-800 dark:text-slate-200">Silakan lakukan transfer ke salah satu rekening pengelola:</p>
-                                      <div className="space-y-2 bg-white dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-slate-550">Bank BCA:</span>
-                                          <span className="font-extrabold text-slate-800 dark:text-slate-200 font-mono bg-slate-50 dark:bg-slate-900 px-2.5 py-1 rounded border border-slate-150">8002931293</span>
+                                      {community.qrisImageUrl && (
+                                        <div className="mb-4">
+                                          <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">Scan QRIS:</p>
+                                          <div className="bg-white dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 inline-block">
+                                            <img src={community.qrisImageUrl} alt="QRIS" className="max-h-40 object-contain rounded-lg" />
+                                          </div>
                                         </div>
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-slate-550">Bank Mandiri:</span>
-                                          <span className="font-extrabold text-slate-800 dark:text-slate-200 font-mono bg-slate-50 dark:bg-slate-900 px-2.5 py-1 rounded border border-slate-150">120001828828</span>
+                                      )}
+                                      <p className="font-bold text-slate-800 dark:text-slate-200">
+                                        {community.paymentInstructions ? 'Instruksi Pembayaran:' : 'Silakan lakukan transfer ke salah satu rekening pengelola:'}
+                                      </p>
+                                      {community.paymentInstructions ? (
+                                        <div className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                                          {community.paymentInstructions}
                                         </div>
-                                      </div>
+                                      ) : (
+                                        <div className="space-y-2 bg-white dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-slate-550">Bank BCA:</span>
+                                            <span className="font-extrabold text-slate-800 dark:text-slate-200 font-mono bg-slate-50 dark:bg-slate-900 px-2.5 py-1 rounded border border-slate-150">8002931293</span>
+                                          </div>
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-slate-550">Bank Mandiri:</span>
+                                            <span className="font-extrabold text-slate-800 dark:text-slate-200 font-mono bg-slate-50 dark:bg-slate-900 px-2.5 py-1 rounded border border-slate-150">120001828828</span>
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
 
@@ -1684,12 +1700,28 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 </div>
 
                 {selectedRenewalTierId && (
-                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl text-xs space-y-2 text-slate-600 dark:text-slate-400 font-medium">
-                    <p className="font-bold text-slate-800 dark:text-slate-200">Silakan lakukan transfer ke salah satu rekening:</p>
-                    <div className="space-y-1 text-slate-500 dark:text-slate-400">
-                      <div>• Bank BCA: <span className="font-extrabold text-slate-700 dark:text-slate-300">8002931293</span> a/n Kas Komunitas</div>
-                      <div>• Bank Mandiri: <span className="font-extrabold text-slate-700 dark:text-slate-300">120001828828</span> a/n Kas Komunitas</div>
-                    </div>
+                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl text-xs space-y-3 text-slate-600 dark:text-slate-400 font-medium">
+                    {community.qrisImageUrl && (
+                      <div className="mb-2">
+                        <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">Scan QRIS:</p>
+                        <div className="bg-white dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 inline-block">
+                          <img src={community.qrisImageUrl} alt="QRIS" className="max-h-40 object-contain rounded-lg" />
+                        </div>
+                      </div>
+                    )}
+                    <p className="font-bold text-slate-800 dark:text-slate-200">
+                      {community.paymentInstructions ? 'Instruksi Pembayaran:' : 'Silakan lakukan transfer ke salah satu rekening:'}
+                    </p>
+                    {community.paymentInstructions ? (
+                      <div className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                        {community.paymentInstructions}
+                      </div>
+                    ) : (
+                      <div className="space-y-1 text-slate-500 dark:text-slate-400">
+                        <div>• Bank BCA: <span className="font-extrabold text-slate-700 dark:text-slate-300">8002931293</span> a/n Kas Komunitas</div>
+                        <div>• Bank Mandiri: <span className="font-extrabold text-slate-700 dark:text-slate-300">120001828828</span> a/n Kas Komunitas</div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1917,12 +1949,28 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 )}
 
                 {/* Rekening Transfer */}
-                <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 rounded-2xl text-xs space-y-2 text-slate-600 dark:text-slate-400 font-medium">
-                  <p className="font-bold text-slate-800 dark:text-slate-200">Silakan lakukan transfer ke salah satu rekening pengelola:</p>
-                  <div className="space-y-1 text-slate-500 dark:text-slate-400">
-                    <div>• Bank BCA: <span className="font-extrabold text-slate-700 dark:text-slate-300">8002931293</span> a/n Kas Komunitas</div>
-                    <div>• Bank Mandiri: <span className="font-extrabold text-slate-700 dark:text-slate-300">120001828828</span> a/n Kas Komunitas</div>
-                  </div>
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 rounded-2xl text-xs space-y-3 text-slate-600 dark:text-slate-400 font-medium">
+                  {community.qrisImageUrl && (
+                    <div className="mb-2">
+                      <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">Scan QRIS:</p>
+                      <div className="bg-white dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 inline-block">
+                        <img src={community.qrisImageUrl} alt="QRIS" className="max-h-40 object-contain rounded-lg" />
+                      </div>
+                    </div>
+                  )}
+                  <p className="font-bold text-slate-800 dark:text-slate-200">
+                    {community.paymentInstructions ? 'Instruksi Pembayaran:' : 'Silakan lakukan transfer ke salah satu rekening pengelola:'}
+                  </p>
+                  {community.paymentInstructions ? (
+                    <div className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                      {community.paymentInstructions}
+                    </div>
+                  ) : (
+                    <div className="space-y-1 text-slate-500 dark:text-slate-400">
+                      <div>• Bank BCA: <span className="font-extrabold text-slate-700 dark:text-slate-300">8002931293</span> a/n Kas Komunitas</div>
+                      <div>• Bank Mandiri: <span className="font-extrabold text-slate-700 dark:text-slate-300">120001828828</span> a/n Kas Komunitas</div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Bukti Transfer */}

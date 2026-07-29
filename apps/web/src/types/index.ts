@@ -59,6 +59,8 @@ export interface Community {
   seoKeywords?: string | null;
   registrationFields?: string | null;
   registrationMode?: string | null;
+  paymentInstructions?: string | null;
+  qrisImageUrl?: string | null;
   memberships?: Membership[];
   createdAt: string;
   updatedAt: string;
