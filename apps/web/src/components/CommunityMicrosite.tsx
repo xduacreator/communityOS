@@ -1486,7 +1486,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
           <div className="bg-white dark:bg-slate-950 rounded-[2rem] shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 overflow-hidden relative">
             
             {/* Modal Header with Background Image */}
-            <div className="relative shrink-0 flex flex-col justify-end p-8 pt-12 min-h-[200px]">
+            <div className="relative shrink-0 flex flex-col justify-end p-6 md:p-8 pt-10 md:pt-12 min-h-[160px] md:min-h-[200px]">
               {selectedPackage.image ? (
                 <div className="absolute inset-0">
                   <img src={selectedPackage.image} alt={selectedPackage.name} className="w-full h-full object-cover" />
@@ -1519,8 +1519,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                     </div>
                   )}
                 </div>
-                <h2 className="text-3xl font-extrabold text-slate-900 dark:text-slate-50 mb-1 leading-tight">{selectedPackage.name}</h2>
-                <div className="text-3xl font-black text-slate-900 dark:text-slate-50 flex items-end gap-2">
+                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 mb-1 leading-tight">{selectedPackage.name}</h2>
+                <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 flex items-end gap-2">
                   Rp {((isPrivateSession && selectedPackage.vipPrice) ? selectedPackage.vipPrice : (selectedPackage.memberPrice || 0)).toLocaleString('id-ID')}
                 </div>
                 {selectedPackage.vipPrice && (
@@ -1531,42 +1531,42 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
               </div>
             </div>
 
-            {selectedPackage.vipPrice && (
-              <div className="px-8 pt-4 pb-2 relative shrink-0">
-                <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isPrivateSession}
-                    onChange={(e) => setIsPrivateSession(e.target.checked)}
-                    className="w-5 h-5 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
-                  />
-                  <div>
-                    <div className="font-bold text-amber-800 dark:text-amber-400 text-sm">Gunakan Harga Private</div>
-                    <div className="text-xs text-amber-700 dark:text-amber-500/80">Saya ingin mengambil sesi secara private</div>
+            <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar flex flex-col py-2">
+              {selectedPackage.vipPrice && (
+                <div className="px-6 md:px-8 pt-4 pb-2 shrink-0">
+                  <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isPrivateSession}
+                      onChange={(e) => setIsPrivateSession(e.target.checked)}
+                      className="w-5 h-5 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
+                    />
+                    <div>
+                      <div className="font-bold text-amber-800 dark:text-amber-400 text-sm">Gunakan Harga Private</div>
+                      <div className="text-xs text-amber-700 dark:text-amber-500/80">Saya ingin mengambil sesi secara private</div>
+                    </div>
+                  </label>
+                </div>
+              )}
+
+              <div className="px-6 md:px-8 pt-4 shrink-0">
+                <div className="grid grid-cols-2 gap-3 md:gap-4 mb-4">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 md:p-4 flex flex-col justify-center items-center text-center border border-slate-100 dark:border-slate-800">
+                    <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-emerald-500 mb-1.5 md:mb-2" />
+                    <span className="text-lg md:text-xl font-bold text-slate-900 dark:text-slate-50">{selectedPackage.totalSession}</span>
+                    <span className="text-[10px] md:text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sesi</span>
                   </div>
-                </label>
-              </div>
-            )}
-
-            <div className="px-8 pt-6 relative shrink-0">
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 flex flex-col justify-center items-center text-center border border-slate-100 dark:border-slate-800">
-                  <CheckCircle className="w-6 h-6 text-emerald-500 mb-2" />
-                  <span className="text-xl font-bold text-slate-900 dark:text-slate-50">{selectedPackage.totalSession}</span>
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sesi</span>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 flex flex-col justify-center items-center text-center border border-slate-100 dark:border-slate-800">
-                  <Clock className="w-6 h-6 text-amber-500 mb-2" />
-                  <span className="text-xl font-bold text-slate-900 dark:text-slate-50">{selectedPackage.validDays}</span>
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hari Aktif</span>
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 md:p-4 flex flex-col justify-center items-center text-center border border-slate-100 dark:border-slate-800">
+                    <Clock className="w-5 h-5 md:w-6 md:h-6 text-amber-500 mb-1.5 md:mb-2" />
+                    <span className="text-lg md:text-xl font-bold text-slate-900 dark:text-slate-50">{selectedPackage.validDays}</span>
+                    <span className="text-[10px] md:text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hari Aktif</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="px-8 overflow-y-auto overflow-x-hidden min-h-[100px] mb-4 custom-scrollbar">
-              <div className="mb-4">
-                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-50 uppercase tracking-wider mb-3">Deskripsi Paket</h3>
-                <div className="text-slate-600 dark:text-slate-400 text-sm">
+              <div className="px-6 md:px-8 mb-4 mt-2 shrink-0">
+                <h3 className="text-xs md:text-sm font-bold text-slate-900 dark:text-slate-50 uppercase tracking-wider mb-2 md:mb-3">Deskripsi Paket</h3>
+                <div className="text-slate-600 dark:text-slate-400 text-xs md:text-sm">
                   {selectedPackage.description ? (
                     <p className="whitespace-pre-wrap leading-relaxed break-words">{selectedPackage.description}</p>
                   ) : (
@@ -1576,14 +1576,14 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
               </div>
             </div>
 
-            <div className="p-8 pt-0 mt-auto shrink-0 border-t border-slate-50 dark:border-slate-800">
+            <div className="p-6 md:p-8 pt-4 md:pt-4 mt-auto shrink-0 border-t border-slate-50 dark:border-slate-800 bg-white dark:bg-slate-950 z-10">
               <button 
                 onClick={() => {
                   handlePurchase(selectedPackage.id);
                   setSelectedPackage(null);
                 }}
                 disabled={purchasingMap[selectedPackage.id]}
-                className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:opacity-90 transition-colors shadow-lg shadow-primary/30 text-base mt-6 disabled:opacity-50"
+                className="w-full py-3 md:py-4 bg-primary text-white font-bold rounded-2xl hover:opacity-90 transition-colors shadow-lg shadow-primary/30 text-sm md:text-base mt-2 md:mt-4 disabled:opacity-50"
               >
                 {purchasingMap[selectedPackage.id] ? 'Processing...' : 'Beli Paket Ini'}
               </button>
@@ -1649,97 +1649,101 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   setSubmittingRenewal(false);
                 }
               }} 
-              className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0"
+              className="flex flex-col flex-1 min-h-0"
             >
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Pilih Paket Membership</label>
-                <div className="space-y-2">
-                  {(community.memberships || []).map((m: Membership) => (
-                    <label 
-                      key={m.id}
-                      className={`flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900 border rounded-xl cursor-pointer transition-all hover:border-primary/70 ${
-                        selectedRenewalTierId === m.id ? 'border-primary ring-2 ring-primary/10' : 'border-slate-200 dark:border-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <input 
-                          type="radio"
-                          name="renewalTier"
-                          checked={selectedRenewalTierId === m.id}
-                          onChange={() => setSelectedRenewalTierId(m.id)}
-                          className="w-4 h-4 text-primary focus:ring-primary border-slate-300 dark:border-slate-600"
-                        />
-                        <div className="text-left">
-                          <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">{m.name}</div>
-                          <div className="text-[10px] text-slate-400 font-semibold mt-0.5">Durasi: {m.durationDays} hari</div>
-                        </div>
-                      </div>
-                      <div className="font-black text-primary text-xs">
-                        Rp {m.price?.toLocaleString('id-ID') || 0}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl text-xs space-y-2 text-slate-600 dark:text-slate-400 font-medium">
-                <p className="font-bold text-slate-800 dark:text-slate-200">Silakan lakukan transfer ke salah satu rekening:</p>
-                <div className="space-y-1 text-slate-500 dark:text-slate-400">
-                  <div>• Bank BCA: <span className="font-extrabold text-slate-700 dark:text-slate-300">8002931293</span> a/n Kas Komunitas</div>
-                  <div>• Bank Mandiri: <span className="font-extrabold text-slate-700 dark:text-slate-300">120001828828</span> a/n Kas Komunitas</div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Unggah Bukti Transfer (Image)</label>
-                {renewalProofUrl ? (
+              <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Pilih Paket Membership</label>
                   <div className="space-y-2">
-                    <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-950 p-2">
-                      <img src={renewalProofUrl} alt="Bukti Transfer" className="w-full h-auto object-contain max-h-32 rounded-lg mx-auto" />
-                    </div>
-                    <button 
-                      type="button"
-                      onClick={() => setRenewalProofUrl('')}
-                      className="text-[10px] text-red-500 hover:text-red-700 font-bold"
-                    >
-                      Hapus Gambar & Ganti
-                    </button>
+                    {(community.memberships || []).map((m: Membership) => (
+                      <label 
+                        key={m.id}
+                        className={`flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900 border rounded-xl cursor-pointer transition-all hover:border-primary/70 ${
+                          selectedRenewalTierId === m.id ? 'border-primary ring-2 ring-primary/10' : 'border-slate-200 dark:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <input 
+                            type="radio"
+                            name="renewalTier"
+                            checked={selectedRenewalTierId === m.id}
+                            onChange={() => setSelectedRenewalTierId(m.id)}
+                            className="w-4 h-4 text-primary focus:ring-primary border-slate-300 dark:border-slate-600"
+                          />
+                          <div className="text-left">
+                            <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">{m.name}</div>
+                            <div className="text-[10px] text-slate-400 font-semibold mt-0.5">Durasi: {m.durationDays} hari</div>
+                          </div>
+                        </div>
+                        <div className="font-black text-primary text-xs">
+                          Rp {m.price?.toLocaleString('id-ID') || 0}
+                        </div>
+                      </label>
+                    ))}
                   </div>
-                ) : (
-                  <input 
-                    type="file"
-                    accept="image/*"
-                    required
-                    onChange={async (e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        try {
-                          const file = e.target.files[0];
-                          const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
-                          const compressedFile = await imageCompression(file, options);
-                          const formData = new FormData();
-                          formData.append('file', compressedFile);
-                          const headers = getAuthHeaders();
-                          const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
-                            method: 'POST',
-                            headers: {
-                              'Authorization': headers.Authorization || ''
-                            },
-                            body: formData
-                          });
-                          if (!uploadRes.ok) throw new Error('Gagal mengunggah gambar');
-                          const uploadData = await uploadRes.json();
-                          setRenewalProofUrl(uploadData.url);
-                        } catch (err) {
-                          alert(err instanceof Error ? err.message : 'Gagal mengunggah');
-                        }
-                      }
-                    }}
-                    className="w-full text-xs font-semibold text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-extrabold file:bg-primary/5 file:text-primary hover:file:bg-primary/20"
-                  />
+                </div>
+
+                {selectedRenewalTierId && (
+                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl text-xs space-y-2 text-slate-600 dark:text-slate-400 font-medium">
+                    <p className="font-bold text-slate-800 dark:text-slate-200">Silakan lakukan transfer ke salah satu rekening:</p>
+                    <div className="space-y-1 text-slate-500 dark:text-slate-400">
+                      <div>• Bank BCA: <span className="font-extrabold text-slate-700 dark:text-slate-300">8002931293</span> a/n Kas Komunitas</div>
+                      <div>• Bank Mandiri: <span className="font-extrabold text-slate-700 dark:text-slate-300">120001828828</span> a/n Kas Komunitas</div>
+                    </div>
+                  </div>
                 )}
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Unggah Bukti Transfer (Image)</label>
+                  {renewalProofUrl ? (
+                    <div className="space-y-2">
+                      <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-950 p-2">
+                        <img src={renewalProofUrl} alt="Bukti Transfer" className="w-full h-auto object-contain max-h-32 rounded-lg mx-auto" />
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => setRenewalProofUrl('')}
+                        className="text-[10px] text-red-500 hover:text-red-700 font-bold"
+                      >
+                        Hapus Gambar & Ganti
+                      </button>
+                    </div>
+                  ) : (
+                    <input 
+                      type="file"
+                      accept="image/*"
+                      required
+                      onChange={async (e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          try {
+                            const file = e.target.files[0];
+                            const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+                            const compressedFile = await imageCompression(file, options);
+                            const formData = new FormData();
+                            formData.append('file', compressedFile);
+                            const headers = getAuthHeaders();
+                            const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
+                              method: 'POST',
+                              headers: {
+                                'Authorization': headers.Authorization || ''
+                              },
+                              body: formData
+                            });
+                            if (!uploadRes.ok) throw new Error('Gagal mengunggah gambar');
+                            const uploadData = await uploadRes.json();
+                            setRenewalProofUrl(uploadData.url);
+                          } catch (err) {
+                            alert(err instanceof Error ? err.message : 'Gagal mengunggah');
+                          }
+                        }
+                      }}
+                      className="w-full text-xs font-semibold text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-extrabold file:bg-primary/5 file:text-primary hover:file:bg-primary/20"
+                    />
+                  )}
+                </div>
               </div>
 
-              <div className="pt-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 mt-6">
+              <div className="p-6 pt-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowRenewalModal(false)}
@@ -1823,153 +1827,156 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   setSubmittingBundle(false);
                 }
               }} 
-              className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0"
+              }} 
+              className="flex flex-col flex-1 min-h-0"
             >
-              {/* Detail Paket Sesi */}
-              <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-150 flex justify-between items-center text-xs">
-                <div>
-                  <div className="font-bold text-slate-800 dark:text-slate-200">Paket Sesi Pilihan:</div>
-                  <div className="text-slate-600 dark:text-slate-400 font-semibold mt-0.5">{bundlePackage.name} ({bundlePackage.totalSession} Sesi)</div>
+              <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+                {/* Detail Paket Sesi */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-150 flex justify-between items-center text-xs">
+                  <div>
+                    <div className="font-bold text-slate-800 dark:text-slate-200">Paket Sesi Pilihan:</div>
+                    <div className="text-slate-600 dark:text-slate-400 font-semibold mt-0.5">{bundlePackage.name} ({bundlePackage.totalSession} Sesi)</div>
+                  </div>
+                  <div className="font-black text-slate-900 dark:text-slate-50">
+                    Rp {(isPrivateSession && bundlePackage.vipPrice ? bundlePackage.vipPrice : bundlePackage.memberPrice)?.toLocaleString('id-ID') || 0}
+                  </div>
                 </div>
-                <div className="font-black text-slate-900 dark:text-slate-50">
-                  Rp {(isPrivateSession && bundlePackage.vipPrice ? bundlePackage.vipPrice : bundlePackage.memberPrice)?.toLocaleString('id-ID') || 0}
-                </div>
-              </div>
 
-              {bundlePackage.vipPrice && (
-                <div className="mt-2">
-                  <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isPrivateSession}
-                      onChange={(e) => setIsPrivateSession(e.target.checked)}
-                      className="w-5 h-5 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
-                    />
-                    <div>
-                      <div className="font-bold text-amber-800 dark:text-amber-400 text-sm">Gunakan Harga Private</div>
-                      <div className="text-xs text-amber-700 dark:text-amber-500/80">Saya ingin mengambil sesi secara private</div>
-                    </div>
-                  </label>
-                </div>
-              )}
-
-              {/* Tipe Membership */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Pilih Paket Perpanjangan Membership</label>
-                <div className="space-y-2">
-                  {(community.memberships || []).map((m: Membership) => (
-                    <label 
-                      key={m.id}
-                      className={`flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900 border rounded-xl cursor-pointer transition-all hover:border-primary/70 ${
-                        selectedBundleTierId === m.id ? 'border-primary ring-2 ring-primary/10' : 'border-slate-200 dark:border-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <input 
-                          type="radio"
-                          name="bundleTier"
-                          checked={selectedBundleTierId === m.id}
-                          onChange={() => setSelectedBundleTierId(m.id)}
-                          className="w-4 h-4 text-primary focus:ring-primary border-slate-300 dark:border-slate-600"
-                        />
-                        <div className="text-left">
-                          <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">{m.name}</div>
-                          <div className="text-[10px] text-slate-400 font-semibold mt-0.5">Durasi: {m.durationDays} hari</div>
-                        </div>
-                      </div>
-                      <div className="font-black text-primary text-xs">
-                        Rp {m.price?.toLocaleString('id-ID') || 0}
+                {bundlePackage.vipPrice && (
+                  <div className="mt-2">
+                    <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isPrivateSession}
+                        onChange={(e) => setIsPrivateSession(e.target.checked)}
+                        className="w-5 h-5 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
+                      />
+                      <div>
+                        <div className="font-bold text-amber-800 dark:text-amber-400 text-sm">Gunakan Harga Private</div>
+                        <div className="text-xs text-amber-700 dark:text-amber-500/80">Saya ingin mengambil sesi secara private</div>
                       </div>
                     </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Rincian Total Pembayaran */}
-              {selectedBundleTierId && (
-                <div className="p-4 bg-primary/5 border border-indigo-150 rounded-2xl space-y-2 text-xs">
-                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 font-bold">
-                    <span>Harga Paket Sesi:</span>
-                    <span>Rp {(isPrivateSession && bundlePackage.vipPrice ? bundlePackage.vipPrice : bundlePackage.memberPrice)?.toLocaleString('id-ID')}</span>
                   </div>
-                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 font-bold">
-                    <span>Harga Membership:</span>
-                    <span>
-                      Rp {(community.memberships || []).find((m: Membership) => m.id === selectedBundleTierId)?.price?.toLocaleString('id-ID')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-primary font-extrabold pt-2 border-t border-indigo-150">
-                    <span>Total Transfer:</span>
-                    <span className="text-sm">
-                      Rp {(
-                        ((isPrivateSession && bundlePackage.vipPrice) ? (bundlePackage.vipPrice || 0) : (bundlePackage.memberPrice || 0)) + 
-                        ((community.memberships || []).find((m: Membership) => m.id === selectedBundleTierId)?.price || 0)
-                      ).toLocaleString('id-ID')}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Rekening Transfer */}
-              <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 rounded-2xl text-xs space-y-2 text-slate-600 dark:text-slate-400 font-medium">
-                <p className="font-bold text-slate-800 dark:text-slate-200">Silakan lakukan transfer ke salah satu rekening pengelola:</p>
-                <div className="space-y-1 text-slate-500 dark:text-slate-400">
-                  <div>• Bank BCA: <span className="font-extrabold text-slate-700 dark:text-slate-300">8002931293</span> a/n Kas Komunitas</div>
-                  <div>• Bank Mandiri: <span className="font-extrabold text-slate-700 dark:text-slate-300">120001828828</span> a/n Kas Komunitas</div>
-                </div>
-              </div>
-
-              {/* Bukti Transfer */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Unggah Bukti Transfer (Image)</label>
-                {bundleProofUrl ? (
-                  <div className="space-y-2">
-                    <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-950 p-2">
-                      <img src={bundleProofUrl} alt="Bukti Transfer" className="w-full h-auto object-contain max-h-32 rounded-lg mx-auto" />
-                    </div>
-                    <button 
-                      type="button"
-                      onClick={() => setBundleProofUrl('')}
-                      className="text-[10px] text-red-500 hover:text-red-700 font-bold"
-                    >
-                      Hapus Gambar & Ganti
-                    </button>
-                  </div>
-                ) : (
-                  <input 
-                    type="file"
-                    accept="image/*"
-                    required
-                    onChange={async (e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        try {
-                          const file = e.target.files[0];
-                          const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
-                          const compressedFile = await imageCompression(file, options);
-                          const formData = new FormData();
-                          formData.append('file', compressedFile);
-                          const headers = getAuthHeaders();
-                          const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
-                            method: 'POST',
-                            headers: {
-                              'Authorization': headers.Authorization || ''
-                            },
-                            body: formData
-                          });
-                          if (!uploadRes.ok) throw new Error('Gagal mengunggah gambar');
-                          const uploadData = await uploadRes.json();
-                          setBundleProofUrl(uploadData.url);
-                        } catch (err) {
-                          alert(err instanceof Error ? err.message : 'Gagal mengunggah');
-                        }
-                      }
-                    }}
-                    className="w-full text-xs font-semibold text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-extrabold file:bg-primary/5 file:text-primary hover:file:bg-primary/20"
-                  />
                 )}
+
+                {/* Tipe Membership */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Pilih Paket Perpanjangan Membership</label>
+                  <div className="space-y-2">
+                    {(community.memberships || []).map((m: Membership) => (
+                      <label 
+                        key={m.id}
+                        className={`flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900 border rounded-xl cursor-pointer transition-all hover:border-primary/70 ${
+                          selectedBundleTierId === m.id ? 'border-primary ring-2 ring-primary/10' : 'border-slate-200 dark:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <input 
+                            type="radio"
+                            name="bundleTier"
+                            checked={selectedBundleTierId === m.id}
+                            onChange={() => setSelectedBundleTierId(m.id)}
+                            className="w-4 h-4 text-primary focus:ring-primary border-slate-300 dark:border-slate-600"
+                          />
+                          <div className="text-left">
+                            <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">{m.name}</div>
+                            <div className="text-[10px] text-slate-400 font-semibold mt-0.5">Durasi: {m.durationDays} hari</div>
+                          </div>
+                        </div>
+                        <div className="font-black text-primary text-xs">
+                          Rp {m.price?.toLocaleString('id-ID') || 0}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Rincian Total Pembayaran */}
+                {selectedBundleTierId && (
+                  <div className="p-4 bg-primary/5 border border-indigo-150 rounded-2xl space-y-2 text-xs">
+                    <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 font-bold">
+                      <span>Harga Paket Sesi:</span>
+                      <span>Rp {(isPrivateSession && bundlePackage.vipPrice ? bundlePackage.vipPrice : bundlePackage.memberPrice)?.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 font-bold">
+                      <span>Harga Membership:</span>
+                      <span>
+                        Rp {(community.memberships || []).find((m: Membership) => m.id === selectedBundleTierId)?.price?.toLocaleString('id-ID')}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-primary font-extrabold pt-2 border-t border-indigo-150">
+                      <span>Total Transfer:</span>
+                      <span className="text-sm">
+                        Rp {(
+                          ((isPrivateSession && bundlePackage.vipPrice) ? (bundlePackage.vipPrice || 0) : (bundlePackage.memberPrice || 0)) + 
+                          ((community.memberships || []).find((m: Membership) => m.id === selectedBundleTierId)?.price || 0)
+                        ).toLocaleString('id-ID')}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Rekening Transfer */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 rounded-2xl text-xs space-y-2 text-slate-600 dark:text-slate-400 font-medium">
+                  <p className="font-bold text-slate-800 dark:text-slate-200">Silakan lakukan transfer ke salah satu rekening pengelola:</p>
+                  <div className="space-y-1 text-slate-500 dark:text-slate-400">
+                    <div>• Bank BCA: <span className="font-extrabold text-slate-700 dark:text-slate-300">8002931293</span> a/n Kas Komunitas</div>
+                    <div>• Bank Mandiri: <span className="font-extrabold text-slate-700 dark:text-slate-300">120001828828</span> a/n Kas Komunitas</div>
+                  </div>
+                </div>
+
+                {/* Bukti Transfer */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Unggah Bukti Transfer (Image)</label>
+                  {bundleProofUrl ? (
+                    <div className="space-y-2">
+                      <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-950 p-2">
+                        <img src={bundleProofUrl} alt="Bukti Transfer" className="w-full h-auto object-contain max-h-32 rounded-lg mx-auto" />
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => setBundleProofUrl('')}
+                        className="text-[10px] text-red-500 hover:text-red-700 font-bold"
+                      >
+                        Hapus Gambar & Ganti
+                      </button>
+                    </div>
+                  ) : (
+                    <input 
+                      type="file"
+                      accept="image/*"
+                      required
+                      onChange={async (e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          try {
+                            const file = e.target.files[0];
+                            const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+                            const compressedFile = await imageCompression(file, options);
+                            const formData = new FormData();
+                            formData.append('file', compressedFile);
+                            const headers = getAuthHeaders();
+                            const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
+                              method: 'POST',
+                              headers: {
+                                'Authorization': headers.Authorization || ''
+                              },
+                              body: formData
+                            });
+                            if (!uploadRes.ok) throw new Error('Gagal mengunggah gambar');
+                            const uploadData = await uploadRes.json();
+                            setBundleProofUrl(uploadData.url);
+                          } catch (err) {
+                            alert(err instanceof Error ? err.message : 'Gagal mengunggah');
+                          }
+                        }
+                      }}
+                      className="w-full text-xs font-semibold text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-extrabold file:bg-primary/5 file:text-primary hover:file:bg-primary/20"
+                    />
+                  )}
+                </div>
               </div>
 
-              <div className="pt-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 mt-6">
+              <div className="p-6 pt-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
                 <button
                   type="button"
                   onClick={() => {
