@@ -23,6 +23,7 @@ interface PendingRenewal {
     email: string;
   };
   membership?: Membership;
+  sessionWallets?: any[];
 }
 
 export default function AdminDashboard({ params }: { params: Promise<{ slug: string }> }) {
