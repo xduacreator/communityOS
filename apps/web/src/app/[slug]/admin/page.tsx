@@ -6,7 +6,7 @@ import { getAuthHeaders } from '../../../lib/auth';
 import { Users, CheckCircle, XCircle, Edit2, Trash2, Mail, Hash } from 'lucide-react';
 import ConfirmModal from '../../../components/ui/ConfirmModal';
 
-import { CommunityMember, Community, Membership } from '../../../types';
+import { CommunityMember, Community, Membership, SessionWallet } from '../../../types';
 
 interface PendingRenewal {
   id: string;
@@ -23,7 +23,7 @@ interface PendingRenewal {
     email: string;
   };
   membership?: Membership;
-  sessionWallets?: any[];
+  sessionWallets?: SessionWallet[];
 }
 
 export default function AdminDashboard({ params }: { params: Promise<{ slug: string }> }) {
