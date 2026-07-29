@@ -355,7 +355,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                       Rp {
                         (
                           (renewal.membership?.price || 0) +
-                          ((renewal as any).sessionWallets?.reduce((sum: number, w: any) => sum + (w.isPrivate ? w.package?.vipPrice : w.package?.memberPrice) || 0, 0) || 0)
+                          (renewal.sessionWallets?.reduce((sum, w) => sum + (w.isPrivate ? w.package?.vipPrice : w.package?.memberPrice) || 0, 0) || 0)
                         ).toLocaleString('id-ID')
                       }
                     </td>

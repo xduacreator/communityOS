@@ -146,6 +146,7 @@ export interface SessionWallet {
   communityId: string;
   packageId: string;
   userMembershipId?: string | null;
+  isPrivate?: boolean;
   walletStatus: string;
   totalSession: number;
   remainingSession: number;
@@ -199,4 +200,6 @@ export interface UserMembershipWithMembership {
   status: string;
   paymentProofUrl?: string | null;
   membership?: Membership;
+  sessionWallets?: SessionWallet[];
+  user?: User;
 }
