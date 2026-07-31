@@ -20,11 +20,10 @@ export class TenantRoleGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     
-    const communityId = request.params.communityId || request.body.communityId || request.query.communityId;
+    const communityId = request.params?.communityId ?? request.body?.communityId ?? request.query?.communityId;
 
-    if (!user || !communityId) {
-      return false;
-    }
+    if (!user) { return false; }
+    if (!communityId) { return true; }
 
     if (user.isSuperAdmin) {
       return true; // Super admins can do anything
