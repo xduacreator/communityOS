@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Shield, Users, Calendar, Settings, LogOut, ArrowLeft, Image, LayoutDashboard, Wallet, CheckSquare, Menu, X } from 'lucide-react';
-import { removeToken } from '../../../lib/auth';
+import { removeToken, getAuthHeaders } from '../../../lib/auth';
 
 export default function AdminLayout({ 
   children,
@@ -17,11 +17,61 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const checkAuth = async () => {
+      const headers = getAuthHeaders();
+      if (!headers.Authorization) {
+        router.push('/login');
+        return;
+      }
+      try {
+        const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/auth/me`, { headers: { ...headers } });
+        if (!userRes.ok) throw new Error('Unauthorized');
+        const userData = await userRes.json();
+        
+        if (userData.isSuperAdmin) {
+          if (isMounted) setIsAuthorized(true);
+          return;
+        }
+
+        const memRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/memberships/my-status/${resolvedParams.slug}`, { headers: { ...headers } });
+        if (!memRes.ok) {
+          router.push(`/${resolvedParams.slug}/dashboard`);
+          return;
+        }
+        
+        const memData = await memRes.json();
+        if (memData && memData.role === 'COMMUNITY_ADMIN') {
+          if (isMounted) setIsAuthorized(true);
+        } else {
+          router.push(`/${resolvedParams.slug}/dashboard`);
+        }
+      } catch (err) {
+        router.push('/login');
+      }
+    };
+    checkAuth();
+    return () => { isMounted = false; };
+  }, [resolvedParams.slug, router]);
 
   const handleLogout = () => {
     removeToken();
     router.push('/login');
   };
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+          <div className="text-slate-400 font-bold tracking-widest uppercase text-xs">Authenticating...</div>
+        </div>
+      </div>
+    );
+  }
 
   const navItems = [
     { name: 'Dashboard', href: `/${resolvedParams.slug}/admin/dashboard`, icon: LayoutDashboard },

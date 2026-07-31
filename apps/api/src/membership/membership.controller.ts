@@ -2,7 +2,8 @@ import { Controller, Post, Body, Get, Param, Patch, Delete, UseGuards, Request }
 import { MembershipService } from './membership.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
-import { RequireTenantRole } from '../auth/decorators/roles.decorator';
+import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
+import { RequireTenantRole, RequireSuperAdmin } from '../auth/decorators/roles.decorator';
 
 @Controller('memberships')
 export class MembershipController {
@@ -14,6 +15,8 @@ export class MembershipController {
     return this.membershipService.joinCommunity(req.user.userId, data.communityId, data.customFieldsData);
   }
 
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
   @Get('community/:communityId')
   getMembers(@Param('communityId') communityId: string) {
     return this.membershipService.getMembers(communityId);
@@ -53,7 +56,8 @@ export class MembershipController {
     return this.membershipService.updateMember(id, { paymentProofUrl: data.paymentProofUrl });
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
   @Get('all')
   getAllMembers() {
     return this.membershipService.getAllMembers();
