@@ -234,6 +234,7 @@ model SessionWallet {
   purchaseDate     DateTime?
   startDate        DateTime?
   expiredDate      DateTime?
+  paymentProofUrl  String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 

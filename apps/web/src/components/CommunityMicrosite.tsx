@@ -62,6 +62,9 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
   const [bundleProofUrl, setBundleProofUrl] = useState('');
   const [submittingBundle, setSubmittingBundle] = useState(false);
   const [isPrivateSession, setIsPrivateSession] = useState(false);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [purchasePackage, setPurchasePackage] = useState<SessionPackage | null>(null);
+  const [purchaseProofUrl, setPurchaseProofUrl] = useState('');
 
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -334,28 +337,19 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       if (!meRes.ok) throw new Error('Please login again');
       const meData = await meRes.json();
 
-      // Purchase package
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/session-wallet/purchase', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...headers,
-        },
-        body: JSON.stringify({
-          userId: meData.id,
-          communityId: community.id,
-          packageId: pkgId,
-          isPrivate: isPrivateSession,
-        }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to purchase package');
+      // Find selected package
+      const pkg = sessions.find(p => p.id === pkgId) || selectedPackage;
+      if (!pkg) {
+        alert('Paket tidak ditemukan');
+        return;
       }
 
-      alert('Successfully purchased package!');
-      handleTabChange('dashboard');
+      // Store selected package and open purchase modal
+      setPurchasePackage(pkg);
+      setPurchaseProofUrl('');
+      setShowPurchaseModal(true);
+      // No need to continue purchase here; submission will happen in modal
+      return;
     } catch (e) {
       alert(e instanceof Error ? e.message : 'An error occurred');
     } finally {
@@ -2040,6 +2034,212 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   className="px-5 py-2 bg-primary hover:opacity-90 text-white font-bold rounded-xl text-xs shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
                 >
                   {submittingBundle ? 'Mengirim...' : 'Kirim Permintaan'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showPurchaseModal && purchasePackage && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-950 rounded-[2rem] shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
+            <div className="px-6 py-5 shrink-0 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">Pembelian Paket Sesi</h3>
+                <p className="text-xs text-slate-500 font-semibold mt-1">Selesaikan pembayaran untuk membeli paket sesi ini.</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => {
+                  setShowPurchaseModal(false);
+                  setPurchasePackage(null);
+                }}
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-700 dark:text-slate-300 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form 
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!purchaseProofUrl) {
+                  alert('Silakan unggah bukti transfer pembayaran Anda');
+                  return;
+                }
+                
+                setPurchasingMap(prev => ({ ...prev, [purchasePackage.id]: true }));
+                try {
+                  const headers = getAuthHeaders();
+                  const meRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/me', { headers });
+                  if (!meRes.ok) throw new Error('Please login again');
+                  const meData = await meRes.json();
+
+                  const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/session-wallet/purchase', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': headers.Authorization || ''
+                    },
+                    body: JSON.stringify({
+                      userId: meData.id,
+                      communityId: community.id,
+                      packageId: purchasePackage.id,
+                      isPrivate: isPrivateSession,
+                      paymentProofUrl: purchaseProofUrl
+                    })
+                  });
+                  if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.message || 'Gagal mengirim pembelian paket sesi');
+                  }
+                  
+                  alert('Permintaan pembelian paket sesi berhasil dikirim! Menunggu verifikasi pembayaran oleh admin.');
+                  setShowPurchaseModal(false);
+                  setPurchasePackage(null);
+                  fetchDashboardData();
+                  handleTabChange('dashboard');
+                } catch (err) {
+                  alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
+                } finally {
+                  setPurchasingMap(prev => ({ ...prev, [purchasePackage.id]: false }));
+                }
+              }} 
+              className="flex flex-col flex-1 min-h-0"
+            >
+              <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+                {/* Detail Paket Sesi */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-150 flex justify-between items-center text-xs">
+                  <div>
+                    <div className="font-bold text-slate-800 dark:text-slate-200">Paket Sesi Pilihan:</div>
+                    <div className="text-slate-600 dark:text-slate-400 font-semibold mt-0.5">{purchasePackage.name} ({purchasePackage.totalSession} Sesi)</div>
+                  </div>
+                  <div className="font-black text-slate-900 dark:text-slate-50">
+                    Rp {(isPrivateSession && purchasePackage.vipPrice ? purchasePackage.vipPrice : purchasePackage.memberPrice)?.toLocaleString('id-ID') || 0}
+                  </div>
+                </div>
+
+                {purchasePackage.vipPrice && (
+                  <div className="mt-2">
+                    <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isPrivateSession}
+                        onChange={(e) => setIsPrivateSession(e.target.checked)}
+                        className="w-5 h-5 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
+                      />
+                      <div>
+                        <div className="font-bold text-amber-800 dark:text-amber-400 text-sm">Gunakan Harga Private</div>
+                        <div className="text-xs text-amber-700 dark:text-amber-500/80">Saya ingin mengambil sesi secara private</div>
+                      </div>
+                    </label>
+                  </div>
+                )}
+
+                {/* Rincian Total Pembayaran */}
+                <div className="p-4 bg-primary/5 border border-indigo-150 rounded-2xl space-y-2 text-xs">
+                  <div className="flex justify-between items-center text-primary font-extrabold">
+                    <span>Total Transfer:</span>
+                    <span className="text-sm">
+                      Rp {((isPrivateSession && purchasePackage.vipPrice) ? (purchasePackage.vipPrice || 0) : (purchasePackage.memberPrice || 0)).toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Rekening Transfer */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 rounded-2xl text-xs space-y-3 text-slate-600 dark:text-slate-400 font-medium">
+                  {community.qrisImageUrl && (
+                    <div className="mb-2">
+                      <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">Scan QRIS:</p>
+                      <div className="bg-white dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 inline-block">
+                        <img src={community.qrisImageUrl} alt="QRIS" className="max-h-40 object-contain rounded-lg" />
+                      </div>
+                    </div>
+                  )}
+                  <p className="font-bold text-slate-800 dark:text-slate-200">
+                    {community.paymentInstructions ? 'Instruksi Pembayaran:' : 'Silakan lakukan transfer ke salah satu rekening pengelola:'}
+                  </p>
+                  {community.paymentInstructions ? (
+                    <div className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                      {community.paymentInstructions}
+                    </div>
+                  ) : (
+                    <div className="space-y-1 text-slate-500 dark:text-slate-400">
+                      <div>• Bank BCA: <span className="font-extrabold text-slate-700 dark:text-slate-300">8002931293</span> a/n Kas Komunitas</div>
+                      <div>• Bank Mandiri: <span className="font-extrabold text-slate-700 dark:text-slate-300">120001828828</span> a/n Kas Komunitas</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Bukti Transfer */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Unggah Bukti Transfer (Image)</label>
+                  {purchaseProofUrl ? (
+                    <div className="space-y-2">
+                      <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-950 p-2">
+                        <img src={purchaseProofUrl} alt="Bukti Transfer" className="w-full h-auto object-contain max-h-32 rounded-lg mx-auto" />
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => setPurchaseProofUrl('')}
+                        className="text-[10px] text-red-500 hover:text-red-700 font-bold"
+                      >
+                        Hapus Gambar & Ganti
+                      </button>
+                    </div>
+                  ) : (
+                    <input 
+                      type="file"
+                      accept="image/*"
+                      required
+                      onChange={async (e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          try {
+                            const file = e.target.files[0];
+                            const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+                            const compressedFile = await imageCompression(file, options);
+                            const formData = new FormData();
+                            formData.append('file', compressedFile);
+                            const headers = getAuthHeaders();
+                            const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
+                              method: 'POST',
+                              headers: {
+                                'Authorization': headers.Authorization || ''
+                              },
+                              body: formData
+                            });
+                            if (!uploadRes.ok) throw new Error('Gagal mengunggah gambar');
+                            const uploadData = await uploadRes.json();
+                            setPurchaseProofUrl(uploadData.url);
+                          } catch (err) {
+                            alert(err instanceof Error ? err.message : 'Gagal mengunggah');
+                          }
+                        }
+                      }}
+                      className="w-full text-xs font-semibold text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-extrabold file:bg-primary/5 file:text-primary hover:file:bg-primary/20"
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div className="p-6 pt-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPurchaseModal(false);
+                    setPurchasePackage(null);
+                  }}
+                  className="px-4 py-2 font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={purchasingMap[purchasePackage.id]}
+                  className="px-5 py-2 bg-primary hover:opacity-90 text-white font-bold rounded-xl text-xs shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
+                >
+                  {purchasingMap[purchasePackage.id] ? 'Mengirim...' : 'Kirim Permintaan'}
                 </button>
               </div>
             </form>

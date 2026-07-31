@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class SessionWalletService {
   constructor(private prisma: PrismaService) {}
 
-  async purchasePackage(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, userMembershipId?: string) {
+  async purchasePackage(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, userMembershipId?: string, paymentProofUrl?: string) {
     const pkg = await this.prisma.sessionPackage.findUnique({ where: { id: packageId } });
     if (!pkg) throw new NotFoundException('Package not found');
 
@@ -30,20 +30,9 @@ export class SessionWalletService {
       }
     }
 
-    const activeWallets = await this.prisma.sessionWallet.findMany({
-      where: { userId, communityId, packageId, walletStatus: 'ACTIVE' }
-    });
-
-    const initialStatus = activeWallets.length > 0 ? 'WAITING' : 'ACTIVE';
+    // New logic: All new standalone purchases are pending approval by admin
+    const initialStatus = 'PENDING';
     
-    let startDate = null;
-    let expiredDate = null;
-    if (initialStatus === 'ACTIVE') {
-      startDate = new Date();
-      expiredDate = new Date();
-      expiredDate.setDate(expiredDate.getDate() + pkg.validDays);
-    }
-
     return this.prisma.sessionWallet.create({
       data: {
         userId,
@@ -54,8 +43,7 @@ export class SessionWalletService {
         totalSession: pkg.totalSession,
         remainingSession: pkg.totalSession,
         purchaseDate: new Date(),
-        startDate,
-        expiredDate,
+        paymentProofUrl,
         isPrivate,
       }
     });
@@ -509,5 +497,65 @@ export class SessionWalletService {
       userMembership,
       sessionWallet
     };
+  }
+
+  async findPendingByCommunity(communityId: string) {
+    return this.prisma.sessionWallet.findMany({
+      where: {
+        communityId,
+        walletStatus: 'PENDING'
+      },
+      include: {
+        user: true,
+        package: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  async approvePackage(id: string) {
+    const pendingWallet = await this.prisma.sessionWallet.findUnique({
+      where: { id },
+      include: { package: true }
+    });
+
+    if (!pendingWallet) {
+      throw new NotFoundException('Pending session wallet not found');
+    }
+
+    if (pendingWallet.walletStatus !== 'PENDING') {
+      throw new BadRequestException('Wallet is not in PENDING status');
+    }
+
+    // Check if there is an active wallet for the same package
+    const activeWallets = await this.prisma.sessionWallet.findMany({
+      where: {
+        userId: pendingWallet.userId,
+        communityId: pendingWallet.communityId,
+        packageId: pendingWallet.packageId,
+        walletStatus: 'ACTIVE'
+      }
+    });
+
+    const newStatus = activeWallets.length > 0 ? 'WAITING' : 'ACTIVE';
+    
+    let startDate = null;
+    let expiredDate = null;
+    if (newStatus === 'ACTIVE') {
+      startDate = new Date();
+      expiredDate = new Date();
+      if (pendingWallet.package) {
+        expiredDate.setDate(expiredDate.getDate() + pendingWallet.package.validDays);
+      }
+    }
+
+    return this.prisma.sessionWallet.update({
+      where: { id },
+      data: {
+        walletStatus: newStatus,
+        startDate,
+        expiredDate,
+      }
+    });
   }
 }

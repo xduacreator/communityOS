@@ -26,11 +26,32 @@ interface PendingRenewal {
   sessionWallets?: SessionWallet[];
 }
 
+interface PendingSessionPackage {
+  id: string;
+  userId: string;
+  communityId: string;
+  packageId: string;
+  walletStatus: string;
+  paymentProofUrl?: string | null;
+  createdAt: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  package?: {
+    id: string;
+    name: string;
+    totalSession: number;
+  };
+}
+
 export default function AdminDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = React.use(params);
   const [members, setMembers] = useState<CommunityMember[]>([]);
   const [community, setCommunity] = useState<Community | null>(null);
   const [pendingRenewals, setPendingRenewals] = useState<PendingRenewal[]>([]);
+  const [pendingPackages, setPendingPackages] = useState<PendingSessionPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -75,6 +96,15 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
           const renewalData = await renewalRes.json();
           setPendingRenewals(renewalData);
         }
+      }
+
+      // Fetch pending session packages
+      const pkgRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/pending/${commData.id}`, {
+        headers: { ...headers },
+      });
+      if (pkgRes.ok) {
+        const pkgData = await pkgRes.json();
+        setPendingPackages(pkgData);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -417,6 +447,91 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
           </div>
         </div>
       )}
+
+      {/* Pending Session Packages Section */}
+      <div className="bg-white rounded-[2rem] shadow-xl p-8 border border-slate-150 space-y-6 mt-8">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight text-left">Pending Session Packages</h2>
+          <p className="text-sm text-slate-500 mt-1 text-left">Verify payment receipts and approve standalone session package purchases.</p>
+        </div>
+
+        <div className="overflow-x-auto rounded-3xl border border-slate-200">
+          <table className="min-w-full divide-y divide-slate-100">
+            <thead className="bg-slate-50">
+              <tr>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Member Details</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Package</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Payment Receipt</th>
+                <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-slate-100">
+              {pendingPackages.map((pkg) => (
+                <tr key={pkg.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-6 py-4 text-left">
+                    <div className="text-sm font-bold text-slate-900">{pkg.user?.name}</div>
+                    <div className="text-xs text-slate-400 mt-0.5">{pkg.user?.email}</div>
+                  </td>
+                  <td className="px-6 py-4 text-left">
+                    <div className="text-sm font-bold text-slate-800">{pkg.package?.name}</div>
+                    <div className="text-[10px] text-slate-400 font-semibold mt-0.5">Total Sesi: {pkg.package?.totalSession}</div>
+                  </td>
+                  <td className="px-6 py-4 text-left">
+                    {pkg.paymentProofUrl ? (
+                      <a 
+                        href={pkg.paymentProofUrl} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="inline-flex items-center text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-xl transition-all shadow-sm"
+                      >
+                        Lihat Bukti Transfer
+                      </a>
+                    ) : (
+                      <span className="text-xs font-bold text-rose-500 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100">Belum ada bukti</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!confirm(`Apakah Anda yakin ingin menyetujui pembelian paket sesi untuk ${pkg.user?.name}?`)) return;
+                          try {
+                            const headers = getAuthHeaders();
+                            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/approve/${pkg.id}`, {
+                              method: 'PATCH',
+                              headers: {
+                                'Authorization': headers.Authorization || ''
+                              }
+                            });
+                            if (!res.ok) throw new Error('Gagal menyetujui paket');
+                            alert('Pembelian paket sesi berhasil disetujui!');
+                            fetchData();
+                          } catch (err) {
+                            alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
+                          }
+                        }}
+                        className="flex items-center px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl transition-colors font-bold text-xs shadow-lg shadow-emerald-500/20"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                        Setujui
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+
+              {pendingPackages.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center">
+                    <div className="text-slate-400 font-medium text-sm">Tidak ada permintaan pembelian paket sesi pending saat ini.</div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <ConfirmModal 
         isOpen={modalOpen}

@@ -141,6 +141,16 @@ export class UserMembershipService {
       });
     }
 
+    // Reject any other pending memberships for this user/community to prevent duplicate sessions
+    await this.prisma.userMembership.updateMany({
+      where: {
+        userId: pending.userId,
+        communityId: pending.communityId,
+        status: 'PENDING',
+        id: { not: id },
+      },
+      data: { status: 'REJECTED' },
+    });
     return updated;
   }
 

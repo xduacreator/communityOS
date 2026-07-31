@@ -1,14 +1,30 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards, Patch } from '@nestjs/common';
 import { SessionWalletService } from './session-wallet.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
+import { RequireTenantRole } from '../auth/decorators/roles.decorator';
 
 @Controller('session-wallet')
 export class SessionWalletController {
   constructor(private readonly sessionWalletService: SessionWalletService) {}
 
   @Post('purchase')
-  purchasePackage(@Body() body: { userId: string; communityId: string; packageId: string; isPrivate?: boolean; userMembershipId?: string }) {
-    return this.sessionWalletService.purchasePackage(body.userId, body.communityId, body.packageId, body.isPrivate, body.userMembershipId);
+  purchasePackage(@Body() body: { userId: string; communityId: string; packageId: string; isPrivate?: boolean; userMembershipId?: string; paymentProofUrl?: string }) {
+    return this.sessionWalletService.purchasePackage(body.userId, body.communityId, body.packageId, body.isPrivate, body.userMembershipId, body.paymentProofUrl);
+  }
+
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
+  @Get('pending/:communityId')
+  findPendingByCommunity(@Param('communityId') communityId: string) {
+    return this.sessionWalletService.findPendingByCommunity(communityId);
+  }
+
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
+  @Patch('approve/:id')
+  approvePackage(@Param('id') id: string) {
+    return this.sessionWalletService.approvePackage(id);
   }
 
   @Post('purchase-bundle')
