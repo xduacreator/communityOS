@@ -483,7 +483,6 @@ export default function SuperAdminDashboard() {
               </div>
             </form>
           </div>
-          </div>
         </div>
       )}
 
