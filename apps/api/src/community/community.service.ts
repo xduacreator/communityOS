@@ -207,4 +207,73 @@ export class CommunityService {
       data: { isActive: true },
     });
   }
+
+  async resetData(id: string, options: string[]) {
+    return this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+      const deleteTransactions = options.includes('TRANSACTIONS') || options.includes('MEMBERS') || options.includes('PACKAGES');
+      const deleteEvents = options.includes('EVENTS');
+      const deleteGallery = options.includes('GALLERY');
+      const deleteMembers = options.includes('MEMBERS');
+      const deletePackages = options.includes('PACKAGES');
+      const deleteMemberships = options.includes('MEMBERSHIPS');
+      const deleteUserMemberships = deleteMemberships || deleteMembers;
+
+      if (deleteTransactions) {
+        const wallets = await prisma.sessionWallet.findMany({ where: { communityId: id } });
+        const walletIds = wallets.map(w => w.id);
+        if (walletIds.length > 0) {
+          await prisma.sessionTransaction.deleteMany({ where: { walletId: { in: walletIds } } });
+        }
+        await prisma.sessionWallet.deleteMany({ where: { communityId: id } });
+      }
+
+      if (deleteEvents) {
+        const events = await prisma.event.findMany({ where: { communityId: id } });
+        const eventIds = events.map(e => e.id);
+        if (eventIds.length > 0) {
+          await prisma.eventRegistration.deleteMany({ where: { eventId: { in: eventIds } } });
+        }
+        await prisma.event.deleteMany({ where: { communityId: id } });
+      }
+
+      if (deleteGallery) {
+        await prisma.galleryImage.deleteMany({ where: { communityId: id } });
+      }
+
+      if (deleteUserMemberships) {
+        await prisma.userMembership.deleteMany({ where: { communityId: id } });
+      }
+
+      if (deletePackages) {
+        const activities = await prisma.activity.findMany({ where: { communityId: id } });
+        const activityIds = activities.map(a => a.id);
+        
+        if (activityIds.length > 0) {
+          const categories = await prisma.category.findMany({ where: { activityId: { in: activityIds } } });
+          const categoryIds = categories.map(c => c.id);
+          
+          if (categoryIds.length > 0) {
+            await prisma.sessionPackage.deleteMany({ where: { categoryId: { in: categoryIds } } });
+            await prisma.category.deleteMany({ where: { activityId: { in: activityIds } } });
+          }
+          await prisma.activity.deleteMany({ where: { communityId: id } });
+        }
+      }
+
+      if (deleteMemberships) {
+        await prisma.membership.deleteMany({ where: { communityId: id } });
+      }
+
+      if (deleteMembers) {
+        await prisma.communityMember.deleteMany({
+          where: { 
+            communityId: id,
+            role: { not: 'COMMUNITY_ADMIN' }
+          }
+        });
+      }
+      
+      return { success: true, message: 'Data reset successfully' };
+    });
+  }
 }

@@ -48,4 +48,13 @@ export class CommunityController {
   update(@Param('communityId') id: string, @Body() data: any) {
     return this.communityService.update(id, data);
   }
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
+  @Post(':id/reset-data')
+  resetData(@Param('id') id: string, @Body() body: { options: string[] }) {
+    if (!body.options || !Array.isArray(body.options)) {
+      return { success: false, message: 'Invalid options array' };
+    }
+    return this.communityService.resetData(id, body.options);
+  }
 }
