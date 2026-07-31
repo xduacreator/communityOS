@@ -490,8 +490,8 @@ export default function SuperAdminDashboard() {
       {resetModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setResetModalOpen(false)}></div>
-          <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden">
-            <div className="p-8 md:p-10">
+          <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div className="p-8 md:p-10 overflow-y-auto">
               <div className="flex justify-between items-start mb-8">
                 <div>
                   <h2 className="text-3xl font-black text-slate-900 tracking-tight">Reset Data Komunitas</h2>
