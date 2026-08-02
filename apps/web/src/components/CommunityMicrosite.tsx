@@ -300,7 +300,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
 
   const handlePurchase = async (pkgId: string) => {
-    let pkg = sessions.find(p => p.id === pkgId) || selectedPackage;
+    const pkg = sessions.find(p => p.id === pkgId) || selectedPackage;
     if (!pkg) {
       alert('Paket tidak ditemukan');
       return;

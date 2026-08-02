@@ -45,8 +45,8 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
       const guestData = await guestRes.json();
       
       setGuests(guestData);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error");
     } finally {
       setLoading(false);
     }
@@ -69,8 +69,8 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
       });
       if (!res.ok) throw new Error('Failed to update status');
       fetchData();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Error");
     }
   };
 
