@@ -769,7 +769,6 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
                     >
                       <option value="PUBLIC">Terbuka Untuk Umum (Public)</option>
                       <option value="MEMBER_ONLY">Hanya Anggota Komunitas (Registered Members)</option>
-                      <option value="PAID_MEMBERSHIP_ONLY">Hanya Anggota dengan Membership Berbayar (Active Paid Membership)</option>
                     </select>
                     <p className="text-xs text-slate-400">Tentukan siapa saja yang diperbolehkan membeli paket sesi ini.</p>
                   </div>

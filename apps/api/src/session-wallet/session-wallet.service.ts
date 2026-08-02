@@ -16,18 +16,6 @@ export class SessionWalletService {
       if (!member || member.status !== 'APPROVED') {
         throw new BadRequestException('Only approved community members can purchase this package.');
       }
-    } else if (pkg.accessRule === 'PAID_MEMBERSHIP_ONLY') {
-      const activeMembership = await this.prisma.userMembership.findFirst({
-        where: {
-          userId,
-          communityId,
-          status: 'ACTIVE',
-          endDate: { gt: new Date() }
-        }
-      });
-      if (!activeMembership) {
-        throw new BadRequestException('Only members with an active paid membership subscription can purchase this package.');
-      }
     }
 
     // New logic: All new standalone purchases are pending approval by admin

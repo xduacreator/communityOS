@@ -17,6 +17,7 @@ import { UserMembershipModule } from './user-membership/user-membership.module';
 import { MembershipTierModule } from './membership-tier/membership-tier.module';
 import { CronModule } from './cron/cron.module';
 import { SystemSettingModule } from './system-setting/system-setting.module';
+import { GuestRegistrationModule } from './guest-registration/guest-registration.module';
 
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -40,7 +41,8 @@ import { APP_GUARD } from '@nestjs/core';
     UserModule, 
     EventModule, 
     GalleryModule, ActivityModule, SessionPackageModule, SessionWalletModule, UserMembershipModule, MembershipTierModule, CronModule,
-    SystemSettingModule
+    SystemSettingModule,
+    GuestRegistrationModule
   ],
   controllers: [AppController],
   providers: [

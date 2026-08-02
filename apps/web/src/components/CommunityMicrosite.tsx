@@ -66,6 +66,12 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
   const [purchasePackage, setPurchasePackage] = useState<SessionPackage | null>(null);
   const [purchaseProofUrl, setPurchaseProofUrl] = useState('');
 
+  // Guest RSVP Modal
+  const [showGuestRsvpModal, setShowGuestRsvpModal] = useState(false);
+  const [guestRsvpPackage, setGuestRsvpPackage] = useState<SessionPackage | null>(null);
+  const [guestForm, setGuestForm] = useState({ name: '', email: '', phone: '', address: '', acceptedTnC: false });
+  const [submittingGuest, setSubmittingGuest] = useState(false);
+
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState(false);
 
@@ -294,39 +300,34 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
 
   const handlePurchase = async (pkgId: string) => {
+    let pkg = sessions.find(p => p.id === pkgId) || selectedPackage;
+    if (!pkg) {
+      alert('Paket tidak ditemukan');
+      return;
+    }
+
     const headers = getAuthHeaders();
     if (!headers.Authorization) {
-      router.push(`/${slug}/login`);
-      return;
+      if (pkg.accessRule === 'PUBLIC') {
+        setGuestRsvpPackage(pkg);
+        setGuestForm({ name: '', email: '', phone: '', address: '', acceptedTnC: false });
+        setShowGuestRsvpModal(true);
+        return;
+      } else {
+        router.push(`/${slug}/login`);
+        return;
+      }
     }
 
     // Check membership remaining duration (require renewal bundle if <= 2 days or empty)
     const days = getMembershipRemainingDays();
     if (days <= 2) {
-      const pkg = sessions.find(p => p.id === pkgId) || selectedPackage;
-      if (pkg) {
-        if (!selectedPackage) setIsPrivateSession(false);
-        setSelectedPackage(null);
-        setBundlePackage(pkg);
-        setSelectedBundleTierId(community.memberships && community.memberships.length > 0 ? community.memberships[0].id : '');
-        setBundleProofUrl('');
-        setShowBundleModal(true);
-      } else {
-        // Fetch packages and retry
-        const pkgRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-package/community/${community.id}`);
-        if (pkgRes.ok) {
-          const list = await pkgRes.json();
-          const target = list.find((p: SessionPackage) => p.id === pkgId);
-          if (target) {
-            if (!selectedPackage) setIsPrivateSession(false);
-            setSelectedPackage(null);
-            setBundlePackage(target);
-            setSelectedBundleTierId(community.memberships && community.memberships.length > 0 ? community.memberships[0].id : '');
-            setBundleProofUrl('');
-            setShowBundleModal(true);
-          }
-        }
-      }
+      if (!selectedPackage) setIsPrivateSession(false);
+      setSelectedPackage(null);
+      setBundlePackage(pkg);
+      setSelectedBundleTierId(community.memberships && community.memberships.length > 0 ? community.memberships[0].id : '');
+      setBundleProofUrl('');
+      setShowBundleModal(true);
       return;
     }
 
@@ -336,13 +337,6 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       const meRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/me', { headers });
       if (!meRes.ok) throw new Error('Please login again');
       const meData = await meRes.json();
-
-      // Find selected package
-      const pkg = sessions.find(p => p.id === pkgId) || selectedPackage;
-      if (!pkg) {
-        alert('Paket tidak ditemukan');
-        return;
-      }
 
       // Store selected package and open purchase modal
       setPurchasePackage(pkg);
@@ -2246,6 +2240,87 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
           </div>
         </div>
       )}
+      
+      {/* Guest RSVP Modal */}
+      {showGuestRsvpModal && guestRsvpPackage && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowGuestRsvpModal(false)} />
+          <div className="relative bg-white dark:bg-slate-950 w-full max-w-md rounded-3xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+              <h3 className="text-lg font-black text-slate-900 dark:text-slate-50 tracking-tight">Pendaftaran Peserta Umum</h3>
+              <p className="text-xs text-slate-500 font-medium mt-1">Isi formulir di bawah ini untuk mendaftar pada <span className="font-bold text-primary">{guestRsvpPackage.name}</span></p>
+            </div>
+            
+            <form 
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!guestForm.acceptedTnC) {
+                  alert('Anda harus menyetujui syarat & ketentuan');
+                  return;
+                }
+                setSubmittingGuest(true);
+                try {
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/guest-registrations/submit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      communityId: community.id,
+                      packageId: guestRsvpPackage.id,
+                      ...guestForm
+                    })
+                  });
+                  if (!res.ok) throw new Error('Gagal mengirim pendaftaran');
+                  
+                  alert('Pendaftaran berhasil! Kami akan segera memprosesnya.');
+                  setShowGuestRsvpModal(false);
+                  setGuestRsvpPackage(null);
+                  setGuestForm({ name: '', email: '', phone: '', address: '', acceptedTnC: false });
+                } catch (err) {
+                  alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
+                } finally {
+                  setSubmittingGuest(false);
+                }
+              }} 
+              className="flex flex-col flex-1 min-h-0"
+            >
+              <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap</label>
+                  <input type="text" required value={guestForm.name} onChange={e => setGuestForm({...guestForm, name: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm" placeholder="Masukkan nama lengkap" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Alamat Email</label>
+                  <input type="email" required value={guestForm.email} onChange={e => setGuestForm({...guestForm, email: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm" placeholder="email@contoh.com" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nomor Handphone (WhatsApp)</label>
+                  <input type="text" required value={guestForm.phone} onChange={e => setGuestForm({...guestForm, phone: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm" placeholder="08xxxxxxxxxx" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Alamat Domisili</label>
+                  <textarea required value={guestForm.address} onChange={e => setGuestForm({...guestForm, address: e.target.value})} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm resize-none" placeholder="Masukkan alamat lengkap"></textarea>
+                </div>
+                <div className="pt-2">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" checked={guestForm.acceptedTnC} onChange={e => setGuestForm({...guestForm, acceptedTnC: e.target.checked})} className="mt-1 w-4 h-4 text-primary rounded" />
+                    <span className="text-xs text-slate-500 leading-tight">
+                      Saya telah membaca dan menyetujui seluruh <a href="#" className="text-primary font-bold hover:underline">Syarat & Ketentuan</a> serta Kebijakan Privasi dari {community.name}.
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="p-6 pt-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
+                <button type="button" onClick={() => setShowGuestRsvpModal(false)} className="px-4 py-2 font-bold text-slate-500 hover:bg-slate-100 rounded-xl text-xs transition-colors">Batal</button>
+                <button type="submit" disabled={submittingGuest} className="px-5 py-2 bg-primary hover:opacity-90 text-white font-bold rounded-xl text-xs shadow-lg shadow-primary/20 transition-all disabled:opacity-50">
+                  {submittingGuest ? 'Mengirim...' : 'Kirim Pendaftaran'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Floating Bottom Navigation */}
       <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-white dark:bg-slate-950 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 dark:border-slate-800 flex items-center gap-2 px-6 py-3 z-[100] animate-in slide-in-from-bottom-8 overflow-x-auto scrollbar-none scroll-smooth">
         {(isLoggedIn ? ['home', 'about', 'sessions', 'gallery', 'contact', 'dashboard'] : ['home', 'about', 'sessions', 'gallery', 'contact']).map(tab => {

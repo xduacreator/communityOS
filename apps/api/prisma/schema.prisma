@@ -59,13 +59,14 @@ model Community {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
-  members         CommunityMember[]
-  events          Event[]
-  galleryImages   GalleryImage[]
-  memberships     Membership[]
-  userMemberships UserMembership[]
-  activities      Activity[]
-  sessionWallets  SessionWallet[]
+  members            CommunityMember[]
+  events             Event[]
+  galleryImages      GalleryImage[]
+  memberships        Membership[]
+  userMemberships    UserMembership[]
+  activities         Activity[]
+  sessionWallets     SessionWallet[]
+  guestRegistrations GuestRegistration[]
 }
 
 model CommunityMember {
@@ -216,8 +217,9 @@ model SessionPackage {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  category       Category        @relation(fields: [categoryId], references: [id])
-  sessionWallets SessionWallet[]
+  category           Category            @relation(fields: [categoryId], references: [id])
+  sessionWallets     SessionWallet[]
+  guestRegistrations GuestRegistration[]
 }
 
 model SessionWallet {
@@ -255,10 +257,27 @@ model SessionTransaction {
   afterSession    Int
   remarks         String?
   createdBy       String?
+  transactionDate DateTime @default(now())
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  wallet SessionWallet @relation(fields: [walletId], references: [id])
+  wallet          SessionWallet @relation(fields: [walletId], references: [id])
+}
+
+model GuestRegistration {
+  id              String         @id @default(uuid())
+  communityId     String
+  packageId       String
+  name            String
+  email           String
+  phone           String
+  address         String
+  status          String         @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  community       Community      @relation(fields: [communityId], references: [id])
+  package         SessionPackage @relation(fields: [packageId], references: [id])
 }
 
 model SystemSetting {
