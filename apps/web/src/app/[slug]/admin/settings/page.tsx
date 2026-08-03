@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuthHeaders } from '../../../../lib/auth';
 import { Settings, Save, Globe, Type, Info, Phone, Image as ImageIcon, BarChart2, Search, X, Trash2 } from 'lucide-react';
+import ConfirmModal from '../../../../components/ui/ConfirmModal';
 import { Community, Membership } from '../../../../types';
 import imageCompression from 'browser-image-compression';
 
@@ -11,6 +12,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
   const resolvedParams = React.use(params);
   const [community, setCommunity] = useState<Community | null>(null);
   const [loading, setLoading] = useState(true);
+  const [confirmModalConfig, setConfirmModalConfig] = useState({ isOpen: false, title: '', message: '', confirmText: 'Hapus', isDestructive: false, onConfirm: () => {} });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -1046,6 +1048,15 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
           </div>
         </div>
       )}
+      <ConfirmModal
+        isOpen={confirmModalConfig.isOpen}
+        title={confirmModalConfig.title}
+        message={confirmModalConfig.message}
+        confirmText={confirmModalConfig.confirmText}
+        isDestructive={confirmModalConfig.isDestructive}
+        onConfirm={confirmModalConfig.onConfirm}
+        onCancel={() => setConfirmModalConfig({ ...confirmModalConfig, isOpen: false })}
+      />
     </div>
   );
 }

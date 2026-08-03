@@ -49,6 +49,7 @@ interface PendingSessionPackage {
 export default function AdminDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = React.use(params);
   const [members, setMembers] = useState<CommunityMember[]>([]);
+  const [confirmModalConfig, setConfirmModalConfig] = useState({ isOpen: false, title: '', message: '', confirmText: 'Konfirmasi', onConfirm: () => {} });
   const [community, setCommunity] = useState<Community | null>(null);
   const [pendingRenewals, setPendingRenewals] = useState<PendingRenewal[]>([]);
   const [pendingPackages, setPendingPackages] = useState<PendingSessionPackage[]>([]);
@@ -408,9 +409,14 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                       <div className="flex justify-end gap-2">
                         <button
                           type="button"
-                          onClick={async () => {
-                            if (!confirm(`Apakah Anda yakin ingin menyetujui perpanjangan membership untuk ${renewal.user?.name}?`)) return;
-                            try {
+                          onClick={() => {
+                            setConfirmModalConfig({
+                              isOpen: true,
+                              title: 'Setujui Perpanjangan',
+                              message: `Apakah Anda yakin ingin menyetujui perpanjangan membership untuk ${renewal.user?.name}?`,
+                              confirmText: 'Setujui',
+                              onConfirm: async () => {
+                                try {
                               const headers = getAuthHeaders();
                               const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/user-membership/approve/${renewal.id}?communityId=${community?.id}`, {
                                 method: 'PATCH',
@@ -424,6 +430,8 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                             } catch (err) {
                               alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
                             }
+                              }
+                            });
                           }}
                           className="flex items-center px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl transition-colors font-bold text-xs shadow-lg shadow-emerald-500/20"
                         >
@@ -494,9 +502,14 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                     <div className="flex justify-end gap-2">
                       <button
                         type="button"
-                        onClick={async () => {
-                          if (!confirm(`Apakah Anda yakin ingin menyetujui pembelian paket sesi untuk ${pkg.user?.name}?`)) return;
-                          try {
+                        onClick={() => {
+                          setConfirmModalConfig({
+                            isOpen: true,
+                            title: 'Setujui Pembelian',
+                            message: `Apakah Anda yakin ingin menyetujui pembelian paket sesi untuk ${pkg.user?.name}?`,
+                            confirmText: 'Setujui',
+                            onConfirm: async () => {
+                              try {
                             const headers = getAuthHeaders();
                             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/approve/${pkg.id}`, {
                               method: 'PATCH',
@@ -510,6 +523,8 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                           } catch (err) {
                             alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
                           }
+                            }
+                          });
                         }}
                         className="flex items-center px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl transition-colors font-bold text-xs shadow-lg shadow-emerald-500/20"
                       >
