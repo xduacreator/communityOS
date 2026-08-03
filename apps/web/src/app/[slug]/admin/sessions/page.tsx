@@ -46,6 +46,8 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
     validDays: 30,
     memberPrice: 0,
     vipPrice: 0,
+    quota: '',
+    privateQuota: '',
     accessRule: 'PUBLIC',
   });
   const [submitting, setSubmitting] = useState(false);
@@ -174,6 +176,8 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
           validDays: Number(formData.validDays),
           memberPrice: Number(formData.memberPrice),
           vipPrice: formData.vipPrice ? Number(formData.vipPrice) : null,
+          quota: formData.quota ? Number(formData.quota) : null,
+          privateQuota: formData.privateQuota ? Number(formData.privateQuota) : null,
           accessRule: formData.accessRule
         })
       });
@@ -188,7 +192,7 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
         activityMode: 'select', activityId: '', activityName: '',
         categoryMode: 'select', categoryId: '', categoryName: '',
         name: '', description: '', image: '', totalSession: 1, validDays: 30, memberPrice: 0, vipPrice: 0,
-        accessRule: 'PUBLIC',
+        quota: '', privateQuota: '', accessRule: 'PUBLIC',
       });
       if (pkgRes.ok) {
         setIsModalOpen(false);
@@ -261,6 +265,8 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
       validDays: pkg.validDays || 30,
       memberPrice: pkg.memberPrice || 0,
       vipPrice: pkg.vipPrice || 0,
+      quota: pkg.quota?.toString() || '',
+      privateQuota: pkg.privateQuota?.toString() || '',
       accessRule: pkg.accessRule || 'PUBLIC',
     });
     setIsModalOpen(true);
@@ -383,7 +389,7 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
                   activityMode: 'select', activityId: '', activityName: '',
                   categoryMode: 'select', categoryId: '', categoryName: '',
                   name: '', description: '', image: '', totalSession: 1, validDays: 30, memberPrice: 0, vipPrice: 0,
-                  accessRule: 'PUBLIC',
+                  quota: '', privateQuota: '', accessRule: 'PUBLIC',
                 });
                 setIsModalOpen(true);
               }}
@@ -529,7 +535,11 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
                     <td className="px-6 py-5 font-bold text-slate-900">{w.user?.name || '-'}</td>
                     <td className="px-6 py-5 font-bold text-slate-700">{w.package?.name || '-'}</td>
                     <td className="px-6 py-5">
-                      <span className={`px-3 py-1 text-xs font-bold rounded-full ${w.walletStatus === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : w.walletStatus === 'WAITING' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'}`}>
+                      <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+                        w.walletStatus === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 
+                        (w.walletStatus === 'WAITING' || w.walletStatus === 'WAITLIST') ? 'bg-amber-100 text-amber-700' : 
+                        'bg-slate-100 text-slate-700'
+                      }`}>
                         {w.walletStatus}
                       </span>
                     </td>
@@ -716,6 +726,33 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
                             className="w-full pl-5 pr-16 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-black text-indigo-600 transition-all shadow-sm hover:border-slate-300"
                           />
                           <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">Hari</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                      <div className="space-y-3">
+                        <label className="text-sm font-bold text-slate-700">Kuota Reguler (Opsional)</label>
+                        <div className="relative">
+                          <input type="number" min="1"
+                            value={formData.quota}
+                            onChange={(e) => setFormData({ ...formData, quota: e.target.value })}
+                            placeholder="Unlimited"
+                            className="w-full pl-5 pr-16 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-black text-indigo-600 transition-all shadow-sm hover:border-slate-300"
+                          />
+                          <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">Orang</span>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-sm font-bold text-slate-700">Kuota Privat (Opsional)</label>
+                        <div className="relative">
+                          <input type="number" min="1"
+                            value={formData.privateQuota}
+                            onChange={(e) => setFormData({ ...formData, privateQuota: e.target.value })}
+                            placeholder="Unlimited"
+                            className="w-full pl-5 pr-16 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 font-black text-amber-600 transition-all shadow-sm hover:border-slate-300"
+                          />
+                          <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">Orang</span>
                         </div>
                       </div>
                     </div>

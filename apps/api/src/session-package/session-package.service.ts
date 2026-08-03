@@ -14,9 +14,24 @@ export class SessionPackageService {
   }
 
   async findAllByCommunity(communityId: string) {
-    return this.prisma.sessionPackage.findMany({
+    const packages = await this.prisma.sessionPackage.findMany({
       where: { category: { activity: { communityId } } },
-      include: { category: { include: { activity: true } } }
+      include: {
+        category: { include: { activity: true } },
+        sessionWallets: {
+          where: { walletStatus: { in: ['PENDING', 'APPROVED'] } }
+        },
+        guestRegistrations: {
+          where: { status: { in: ['PENDING', 'APPROVED'] } }
+        }
+      }
+    });
+
+    return packages.map(pkg => {
+      const currentParticipants = pkg.sessionWallets.filter(w => !w.isPrivate).length + pkg.guestRegistrations.length;
+      const currentPrivateParticipants = pkg.sessionWallets.filter(w => w.isPrivate).length;
+      const { sessionWallets, guestRegistrations, ...rest } = pkg;
+      return { ...rest, currentParticipants, currentPrivateParticipants };
     });
   }
 

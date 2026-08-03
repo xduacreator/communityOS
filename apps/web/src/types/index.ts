@@ -124,6 +124,10 @@ export interface SessionPackage {
   validDays: number;
   memberPrice: number;
   vipPrice?: number | null;
+  quota?: number | null;
+  privateQuota?: number | null;
+  currentParticipants?: number;
+  currentPrivateParticipants?: number;
   status: string;
   accessRule?: string;
   createdAt: string;

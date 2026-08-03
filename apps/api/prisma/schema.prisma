@@ -212,6 +212,8 @@ model SessionPackage {
   validDays    Int
   memberPrice  Float
   vipPrice     Float?
+  quota        Int?
+  privateQuota Int?
   status       String   @default("ACTIVE")
   accessRule   String   @default("PUBLIC")
   createdAt    DateTime @default(now())

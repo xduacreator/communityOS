@@ -132,14 +132,15 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
                       <span className={`inline-flex px-3 py-1 text-[11px] font-black rounded-lg uppercase tracking-wider ${
                         guest.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
                         guest.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
-                        'bg-amber-100 text-amber-700'
+                        (guest.status === 'PENDING' || guest.status === 'WAITING' || guest.status === 'WAITLIST') ? 'bg-amber-100 text-amber-700' :
+                        'bg-slate-100 text-slate-700'
                       }`}>
                         {guest.status}
                       </span>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex justify-end gap-2">
-                        {guest.status === 'PENDING' && (
+                        {(guest.status === 'PENDING' || guest.status === 'WAITLIST') && (
                           <>
                             <button
                               onClick={() => handleUpdateStatus(guest.id, 'APPROVED')}

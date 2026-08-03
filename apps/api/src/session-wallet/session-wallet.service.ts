@@ -19,7 +19,31 @@ export class SessionWalletService {
     }
 
     // New logic: All new standalone purchases are pending approval by admin
-    const initialStatus = 'PENDING';
+    let initialStatus = 'PENDING';
+    
+    // Check quota based on isPrivate
+    if (isPrivate) {
+      if (pkg.privateQuota !== null) {
+        const privateCount = await this.prisma.sessionWallet.count({
+          where: { packageId, isPrivate: true, walletStatus: { in: ['PENDING', 'APPROVED'] } }
+        });
+        if (privateCount >= pkg.privateQuota) {
+          initialStatus = 'WAITLIST';
+        }
+      }
+    } else {
+      if (pkg.quota !== null) {
+        const walletCount = await this.prisma.sessionWallet.count({
+          where: { packageId, isPrivate: false, walletStatus: { in: ['PENDING', 'APPROVED'] } }
+        });
+        const guestCount = await this.prisma.guestRegistration.count({
+          where: { packageId, status: { in: ['PENDING', 'APPROVED'] } }
+        });
+        if (walletCount + guestCount >= pkg.quota) {
+          initialStatus = 'WAITLIST';
+        }
+      }
+    }
     
     return this.prisma.sessionWallet.create({
       data: {

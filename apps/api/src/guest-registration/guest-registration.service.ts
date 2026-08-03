@@ -25,6 +25,19 @@ export class GuestRegistrationService {
       throw new BadRequestException('This package is not open for public guest registration.');
     }
 
+    let status = 'PENDING';
+    if (pkg.quota !== null) {
+      const walletCount = await this.prisma.sessionWallet.count({
+        where: { packageId: data.packageId, isPrivate: false, walletStatus: { in: ['PENDING', 'APPROVED'] } }
+      });
+      const guestCount = await this.prisma.guestRegistration.count({
+        where: { packageId: data.packageId, status: { in: ['PENDING', 'APPROVED'] } }
+      });
+      if (walletCount + guestCount >= pkg.quota) {
+        status = 'WAITLIST';
+      }
+    }
+
     return this.prisma.guestRegistration.create({
       data: {
         communityId: data.communityId,
@@ -33,7 +46,7 @@ export class GuestRegistrationService {
         email: data.email,
         phone: data.phone,
         address: data.address,
-        status: 'PENDING'
+        status: status
       }
     });
   }
