@@ -2,7 +2,8 @@ import { Controller, Get, Post, Body, Param, Query, UseGuards, Patch } from '@ne
 import { SessionWalletService } from './session-wallet.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
-import { RequireTenantRole } from '../auth/decorators/roles.decorator';
+import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
+import { RequireTenantRole, RequireSuperAdmin } from '../auth/decorators/roles.decorator';
 
 @Controller('session-wallet')
 export class SessionWalletController {
@@ -60,32 +61,45 @@ export class SessionWalletController {
   }
 
   // Admin endpoints
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
   @Get('admin/community/:communityId/wallets')
   getAdminWallets(@Param('communityId') communityId: string) {
     return this.sessionWalletService.getAdminWallets(communityId);
   }
 
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
   @Get('admin/community/:communityId/attendance')
   getAdminAttendance(@Param('communityId') communityId: string) {
     return this.sessionWalletService.getAdminAttendance(communityId);
   }
 
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
   @Get('admin/community/:communityId/dashboard')
   getAdminDashboardStats(@Param('communityId') communityId: string) {
     return this.sessionWalletService.getAdminDashboardStats(communityId);
   }
 
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
   @Get('superadmin/wallets')
   getSuperAdminWallets() {
     return this.sessionWalletService.getSuperAdminWallets();
   }
 
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
   @Get('superadmin/attendance')
   getSuperAdminAttendance() {
     return this.sessionWalletService.getSuperAdminAttendance();
   }
 
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
   @Get('superadmin/dashboard')
+
   getSuperAdminDashboardStats() {
     return this.sessionWalletService.getSuperAdminDashboardStats();
   }

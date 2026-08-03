@@ -21,6 +21,7 @@ export default function AdminLayout({
 
   useEffect(() => {
     let isMounted = true;
+    setIsAuthorized(false); // Reset authorized state when community slug changes
     const checkAuth = async () => {
       const headers = getAuthHeaders();
       if (!headers.Authorization) {
