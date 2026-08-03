@@ -25,6 +25,7 @@ interface CommunityWithMemberships {
   id: string;
   slug: string;
   name: string;
+  logoUrl?: string | null;
   registrationMode?: string | null;
   memberships?: Membership[];
   registrationFields?: string | null;
@@ -174,13 +175,15 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
     <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans p-4">
       <div className="max-w-xl w-full bg-white rounded-[2rem] shadow-2xl p-8 md:p-10 border border-slate-100">
         <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-          </div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Join the Community</h2>
-          <p className="text-slate-500 mt-2 font-medium">Create an account to participate in events.</p>
+          {community?.logoUrl ? (
+            <img src={community.logoUrl} alt={community.name} className="w-20 h-20 rounded-2xl object-cover mx-auto mb-4 border border-slate-200 shadow-sm" />
+          ) : (
+            <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl font-black text-emerald-600">{community?.name?.[0] || 'C'}</span>
+            </div>
+          )}
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Bergabung ke Komunitas</h2>
+          <p className="text-slate-500 mt-2 font-medium">Buat akun untuk berpartisipasi di event {community?.name}.</p>
         </div>
 
         {error && (
@@ -204,7 +207,7 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
         <form onSubmit={handleRegister} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap</label>
               <input
                 type="text"
                 required
@@ -215,7 +218,7 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Phone Number</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Nomor HP / WhatsApp</label>
               <input
                 type="text"
                 required
@@ -228,7 +231,7 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Alamat Email</label>
             <input
               type="email"
               required
@@ -240,7 +243,7 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Kata Sandi</label>
             <input
               type="password"
               required
@@ -339,7 +342,7 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
             disabled={loading}
             className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 hover:-translate-y-0.5 transition-all shadow-xl shadow-emerald-500/25 disabled:opacity-50 disabled:hover:translate-y-0 mt-2"
           >
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? 'Membuat akun...' : 'Buat Akun'}
           </button>
         </form>
 
@@ -352,7 +355,7 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
         
         <div className="mt-4 text-center">
            <Link href={`/${resolvedParams.slug}`} className="text-sm text-slate-400 font-bold hover:text-slate-600">
-            &larr; Back to Community
+            &larr; Kembali ke Komunitas
           </Link>
         </div>
       </div>

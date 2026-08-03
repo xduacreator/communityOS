@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { setToken } from '../../../lib/auth';
+import { Community } from '../../../types';
 export default function MemberLogin({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = React.use(params);
   const router = useRouter();
@@ -12,6 +13,14 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [community, setCommunity] = useState<Community | null>(null);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if(data) setCommunity(data) })
+      .catch(console.error);
+  }, [resolvedParams.slug]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,13 +75,15 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
     <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans p-4">
       <div className="max-w-md w-full bg-white rounded-[2rem] shadow-2xl p-8 border border-slate-100">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
-            </svg>
-          </div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Welcome Back</h2>
-          <p className="text-slate-500 mt-2 font-medium">Log in to join events and sessions.</p>
+          {community?.logoUrl ? (
+            <img src={community.logoUrl} alt={community.name} className="w-20 h-20 rounded-2xl object-cover mx-auto mb-4 border border-slate-200 shadow-sm" />
+          ) : (
+            <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl font-black text-indigo-600">{community?.name?.[0] || 'C'}</span>
+            </div>
+          )}
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Selamat Datang</h2>
+          <p className="text-slate-500 mt-2 font-medium">Masuk untuk mengikuti event dan sesi di {community?.name || 'Komunitas'}.</p>
         </div>
 
         {error && (
@@ -83,7 +94,7 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Alamat Email</label>
             <input
               type="email"
               required
@@ -95,7 +106,7 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Kata Sandi</label>
             <input
               type="password"
               required
@@ -111,20 +122,18 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
             disabled={loading}
             className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 hover:-translate-y-0.5 transition-all shadow-xl shadow-indigo-500/25 disabled:opacity-50 disabled:hover:translate-y-0 mt-2"
           >
-            {loading ? 'Logging in...' : 'Sign In'}
+            {loading ? 'Masuk...' : 'Masuk'}
           </button>
         </form>
 
         <p className="mt-8 text-center text-slate-500 font-medium">
           Don&apos;t have an account?{' '}
-          <Link href={`/${resolvedParams.slug}/register`} className="text-indigo-600 font-bold hover:text-indigo-700">
-            Sign up here
-          </Link>
+          <Link href={`/${resolvedParams.slug}/register`} className="text-indigo-600 font-bold hover:text-indigo-700">Daftar di sini</Link>
         </p>
         
         <div className="mt-4 text-center">
            <Link href={`/${resolvedParams.slug}`} className="text-sm text-slate-400 font-bold hover:text-slate-600">
-            &larr; Back to Community
+            &larr; Kembali ke Komunitas
           </Link>
         </div>
       </div>
