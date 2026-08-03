@@ -796,13 +796,13 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                     {pkg.quota !== null && pkg.quota !== undefined && (
                       <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl">
                         <Users className="w-4 h-4 mr-2 text-indigo-500" />
-                        Sisa Kuota: {pkg.quota - (pkg.currentParticipants || 0)}/{pkg.quota}
+                        Kuota Terisi: {pkg.currentParticipants || 0}/{pkg.quota}
                       </div>
                     )}
                     {pkg.privateQuota !== null && pkg.privateQuota !== undefined && (
                       <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl">
                         <Users className="w-4 h-4 mr-2 text-amber-500" />
-                        Sisa Kuota Privat: {pkg.privateQuota - (pkg.currentPrivateParticipants || 0)}/{pkg.privateQuota}
+                        Kuota Privat Terisi: {pkg.currentPrivateParticipants || 0}/{pkg.privateQuota}
                       </div>
                     )}
                   </div>
@@ -906,13 +906,13 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                         {pkg.quota !== null && pkg.quota !== undefined && (
                           <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400">
                             <Users className="w-4 h-4 mr-2 text-indigo-500" />
-                            Sisa Kuota: {pkg.quota - (pkg.currentParticipants || 0)}/{pkg.quota}
+                            Kuota Terisi: {pkg.currentParticipants || 0}/{pkg.quota}
                           </div>
                         )}
                         {pkg.privateQuota !== null && pkg.privateQuota !== undefined && (
                           <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400">
                             <Users className="w-4 h-4 mr-2 text-amber-500" />
-                            Sisa Kuota Privat: {pkg.privateQuota - (pkg.currentPrivateParticipants || 0)}/{pkg.privateQuota}
+                            Kuota Privat Terisi: {pkg.currentPrivateParticipants || 0}/{pkg.privateQuota}
                           </div>
                         )}
                       </div>
