@@ -2339,19 +2339,19 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
               <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap</label>
-                  <input type="text" required value={guestForm.name} onChange={e => setGuestForm({...guestForm, name: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm" placeholder="Masukkan nama lengkap" />
+                  <input type="text" required value={guestForm.name} onChange={e => setGuestForm({...guestForm, name: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400" placeholder="Masukkan nama lengkap" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Alamat Email</label>
-                  <input type="email" required value={guestForm.email} onChange={e => setGuestForm({...guestForm, email: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm" placeholder="email@contoh.com" />
+                  <input type="email" required value={guestForm.email} onChange={e => setGuestForm({...guestForm, email: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400" placeholder="email@contoh.com" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nomor Handphone (WhatsApp)</label>
-                  <input type="text" required value={guestForm.phone} onChange={e => setGuestForm({...guestForm, phone: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm" placeholder="08xxxxxxxxxx" />
+                  <input type="text" required value={guestForm.phone} onChange={e => setGuestForm({...guestForm, phone: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400" placeholder="08xxxxxxxxxx" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Alamat Domisili</label>
-                  <textarea required value={guestForm.address} onChange={e => setGuestForm({...guestForm, address: e.target.value})} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm resize-none" placeholder="Masukkan alamat lengkap"></textarea>
+                  <textarea required value={guestForm.address} onChange={e => setGuestForm({...guestForm, address: e.target.value})} rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400 resize-none" placeholder="Masukkan alamat lengkap"></textarea>
                 </div>
 
                 {(() => {
