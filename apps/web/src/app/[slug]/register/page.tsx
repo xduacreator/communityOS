@@ -25,7 +25,7 @@ interface CommunityWithMemberships {
   id: string;
   slug: string;
   name: string;
-  logoUrl?: string | null;
+  logo?: string | null;
   registrationMode?: string | null;
   memberships?: Membership[];
   registrationFields?: string | null;
@@ -175,8 +175,8 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
     <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans p-4">
       <div className="max-w-xl w-full bg-white rounded-[2rem] shadow-2xl p-8 md:p-10 border border-slate-100">
         <div className="text-center mb-10">
-          {community?.logoUrl ? (
-            <img src={community.logoUrl} alt={community.name} className="w-20 h-20 rounded-2xl object-cover mx-auto mb-4 border border-slate-200 shadow-sm" />
+          {community?.logo ? (
+            <img src={community.logo} alt={community.name} className="w-20 h-20 rounded-2xl object-cover mx-auto mb-4 border border-slate-200 shadow-sm" />
           ) : (
             <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl font-black text-emerald-600">{community?.name?.[0] || 'C'}</span>
