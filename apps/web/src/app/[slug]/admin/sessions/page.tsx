@@ -12,8 +12,10 @@ import {
   Plus,
   QrCode,
   X,
-  CheckCircle
+  CheckCircle,
+  UserPlus
 } from 'lucide-react';
+import Link from 'next/link';
 import { getAuthHeaders } from '../../../../lib/auth';
 import { Community, SessionPackage, Activity as CommunityActivity, SessionWallet, CommunityMember } from '../../../../types';
 
@@ -376,6 +378,12 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
                   </div>
                   Freeze Wallet
                 </button>
+                <Link href={`/${resolvedParams.slug}/admin/sessions/guests`} className="w-full flex items-center p-4 rounded-3xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors font-bold group">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-200/50 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                    <UserPlus className="w-5 h-5" />
+                  </div>
+                  Guest Registrations
+                </Link>
               </div>
             </div>
 
