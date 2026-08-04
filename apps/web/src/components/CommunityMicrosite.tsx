@@ -141,7 +141,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
           const groupedWallets = new Map<string, ActiveWalletView>();
 
           wallets.forEach((w) => {
-            if (w.walletStatus === 'ACTIVE' || w.walletStatus === 'WAITING') {
+            if (w.walletStatus === 'ACTIVE' || w.walletStatus === 'WAITING' || w.walletStatus === 'PENDING' || w.walletStatus === 'WAITLIST') {
               const pid = w.packageId;
               if (!groupedWallets.has(pid)) {
                 groupedWallets.set(pid, {
@@ -1181,14 +1181,16 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                     
                                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
                                       <div className="space-y-1">
-                                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-[10px] font-black text-emerald-700 uppercase tracking-wider">
+                                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 border rounded-full text-[10px] font-black uppercase tracking-wider ${
+                                          wallet.status === 'ACTIVE' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-amber-50 border-amber-100 text-amber-700'
+                                        }`}>
                                           <Activity className="w-3.5 h-3.5" />
-                                          <span>Sesi Aktif</span>
+                                          <span>{wallet.status === 'ACTIVE' ? 'Sesi Aktif' : 'Menunggu Approval'}</span>
                                         </div>
                                         <h3 className="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight mt-2">{wallet.packageName}</h3>
                                         <p className="text-xs text-slate-400 font-semibold flex items-center gap-1">
                                           <Clock className="w-3.5 h-3.5 text-slate-350" />
-                                          <span>Berlaku s/d: {wallet.expiredDate ? new Date(wallet.expiredDate).toLocaleDateString() : 'N/A'}</span>
+                                          <span>Berlaku s/d: {wallet.expiredDate ? new Date(wallet.expiredDate).toLocaleDateString() : (wallet.status === 'ACTIVE' ? 'N/A' : 'Menunggu Aktif')}</span>
                                         </p>
                                       </div>
 
@@ -1200,19 +1202,23 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                         <div className="w-px h-10 bg-slate-150"></div>
                                         <button
                                           onClick={() => handleCheckInOut(wallet.packageId)}
-                                          disabled={checkingInOut}
+                                          disabled={checkingInOut || wallet.status !== 'ACTIVE'}
                                           className={`px-8 py-4 font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 active:scale-[0.97] ${
-                                            history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in'
-                                              ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20'
-                                              : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+                                            wallet.status !== 'ACTIVE' 
+                                              ? 'bg-slate-300 text-slate-500 shadow-none cursor-not-allowed opacity-70'
+                                              : history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in'
+                                                ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20'
+                                                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
                                           }`}
                                         >
                                           <Zap className="w-4 h-4 fill-current" />
                                           <span>{checkingInOut
                                             ? 'Processing...'
-                                            : (history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in')
-                                              ? 'Check Out Sesi'
-                                              : 'Check In Sesi'}</span>
+                                            : wallet.status !== 'ACTIVE'
+                                              ? 'Belum Aktif'
+                                              : (history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in')
+                                                ? 'Check Out Sesi'
+                                                : 'Check In Sesi'}</span>
                                         </button>
                                       </div>
                                     </div>
