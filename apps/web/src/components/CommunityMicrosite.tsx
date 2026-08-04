@@ -1627,7 +1627,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
             </div>
 
             <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar flex flex-col py-2">
-              {selectedPackage.memberPrice && selectedPackage.vipPrice && (
+              {!!selectedPackage.memberPrice && !!selectedPackage.vipPrice && (
                 <div className="px-6 md:px-8 pt-4 pb-2 shrink-0">
                   <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
                     <input
@@ -1952,7 +1952,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   </div>
                 </div>
 
-                {bundlePackage.memberPrice && bundlePackage.vipPrice && (
+                {!!bundlePackage.memberPrice && !!bundlePackage.vipPrice && (
                   <div className="mt-2">
                     <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
                       <input
@@ -2209,7 +2209,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   </div>
                 </div>
 
-                {purchasePackage.memberPrice && purchasePackage.vipPrice && (
+                {!!purchasePackage.memberPrice && !!purchasePackage.vipPrice && (
                   <div className="mt-2">
                     <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
                       <input
