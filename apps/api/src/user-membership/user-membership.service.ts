@@ -35,10 +35,11 @@ export class UserMembershipService {
       where: {
         userId,
         communityId,
-        status: 'ACTIVE',
+        status: { in: ['ACTIVE', 'PENDING'] },
         endDate: { gt: new Date() }
       },
-      include: { membership: true }
+      include: { membership: true },
+      orderBy: { endDate: 'desc' }
     });
   }
 
