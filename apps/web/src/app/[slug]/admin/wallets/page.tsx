@@ -12,6 +12,7 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
   const [communityId, setCommunityId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCommunityId = async () => {
@@ -28,26 +29,52 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
     fetchCommunityId();
   }, [resolvedParams.slug]);
 
-  useEffect(() => {
-    const fetchWallets = async () => {
-      if (!communityId) return;
-      try {
-        const headers = getAuthHeaders();
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/admin/community/${communityId}/wallets`, {
-          headers
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setWallets(data);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    if (!communityId) return;
+    try {
+      const headers = getAuthHeaders();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/admin/community/${communityId}/wallets`, {
+        headers
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setWallets(data);
       }
-    };
-    fetchWallets();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [communityId]);
+
+  const handleApprove = async (id: string) => {
+    if (!confirm('Are you sure you want to approve this package purchase?')) return;
+    
+    setApprovingId(id);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/approve/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to approve wallet');
+      }
+      
+      alert('Wallet approved successfully!');
+      fetchData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setApprovingId(null);
+    }
+  };
 
   const filteredWallets = wallets.filter(w => {
     const matchesSearch = 
@@ -90,6 +117,8 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
             className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors font-bold text-sm text-slate-700 w-full sm:w-auto shadow-sm outline-none"
           >
             <option value="ALL">Semua Status</option>
+            <option value="PENDING">Pending</option>
+            <option value="WAITLIST">Waitlist</option>
             <option value="ACTIVE">Active</option>
             <option value="WAITING">Waiting</option>
             <option value="COMPLETED">Completed</option>
@@ -107,6 +136,7 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
                 <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Sessions</th>
                 <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Status</th>
                 <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Expiry Date</th>
+                <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -118,7 +148,7 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
                 </tr>
               ) : filteredWallets.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500 font-bold">
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-bold">
                     No purchased packages found.
                   </td>
                 </tr>
@@ -167,6 +197,17 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
                       <span className="text-sm font-bold text-slate-700">
                         {wallet.expiredDate ? new Date(wallet.expiredDate).toLocaleDateString() : 'No Expiry'}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {(wallet.walletStatus === 'PENDING' || wallet.walletStatus === 'WAITLIST') && (
+                        <button
+                          onClick={() => handleApprove(wallet.id)}
+                          disabled={approvingId === wallet.id}
+                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm disabled:opacity-50"
+                        >
+                          {approvingId === wallet.id ? 'Approving...' : 'Approve'}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
