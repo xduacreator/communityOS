@@ -536,7 +536,9 @@ export class SessionWalletService {
     }
 
     if (pendingWallet.walletStatus !== 'PENDING' && pendingWallet.walletStatus !== 'WAITLIST') {
-      throw new BadRequestException('Wallet is not in PENDING or WAITLIST status');
+      // Jika statusnya sudah ACTIVE atau WAITING, berarti sudah di-approve sebelumnya.
+      // Kita kembalikan saja data dompetnya tanpa error (idempotent).
+      return pendingWallet;
     }
 
     // Check if there is an active wallet for the same package
