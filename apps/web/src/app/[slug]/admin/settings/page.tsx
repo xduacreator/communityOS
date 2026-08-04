@@ -58,6 +58,8 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
       setLoading(false);
     }
   };
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [tierToDelete, setTierToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -117,12 +119,16 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
     setShowTierModal(true);
   };
 
-  const handleDeleteTier = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus paket membership ini?')) return;
-    if (!community) return;
+  const handleDeleteTierRequest = (id: string) => {
+    setTierToDelete(id);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDeleteTier = async () => {
+    if (!tierToDelete || !community) return;
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/membership-tier/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/membership-tier/${tierToDelete}`, {
         method: 'DELETE',
         headers,
       });
@@ -135,6 +141,9 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
       }
     } catch (err) {
       alert(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsConfirmModalOpen(false);
+      setTierToDelete(null);
     }
   };
 
@@ -387,7 +396,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDeleteTier(tier.id)}
+                                onClick={() => handleDeleteTierRequest(tier.id)}
                                 className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
                                 title="Hapus"
                               >
@@ -977,6 +986,16 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
       </div>
 
       {/* Add / Edit Membership Tier Modal */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        title="Hapus Paket Membership"
+        message="Apakah Anda yakin ingin menghapus paket membership ini? Tindakan ini tidak dapat dibatalkan."
+        confirmText="Hapus"
+        isDestructive={true}
+        onConfirm={handleConfirmDeleteTier}
+        onCancel={() => setIsConfirmModalOpen(false)}
+      />
+
       {showTierModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-[2rem] shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200">

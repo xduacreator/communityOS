@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import JoinButton from './JoinButton';
 import ProfileSettings from './ProfileSettings';
 import { Home, Info, Phone, Calendar, Clock, MapPin, CheckCircle, Image as ImageIcon, Users, Trophy, Sun, ArrowRight, X, LayoutGrid, Shield, CreditCard, Activity, Zap, Plus, LogOut } from 'lucide-react';
+import ConfirmModal from './ui/ConfirmModal';
 import imageCompression from 'browser-image-compression';
 import { getAuthHeaders, removeToken } from '../lib/auth';
 import { useRouter } from 'next/navigation';
@@ -37,6 +38,11 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [purchasingMap, setPurchasingMap] = useState<Record<string, boolean>>({});
   const [selectedPackage, setSelectedPackage] = useState<SessionPackage | null>(null);
+  
+  // Confirm Check-In/Out Modal State
+  const [isCheckInConfirmOpen, setIsCheckInConfirmOpen] = useState(false);
+  const [checkInActionData, setCheckInActionData] = useState<{packageId: string, isCheckedIn: boolean} | null>(null);
+  
   const router = useRouter();
 
   // Dashboard states
@@ -361,12 +367,16 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     // Check if the latest history for THIS package is a check-in.
     const packageHistory = history.filter(h => h.packageId === packageId);
     const isCheckedIn = packageHistory.length > 0 && packageHistory[0].remarks === 'Check-in';
-    const endpoint = isCheckedIn ? 'member/check-out' : 'member/check-in';
-    const actionName = isCheckedIn ? 'checking out' : 'checking in';
     
-    if (!confirm(`Are you sure you want to ${isCheckedIn ? 'check out' : 'check in'}?`)) {
-      return;
-    }
+    setCheckInActionData({ packageId, isCheckedIn });
+    setIsCheckInConfirmOpen(true);
+  };
+
+  const executeCheckInOut = async () => {
+    if (!checkInActionData || !status) return;
+    const { packageId, isCheckedIn } = checkInActionData;
+    const headers = getAuthHeaders();
+    const endpoint = isCheckedIn ? 'member/check-out' : 'member/check-in';
     
     setCheckingInOut(true);
     try {
@@ -386,15 +396,17 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       
       if (!res.ok) {
         const errData = await res.json();
-        throw new Error(errData.message || `Failed during ${actionName}`);
+        throw new Error(errData.message || `Failed to perform action`);
       }
       
       alert(`Successfully ${isCheckedIn ? 'checked out' : 'checked in'}!`);
       await fetchDashboardData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'An error occurred');
+      alert(err instanceof Error ? err.message : `Failed to perform action`);
     } finally {
       setCheckingInOut(false);
+      setIsCheckInConfirmOpen(false);
+      setCheckInActionData(null);
     }
   };
 
@@ -785,24 +797,24 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   </div>
 
                   <div className="space-y-2 mb-6 mt-auto">
-                    <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl">
-                      <CheckCircle className="w-4 h-4 mr-2 text-emerald-500" />
+                    <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-xl">
+                      <CheckCircle className="w-4 h-4 mr-2 text-emerald-500 shrink-0" />
                       {pkg.totalSession} Sessions
                     </div>
-                    <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl">
-                      <Clock className="w-4 h-4 mr-2 text-amber-500" />
+                    <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-xl">
+                      <Clock className="w-4 h-4 mr-2 text-amber-500 shrink-0" />
                       Valid for {pkg.validDays} Days
                     </div>
                     {pkg.quota !== null && pkg.quota !== undefined && (
-                      <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl">
-                        <Users className="w-4 h-4 mr-2 text-indigo-500" />
+                      <div className="flex items-center text-[11px] sm:text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-xl">
+                        <Users className="w-4 h-4 mr-2 text-indigo-500 shrink-0" />
                         Kuota Terisi: {pkg.currentParticipants || 0}/{pkg.quota}
                       </div>
                     )}
                     {pkg.privateQuota !== null && pkg.privateQuota !== undefined && (
-                      <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl">
-                        <Users className="w-4 h-4 mr-2 text-amber-500" />
-                        Kuota Privat Terisi: {pkg.currentPrivateParticipants || 0}/{pkg.privateQuota}
+                      <div className="flex items-center text-[11px] sm:text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-xl">
+                        <Users className="w-4 h-4 mr-2 text-amber-500 shrink-0" />
+                        Privat Terisi: {pkg.currentPrivateParticipants || 0}/{pkg.privateQuota}
                       </div>
                     )}
                   </div>
@@ -896,23 +908,23 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
                       <div className="space-y-2 mb-6 mt-auto border-t border-slate-100 dark:border-slate-800 pt-4">
                         <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400">
-                          <CheckCircle className="w-4 h-4 mr-2 text-emerald-500" />
+                          <CheckCircle className="w-4 h-4 mr-2 text-emerald-500 shrink-0" />
                           {pkg.totalSession} Sessions Total
                         </div>
                         <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400">
-                          <Clock className="w-4 h-4 mr-2 text-amber-500" />
+                          <Clock className="w-4 h-4 mr-2 text-amber-500 shrink-0" />
                           Valid for {pkg.validDays} Days
                         </div>
                         {pkg.quota !== null && pkg.quota !== undefined && (
-                          <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400">
-                            <Users className="w-4 h-4 mr-2 text-indigo-500" />
+                          <div className="flex items-center text-[11px] sm:text-xs font-bold text-slate-600 dark:text-slate-400">
+                            <Users className="w-4 h-4 mr-2 text-indigo-500 shrink-0" />
                             Kuota Terisi: {pkg.currentParticipants || 0}/{pkg.quota}
                           </div>
                         )}
                         {pkg.privateQuota !== null && pkg.privateQuota !== undefined && (
-                          <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400">
-                            <Users className="w-4 h-4 mr-2 text-amber-500" />
-                            Kuota Privat Terisi: {pkg.currentPrivateParticipants || 0}/{pkg.privateQuota}
+                          <div className="flex items-center text-[11px] sm:text-xs font-bold text-slate-600 dark:text-slate-400">
+                            <Users className="w-4 h-4 mr-2 text-amber-500 shrink-0" />
+                            Privat Terisi: {pkg.currentPrivateParticipants || 0}/{pkg.privateQuota}
                           </div>
                         )}
                       </div>
@@ -1294,8 +1306,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                           'bg-rose-50 text-rose-600 border border-rose-100'}`}>
                                         {item.type === 'PURCHASE' ? 'IN' : 'OUT'}
                                       </div>
-                                      <div className="text-left">
-                                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-snug">{item.remarks}</p>
+                                      <div className="text-left min-w-0 pr-2">
+                                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-snug truncate" title={item.remarks}>{item.remarks}</p>
                                         <p className="text-[9px] text-slate-400 font-semibold mt-0.5">{new Date(item.date).toLocaleDateString()}</p>
                                       </div>
                                     </div>
@@ -2421,6 +2433,22 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
         })}
       </div>
       </div>
+
+      <ConfirmModal 
+        isOpen={isCheckInConfirmOpen}
+        title={checkInActionData?.isCheckedIn ? 'Konfirmasi Check-out' : 'Konfirmasi Check-in'}
+        message={checkInActionData?.isCheckedIn 
+          ? 'Apakah Anda yakin ingin melakukan check-out dari kelas ini?' 
+          : 'Apakah Anda yakin ingin menggunakan 1 kuota untuk check-in ke kelas ini?'}
+        confirmText={checkInActionData?.isCheckedIn ? 'Check-out' : 'Check-in'}
+        cancelText="Batal"
+        isDestructive={false}
+        onConfirm={executeCheckInOut}
+        onCancel={() => {
+          setIsCheckInConfirmOpen(false);
+          setCheckInActionData(null);
+        }}
+      />
     </div>
   );
 }

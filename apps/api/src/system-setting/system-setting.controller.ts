@@ -22,4 +22,10 @@ export class SystemSettingController {
   async updateSettings(@Body() dto: UpdateSettingsDto) {
     return this.systemSettingService.updateSettings(dto);
   }
+
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @Put('reset-transactions')
+  async resetTransactions() {
+    return this.systemSettingService.resetTransactions();
+  }
 }

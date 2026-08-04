@@ -535,8 +535,8 @@ export class SessionWalletService {
       throw new NotFoundException('Pending session wallet not found');
     }
 
-    if (pendingWallet.walletStatus !== 'PENDING') {
-      throw new BadRequestException('Wallet is not in PENDING status');
+    if (pendingWallet.walletStatus !== 'PENDING' && pendingWallet.walletStatus !== 'WAITLIST') {
+      throw new BadRequestException('Wallet is not in PENDING or WAITLIST status');
     }
 
     // Check if there is an active wallet for the same package

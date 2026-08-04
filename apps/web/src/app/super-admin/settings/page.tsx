@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
 import { getAuthHeaders } from '../../../lib/auth';
-import { Save, Loader2, Globe, LayoutTemplate, Megaphone, Zap } from 'lucide-react';
+import { Save, Loader2, Globe, LayoutTemplate, AlertOctagon, Megaphone, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import ConfirmModal from '../../../components/ui/ConfirmModal';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -12,6 +12,8 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
@@ -99,6 +101,27 @@ export default function SettingsPage() {
       setError(err instanceof Error ? err.message : 'Error saving settings');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleResetTransactions = async () => {
+    setResetting(true);
+    try {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/system-settings/reset-transactions', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders(),
+        },
+      });
+      if (!res.ok) throw new Error('Failed to reset transactions');
+      const data = await res.json();
+      alert(`Success: ${data.message}`);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setResetting(false);
+      setIsResetConfirmOpen(false);
     }
   };
 
@@ -512,6 +535,41 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Danger Zone Section */}
+        <div className="bg-white rounded-3xl p-8 border border-rose-200 shadow-sm mt-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-rose-50 rounded-full blur-3xl opacity-50 -mr-8 -mt-8"></div>
+          
+          <div className="flex items-center gap-3 mb-6 pb-6 border-b border-rose-100 relative z-10">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+              <AlertOctagon className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-extrabold text-slate-900">Danger Zone</h2>
+              <p className="text-xs text-rose-500 font-bold mt-1">Gunakan dengan sangat hati-hati.</p>
+            </div>
+          </div>
+
+          <div className="space-y-6 relative z-10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-rose-50/50 p-6 rounded-2xl border border-rose-100">
+              <div>
+                <h3 className="font-bold text-slate-900">Reset Seluruh Data Transaksi</h3>
+                <p className="text-sm text-slate-600 mt-1 max-w-xl">
+                  Ini akan secara permanen menghapus semua pendaftaran umum (Guest Registration), transaksi dompet anggota, 
+                  riwayat aktivitas, dan mereset kuota partisipan di seluruh paket sesi. Tindakan ini <b>TIDAK DAPAT</b> dibatalkan.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsResetConfirmOpen(true)}
+                disabled={resetting}
+                className="shrink-0 px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition-colors shadow-lg shadow-rose-600/20 disabled:opacity-50"
+              >
+                {resetting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Reset Semua Transaksi'}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="flex justify-end pt-4">
           <button
             type="submit"
@@ -523,6 +581,17 @@ export default function SettingsPage() {
           </button>
         </div>
       </form>
+
+      <ConfirmModal 
+        isOpen={isResetConfirmOpen}
+        title="Reset Semua Data Transaksi"
+        message="PERINGATAN KERAS: Tindakan ini akan menghapus semua Guest Registrations, Session Wallets, riwayat Check-in, dan mereset kuota semua paket kembali ke 0. Aksi ini bersifat permanen dan tidak dapat dibatalkan. Apakah Anda yakin?"
+        confirmText="Ya, Hapus Permanen"
+        cancelText="Batal"
+        isDestructive={true}
+        onConfirm={handleResetTransactions}
+        onCancel={() => setIsResetConfirmOpen(false)}
+      />
     </div>
   );
 }

@@ -54,4 +54,28 @@ export class SystemSettingService {
     
     return results;
   }
+
+  async resetTransactions() {
+    // Run inside a transaction for safety
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Delete all Guest Registrations
+      const guestRes = await tx.guestRegistration.deleteMany({});
+      
+      // 2. Delete all Session Transactions (history)
+      const txRes = await tx.sessionTransaction.deleteMany({});
+      
+      // 3. Delete all Session Wallets (member purchases/quotas)
+      const walletRes = await tx.sessionWallet.deleteMany({});
+      
+      return {
+        success: true,
+        message: 'All transactional data reset successfully',
+        details: {
+          guestsDeleted: guestRes.count,
+          historyDeleted: txRes.count,
+          walletsDeleted: walletRes.count
+        }
+      };
+    });
+  }
 }

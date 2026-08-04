@@ -11,7 +11,8 @@ import {
   Search,
   Plus,
   QrCode,
-  X
+  X,
+  CheckCircle
 } from 'lucide-react';
 import { getAuthHeaders } from '../../../../lib/auth';
 import { Community, SessionPackage, Activity as CommunityActivity, SessionWallet, CommunityMember } from '../../../../types';
@@ -51,6 +52,24 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
     accessRule: 'PUBLIC',
   });
   const [submitting, setSubmitting] = useState(false);
+
+  const handleUpdateWalletStatus = async (id: string) => {
+    if (!confirm('Apakah Anda yakin ingin meng-approve peserta waitlist ini? Statusnya akan menjadi ACTIVE.')) return;
+    try {
+      const headers = getAuthHeaders();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/approve/${id}`, {
+        method: 'PATCH',
+        headers,
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to approve wallet');
+      }
+      fetchData();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Error approving wallet');
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -527,6 +546,7 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
                   <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Status</th>
                   <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Remaining</th>
                   <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Expiry Date</th>
+                  <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -547,10 +567,21 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
                     <td className="px-6 py-5 text-slate-500 font-medium">
                       {w.expiredDate ? new Date(w.expiredDate).toLocaleDateString('id-ID') : '-'}
                     </td>
+                    <td className="px-6 py-5 text-right">
+                      {(w.walletStatus === 'WAITING' || w.walletStatus === 'WAITLIST' || w.walletStatus === 'PENDING') && (
+                        <button
+                          onClick={() => handleUpdateWalletStatus(w.id)}
+                          className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors inline-flex"
+                          title="Approve dari Waitlist"
+                        >
+                          <CheckCircle className="w-5 h-5" />
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-slate-400 font-medium">
+                    <td colSpan={6} className="py-12 text-center text-slate-400 font-medium">
                       No active wallets found.
                     </td>
                   </tr>
