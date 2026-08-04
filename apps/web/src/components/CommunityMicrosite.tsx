@@ -328,7 +328,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     // Check membership remaining duration (require renewal bundle if <= 2 days or empty)
     const days = getMembershipRemainingDays();
     if (days <= 2) {
-      if (!selectedPackage) setIsPrivateSession(false);
+      if (!selectedPackage) setIsPrivateSession(pkg.vipPrice && !pkg.memberPrice ? true : false);
       setSelectedPackage(null);
       setBundlePackage(pkg);
       setSelectedBundleTierId(community.memberships && community.memberships.length > 0 ? community.memberships[0].id : '');
@@ -345,6 +345,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       const meData = await meRes.json();
 
       // Store selected package and open purchase modal
+      if (!selectedPackage) setIsPrivateSession(pkg.vipPrice && !pkg.memberPrice ? true : false);
       setPurchasePackage(pkg);
       setPurchaseProofUrl('');
       setShowPurchaseModal(true);
@@ -792,9 +793,29 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   </div>
                   
                   <h3 className="font-extrabold text-xl text-slate-900 dark:text-slate-50 mb-1">{pkg.name}</h3>
-                  <div className="text-2xl font-black text-slate-900 dark:text-slate-50 mb-5 flex items-end gap-1">
-                    Rp {(pkg.memberPrice || 0).toLocaleString('id-ID')}
-                  </div>
+                  
+                  {pkg.memberPrice && pkg.vipPrice ? (
+                    <>
+                      <div className="text-2xl font-black text-slate-900 dark:text-slate-50 mb-1 flex items-end gap-1">
+                        Rp {pkg.memberPrice.toLocaleString('id-ID')}
+                      </div>
+                      <div className="text-xs font-bold text-amber-500 mb-5">
+                        Private: Rp {pkg.vipPrice.toLocaleString('id-ID')}
+                      </div>
+                    </>
+                  ) : pkg.vipPrice && !pkg.memberPrice ? (
+                    <div className="text-2xl font-black text-amber-500 mb-6 flex items-end gap-1">
+                      Private: Rp {pkg.vipPrice.toLocaleString('id-ID')}
+                    </div>
+                  ) : pkg.memberPrice && !pkg.vipPrice ? (
+                    <div className="text-2xl font-black text-slate-900 dark:text-slate-50 mb-6 flex items-end gap-1">
+                      Rp {pkg.memberPrice.toLocaleString('id-ID')}
+                    </div>
+                  ) : (
+                    <div className="text-2xl font-black text-slate-900 dark:text-slate-50 mb-6 flex items-end gap-1">
+                      Gratis
+                    </div>
+                  )}
 
                   <div className="space-y-2 mb-6 mt-auto">
                     <div className="flex items-center text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-xl">
@@ -821,13 +842,13 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
                   <div className="mt-auto grid grid-cols-2 gap-2">
                     <button 
-                      onClick={() => { setSelectedPackage(pkg); setIsPrivateSession(false); }}
+                      onClick={() => { setSelectedPackage(pkg); setIsPrivateSession(pkg.vipPrice && !pkg.memberPrice ? true : false); }}
                       className="w-full py-2 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 border-2 border-slate-900 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900 transition-colors text-sm"
                     >
                       Detail
                     </button>
                     <button 
-                      onClick={() => pkg.vipPrice ? (setSelectedPackage(pkg), setIsPrivateSession(false)) : handlePurchase(pkg.id)}
+                      onClick={() => pkg.vipPrice ? (setSelectedPackage(pkg), setIsPrivateSession(pkg.vipPrice && !pkg.memberPrice ? true : false)) : handlePurchase(pkg.id)}
                       disabled={purchasingMap[pkg.id]}
                       className="w-full py-2 bg-slate-900 text-white font-bold rounded-xl hover:bg-primary transition-colors shadow-sm text-sm disabled:opacity-50"
                     >
@@ -894,16 +915,27 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                       
                       <h3 className="font-extrabold text-xl text-slate-900 dark:text-slate-50 mb-1">{pkg.name}</h3>
                       
-                      <div className="text-2xl font-black text-slate-900 dark:text-slate-50 mb-1 flex items-end gap-1">
-                        Rp {(pkg.memberPrice || 0).toLocaleString('id-ID')}
-                      </div>
-                      
-                      {pkg.vipPrice ? (
-                        <div className="text-xs font-bold text-amber-500 mb-6">
+                      {pkg.memberPrice && pkg.vipPrice ? (
+                        <>
+                          <div className="text-2xl font-black text-slate-900 dark:text-slate-50 mb-1 flex items-end gap-1">
+                            Rp {pkg.memberPrice.toLocaleString('id-ID')}
+                          </div>
+                          <div className="text-xs font-bold text-amber-500 mb-6">
+                            Private: Rp {pkg.vipPrice.toLocaleString('id-ID')}
+                          </div>
+                        </>
+                      ) : pkg.vipPrice && !pkg.memberPrice ? (
+                        <div className="text-2xl font-black text-amber-500 mb-6 flex items-end gap-1">
                           Private: Rp {pkg.vipPrice.toLocaleString('id-ID')}
                         </div>
+                      ) : pkg.memberPrice && !pkg.vipPrice ? (
+                        <div className="text-2xl font-black text-slate-900 dark:text-slate-50 mb-6 flex items-end gap-1">
+                          Rp {pkg.memberPrice.toLocaleString('id-ID')}
+                        </div>
                       ) : (
-                        <div className="mb-6 h-4"></div>
+                        <div className="text-2xl font-black text-slate-900 dark:text-slate-50 mb-6 flex items-end gap-1">
+                          Gratis
+                        </div>
                       )}
 
                       <div className="space-y-2 mb-6 mt-auto border-t border-slate-100 dark:border-slate-800 pt-4">
@@ -931,15 +963,15 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
                       <div className="mt-auto grid grid-cols-2 gap-2">
                         <button 
-                          onClick={() => { setSelectedPackage(pkg); setIsPrivateSession(false); }}
-                          className="w-full py-2 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 border-2 border-slate-900 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900 transition-colors text-sm"
+                          onClick={() => { setSelectedPackage(pkg); setIsPrivateSession(pkg.vipPrice && !pkg.memberPrice ? true : false); }}
+                          className="w-full py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm"
                         >
                           Detail
                         </button>
                         <button 
-                          onClick={() => pkg.vipPrice ? (setSelectedPackage(pkg), setIsPrivateSession(false)) : handlePurchase(pkg.id)}
+                          onClick={() => pkg.vipPrice ? (setSelectedPackage(pkg), setIsPrivateSession(pkg.vipPrice && !pkg.memberPrice ? true : false)) : handlePurchase(pkg.id)}
                           disabled={purchasingMap[pkg.id]}
-                          className="w-full py-2 bg-slate-900 text-white font-bold rounded-xl hover:bg-primary transition-colors shadow-sm text-sm disabled:opacity-50"
+                          className="w-full py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-colors shadow-md shadow-primary/20 text-sm disabled:opacity-50"
                         >
                           {purchasingMap[pkg.id] ? 'Processing...' : 'Beli'}
                         </button>
@@ -1560,19 +1592,33 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   )}
                 </div>
                 <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 mb-1 leading-tight">{selectedPackage.name}</h2>
-                <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 flex items-end gap-2">
-                  Rp {((isPrivateSession && selectedPackage.vipPrice) ? selectedPackage.vipPrice : (selectedPackage.memberPrice || 0)).toLocaleString('id-ID')}
-                </div>
-                {selectedPackage.vipPrice && (
-                  <div className="text-sm font-bold text-amber-600 mt-1">
+                {selectedPackage.memberPrice && selectedPackage.vipPrice ? (
+                  <>
+                    <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 flex items-end gap-2">
+                      Rp {(isPrivateSession ? selectedPackage.vipPrice : selectedPackage.memberPrice).toLocaleString('id-ID')}
+                    </div>
+                    <div className="text-sm font-bold text-amber-600 mt-1">
+                      Private: Rp {selectedPackage.vipPrice.toLocaleString('id-ID')}
+                    </div>
+                  </>
+                ) : selectedPackage.vipPrice && !selectedPackage.memberPrice ? (
+                  <div className="text-2xl md:text-3xl font-black text-amber-500 flex items-end gap-2">
                     Private: Rp {selectedPackage.vipPrice.toLocaleString('id-ID')}
+                  </div>
+                ) : selectedPackage.memberPrice && !selectedPackage.vipPrice ? (
+                  <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 flex items-end gap-2">
+                    Rp {selectedPackage.memberPrice.toLocaleString('id-ID')}
+                  </div>
+                ) : (
+                  <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 flex items-end gap-2">
+                    Gratis
                   </div>
                 )}
               </div>
             </div>
 
             <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar flex flex-col py-2">
-              {selectedPackage.vipPrice && (
+              {selectedPackage.memberPrice && selectedPackage.vipPrice && (
                 <div className="px-6 md:px-8 pt-4 pb-2 shrink-0">
                   <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
                     <input
@@ -1897,7 +1943,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   </div>
                 </div>
 
-                {bundlePackage.vipPrice && (
+                {bundlePackage.memberPrice && bundlePackage.vipPrice && (
                   <div className="mt-2">
                     <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
                       <input
@@ -2154,7 +2200,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   </div>
                 </div>
 
-                {purchasePackage.vipPrice && (
+                {purchasePackage.memberPrice && purchasePackage.vipPrice && (
                   <div className="mt-2">
                     <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
                       <input
