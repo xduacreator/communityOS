@@ -445,25 +445,34 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
             {community.tagline && <span className="text-xs text-slate-500 dark:text-slate-400">{community.tagline}</span>}
           </div>
         </div>
-        {(!isLoggedIn || !status) ? (
-          <JoinButton 
-            communityId={community.id} 
-            slug={slug} 
-            registrationFields={community.registrationFields} 
-            registrationMode={community.registrationMode}
-            memberships={community.memberships}
-            label={community.joinCtaLabel || undefined}
-            className="px-4 py-2 bg-primary hover:opacity-90 text-white font-bold rounded-2xl shadow-md transition-colors text-xs flex items-center gap-1"
-            icon={<ArrowRight className="w-3 h-3 ml-1" />}
-          />
-        ) : (
+        <div className="flex items-center gap-2">
           <button 
-            onClick={() => handleTabChange('dashboard')}
-            className="px-4 py-2 bg-primary text-white font-bold rounded-2xl shadow-md text-xs"
+            onClick={toggleDarkMode}
+            className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+            title="Toggle Dark Mode"
           >
-            Dashboard
+            <Sun className="w-4 h-4" />
           </button>
-        )}
+          {(!isLoggedIn || !status) ? (
+            <JoinButton 
+              communityId={community.id} 
+              slug={slug} 
+              registrationFields={community.registrationFields} 
+              registrationMode={community.registrationMode}
+              memberships={community.memberships}
+              label={community.joinCtaLabel || undefined}
+              className="px-4 py-2 bg-primary hover:opacity-90 text-white font-bold rounded-2xl shadow-md transition-colors text-xs flex items-center gap-1"
+              icon={<ArrowRight className="w-3 h-3 ml-1" />}
+            />
+          ) : (
+            <button 
+              onClick={() => handleTabChange('dashboard')}
+              className="px-4 py-2 bg-primary text-white font-bold rounded-2xl shadow-md text-xs"
+            >
+              Dashboard
+            </button>
+          )}
+        </div>
       </nav>
 
       {/* Desktop Top Navigation */}
