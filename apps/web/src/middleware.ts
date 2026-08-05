@@ -47,7 +47,8 @@ export default function middleware(req: NextRequest) {
   
   if (hostname !== rootDomain && !hostname.includes('localhost') && !isIP) {
     // Custom domain rewrite
-    return NextResponse.rewrite(new URL(`/_sites/${hostname}${path}`, req.url));
+    // We rewrite to /[domain] so that the app/[slug] dynamic route can handle it
+    return NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url));
   }
 
   // Otherwise, it's just the default behavior (e.g., /slug goes to app/[slug])

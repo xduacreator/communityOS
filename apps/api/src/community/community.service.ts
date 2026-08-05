@@ -18,8 +18,13 @@ export class CommunityService {
   }
 
   async findBySlug(slug: string) {
-    const community = await this.prisma.community.findUnique({
-      where: { slug },
+    const community = await this.prisma.community.findFirst({
+      where: {
+        OR: [
+          { slug },
+          { domain: slug }
+        ]
+      },
       include: {
         memberships: {
           where: { status: 'ACTIVE' }
@@ -27,7 +32,7 @@ export class CommunityService {
       }
     });
     if (!community) {
-      throw new NotFoundException(`Community with slug ${slug} not found`);
+      throw new NotFoundException(`Community with slug or domain ${slug} not found`);
     }
     if (!community.isActive) {
       throw new ForbiddenException(`Community is currently suspended.`);

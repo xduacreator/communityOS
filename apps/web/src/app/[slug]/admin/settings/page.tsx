@@ -190,7 +190,6 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
           name: community.name,
           tagline: community.tagline,
           slug: community.slug,
-          domain: community.domain,
           shortDescription: community.shortDescription,
           about: community.about,
           contactInfo: community.contactInfo,
@@ -331,17 +330,6 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                 />
                 <p className="text-xs text-slate-500 mt-2">This is the path used to access your community (e.g., /my-community)</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Custom Domain</label>
-                <input
-                  type="text"
-                  value={community.domain || ''}
-                  onChange={(e) => setCommunity({ ...community, domain: e.target.value })}
-                  placeholder="e.g., mycommunity.com"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                />
               </div>
 
               <div>

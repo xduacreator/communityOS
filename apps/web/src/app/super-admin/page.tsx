@@ -20,9 +20,9 @@ export default function SuperAdminDashboard() {
 
   // Create & Edit Community State
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [newComm, setNewComm] = useState({ name: '', slug: '', adminEmail: '', adminName: '', adminPassword: '' });
+  const [newComm, setNewComm] = useState({ name: '', slug: '', domain: '', adminEmail: '', adminName: '', adminPassword: '' });
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editComm, setEditComm] = useState({ id: '', name: '', slug: '', adminEmail: '', adminName: '', adminPassword: '' });
+  const [editComm, setEditComm] = useState({ id: '', name: '', slug: '', domain: '', adminEmail: '', adminName: '', adminPassword: '' });
 
   // Reset Data State
   const [resetModalOpen, setResetModalOpen] = useState(false);
@@ -104,7 +104,7 @@ export default function SuperAdminDashboard() {
       if (!res.ok) throw new Error('Failed to create community');
       
       setCreateModalOpen(false);
-      setNewComm({ name: '', slug: '', adminEmail: '', adminName: '', adminPassword: '' });
+      setNewComm({ name: '', slug: '', domain: '', adminEmail: '', adminName: '', adminPassword: '' });
       fetchCommunities();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'An error occurred');
@@ -117,6 +117,7 @@ export default function SuperAdminDashboard() {
       id: comm.id,
       name: comm.name,
       slug: comm.slug,
+      domain: comm.domain || '',
       adminEmail: adminMember?.user?.email || '',
       adminName: adminMember?.user?.name || '',
       adminPassword: ''
@@ -131,6 +132,7 @@ export default function SuperAdminDashboard() {
       const payload = {
         name: editComm.name,
         slug: editComm.slug,
+        domain: editComm.domain ? editComm.domain.replace(/^https?:\/\//, '').replace(/\/$/, '') : null,
         ...(editComm.adminEmail && { adminEmail: editComm.adminEmail, adminName: editComm.adminName, adminPassword: editComm.adminPassword })
       };
       
@@ -347,6 +349,24 @@ export default function SuperAdminDashboard() {
                       />
                     </div>
                   </div>
+                  
+                  <div className="mt-6">
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Custom Domain (Opsional)</label>
+                    <input 
+                      type="text" 
+                      value={newComm.domain} onChange={e => setNewComm({...newComm, domain: e.target.value})}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow" 
+                      placeholder="e.g. komunitasku.com"
+                    />
+                    <div className="mt-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                      <h4 className="text-xs font-bold text-blue-800 mb-1">Instruksi DNS:</h4>
+                      <p className="text-xs text-blue-600 mb-2">Arahkan DNS Record dari domain panel ke IP VPS ini agar domain berfungsi:</p>
+                      <ul className="text-xs text-blue-700 font-mono space-y-1">
+                        <li>A Record : @ ➔ 68.183.189.91</li>
+                        <li>CNAME : www ➔ (nama domain root)</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="pt-6 border-t border-slate-100">
@@ -431,6 +451,24 @@ export default function SuperAdminDashboard() {
                         value={editComm.slug} onChange={e => setEditComm({...editComm, slug: e.target.value})}
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow" 
                       />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Custom Domain (Opsional)</label>
+                    <input 
+                      type="text" 
+                      value={editComm.domain} onChange={e => setEditComm({...editComm, domain: e.target.value})}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow" 
+                      placeholder="e.g. komunitasku.com"
+                    />
+                    <div className="mt-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                      <h4 className="text-xs font-bold text-blue-800 mb-1">Instruksi DNS:</h4>
+                      <p className="text-xs text-blue-600 mb-2">Arahkan DNS Record dari domain panel ke IP VPS ini agar domain berfungsi:</p>
+                      <ul className="text-xs text-blue-700 font-mono space-y-1">
+                        <li>A Record : @ ➔ 68.183.189.91</li>
+                        <li>CNAME : www ➔ (nama domain root)</li>
+                      </ul>
                     </div>
                   </div>
                 </div>
