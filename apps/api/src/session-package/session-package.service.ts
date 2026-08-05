@@ -19,7 +19,7 @@ export class SessionPackageService {
       include: {
         category: { include: { activity: true } },
         sessionWallets: {
-          where: { walletStatus: { in: ['PENDING', 'APPROVED'] } }
+          where: { walletStatus: { in: ['PENDING', 'ACTIVE', 'WAITING'] } }
         },
         guestRegistrations: {
           where: { status: { in: ['PENDING', 'APPROVED'] } }

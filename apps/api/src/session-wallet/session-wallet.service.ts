@@ -25,7 +25,7 @@ export class SessionWalletService {
     if (isPrivate) {
       if (pkg.privateQuota !== null) {
         const privateCount = await this.prisma.sessionWallet.count({
-          where: { packageId, isPrivate: true, walletStatus: { in: ['PENDING', 'APPROVED'] } }
+          where: { packageId, isPrivate: true, walletStatus: { in: ['PENDING', 'ACTIVE', 'WAITING'] } }
         });
         if (privateCount >= pkg.privateQuota) {
           initialStatus = 'WAITLIST';
@@ -34,7 +34,7 @@ export class SessionWalletService {
     } else {
       if (pkg.quota !== null) {
         const walletCount = await this.prisma.sessionWallet.count({
-          where: { packageId, isPrivate: false, walletStatus: { in: ['PENDING', 'APPROVED'] } }
+          where: { packageId, isPrivate: false, walletStatus: { in: ['PENDING', 'ACTIVE', 'WAITING'] } }
         });
         const guestCount = await this.prisma.guestRegistration.count({
           where: { packageId, status: { in: ['PENDING', 'APPROVED'] } }
@@ -535,9 +535,12 @@ export class SessionWalletService {
       throw new NotFoundException('Pending session wallet not found');
     }
 
-    if (pendingWallet.walletStatus !== 'PENDING' && pendingWallet.walletStatus !== 'WAITLIST') {
-      // Jika statusnya sudah ACTIVE atau WAITING, berarti sudah di-approve sebelumnya.
-      // Kita kembalikan saja data dompetnya tanpa error (idempotent).
+    if (
+      pendingWallet.walletStatus !== 'PENDING' && 
+      pendingWallet.walletStatus !== 'WAITLIST' &&
+      pendingWallet.walletStatus !== 'WAITING'
+    ) {
+      // Jika statusnya sudah ACTIVE, berarti sudah di-approve sebelumnya.
       return pendingWallet;
     }
 
@@ -551,8 +554,13 @@ export class SessionWalletService {
       }
     });
 
-    const newStatus = activeWallets.length > 0 ? 'WAITING' : 'ACTIVE';
+    let newStatus = activeWallets.length > 0 ? 'WAITING' : 'ACTIVE';
     
+    // Force active jika disetujui manual (bisa disesuaikan tergantung business logic)
+    if (pendingWallet.walletStatus === 'WAITING' || pendingWallet.walletStatus === 'WAITLIST') {
+      newStatus = 'ACTIVE';
+    }
+
     let startDate = null;
     let expiredDate = null;
     if (newStatus === 'ACTIVE') {
@@ -567,8 +575,7 @@ export class SessionWalletService {
       where: { id },
       data: {
         walletStatus: newStatus,
-        startDate,
-        expiredDate,
+        ...(newStatus === 'ACTIVE' ? { startDate, expiredDate } : {})
       }
     });
   }

@@ -28,7 +28,7 @@ export class GuestRegistrationService {
     let status = 'PENDING';
     if (pkg.quota !== null) {
       const walletCount = await this.prisma.sessionWallet.count({
-        where: { packageId: data.packageId, isPrivate: false, walletStatus: { in: ['PENDING', 'APPROVED'] } }
+        where: { packageId: data.packageId, isPrivate: false, walletStatus: { in: ['PENDING', 'ACTIVE', 'WAITING'] } }
       });
       const guestCount = await this.prisma.guestRegistration.count({
         where: { packageId: data.packageId, status: { in: ['PENDING', 'APPROVED'] } }

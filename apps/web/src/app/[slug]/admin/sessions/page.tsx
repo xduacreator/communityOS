@@ -579,10 +579,11 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
                       {(w.walletStatus === 'WAITING' || w.walletStatus === 'WAITLIST' || w.walletStatus === 'PENDING') && (
                         <button
                           onClick={() => handleUpdateWalletStatus(w.id)}
-                          className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors inline-flex"
-                          title="Approve dari Waitlist"
+                          className="px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors inline-flex items-center gap-2"
+                          title="Approve"
                         >
-                          <CheckCircle className="w-5 h-5" />
+                          <CheckCircle className="w-4 h-4" />
+                          Approve
                         </button>
                       )}
                     </td>
