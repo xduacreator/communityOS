@@ -1266,7 +1266,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                       <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Paket Membership</h4>
                                       {userMemberships.length > 0 ? (
                                         (() => {
-                                          const displayMem = userMemberships.find((m: any) => m.status === 'ACTIVE') || userMemberships[0];
+                                          const displayMem = userMemberships.find((m) => m.status === 'ACTIVE') || userMemberships[0];
                                           return (
                                             <div className="mt-1.5">
                                               <div className="flex items-center gap-2 mb-1">
@@ -1302,7 +1302,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                       type="button"
                                       onClick={() => {
                                         if (userMemberships.length > 0) {
-                                          const displayMem = userMemberships.find((m: any) => m.status === 'ACTIVE') || userMemberships[0];
+                                          const displayMem = userMemberships.find((m) => m.status === 'ACTIVE') || userMemberships[0];
                                           const end = new Date(displayMem.endDate);
                                           const now = new Date();
                                           const diffTime = end.getTime() - now.getTime();
