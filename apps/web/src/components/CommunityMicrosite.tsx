@@ -1260,10 +1260,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                 <Shield className="w-4 h-4 mr-2 text-primary" />
                                 Detail Membership
                               </h3>
-                              
                               <div className="space-y-4">
-                                {community.registrationMode === 'PAID' && (
-                                  <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div>
                                       <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Paket Membership</h4>
                                       {userMemberships.length > 0 ? (
@@ -1309,7 +1307,6 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                       <Plus className="w-3.5 h-3.5" />
                                     </button>
                                   </div>
-                                )}
                               </div>
                             </div>
                           </div>
