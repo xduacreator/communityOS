@@ -40,4 +40,9 @@ export class UserMembershipController {
   update(@Param('id') id: string, @Body() updateData: any) {
     return this.userMembershipService.update(id, updateData);
   }
+
+  @Get('debug/db-status')
+  async debugDbStatus() {
+    return this.userMembershipService.debugDbStatus();
+  }
 }

@@ -158,4 +158,19 @@ export class UserMembershipService {
   async update(id: string, data: any) {
     return this.prisma.userMembership.update({ where: { id }, data });
   }
+
+  async debugDbStatus() {
+    return this.prisma.userMembership.findMany({
+      include: {
+        user: {
+          include: {
+            communityMembers: true
+          }
+        },
+        sessionWallets: true
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 20
+    });
+  }
 }
