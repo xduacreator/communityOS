@@ -10,11 +10,11 @@ export class SessionWalletService {
     if (!pkg) throw new NotFoundException('Package not found');
 
     if (pkg.accessRule === 'MEMBER_ONLY') {
-      const member = await this.prisma.communityMember.findUnique({
-        where: { userId_communityId: { userId, communityId } }
+      const activeMembership = await this.prisma.userMembership.findFirst({
+        where: { userId, communityId, status: 'ACTIVE', endDate: { gte: new Date() } }
       });
-      if (!member || member.status !== 'APPROVED') {
-        throw new BadRequestException('Only approved community members can purchase this package.');
+      if (!activeMembership) {
+        throw new BadRequestException('Only active paid members can purchase this package directly. Please purchase a membership bundle.');
       }
     }
 

@@ -327,7 +327,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
     // Check membership remaining duration (require renewal bundle if <= 2 days or empty)
     const days = getMembershipRemainingDays();
-    const requiresPaidMembership = community.registrationMode === 'PAID' || pkg.accessRule === 'PAID_MEMBERSHIP_ONLY';
+    const requiresPaidMembership = community.registrationMode === 'PAID' || pkg.accessRule === 'MEMBER_ONLY' || pkg.accessRule === 'PAID_MEMBERSHIP_ONLY';
 
     if (requiresPaidMembership && days <= 2) {
       if (!selectedPackage) setIsPrivateSession(pkg.vipPrice && !pkg.memberPrice ? true : false);

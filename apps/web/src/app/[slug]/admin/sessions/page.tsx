@@ -845,7 +845,7 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
                       className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-900 transition-all shadow-sm hover:border-slate-300 outline-none"
                     >
                       <option value="PUBLIC">Terbuka Untuk Umum (Public)</option>
-                      <option value="MEMBER_ONLY">Hanya Anggota Komunitas (Registered Members)</option>
+                      <option value="MEMBER_ONLY">Hanya Member Aktif Berbayar (Premium Members)</option>
                     </select>
                     <p className="text-xs text-slate-400">Tentukan siapa saja yang diperbolehkan membeli paket sesi ini.</p>
                   </div>
