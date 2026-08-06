@@ -9,6 +9,7 @@ import ConfirmModal from './ui/ConfirmModal';
 import imageCompression from 'browser-image-compression';
 import { getAuthHeaders, removeToken } from '../lib/auth';
 import { useParams, useRouter } from 'next/navigation';
+import html2canvas from 'html2canvas';
 import { Community, SessionPackage, GalleryImage, CommunityMember, SessionWallet, UserMembershipWithMembership, Membership, User, Event } from '../types';
 
 interface ActiveWalletView {
@@ -103,6 +104,59 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     const diffTime = maxDate - Date.now();
     if (diffTime <= 0) return 0;
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const downloadCard = async () => {
+    const cardElement = document.getElementById('member-card');
+    const bgElement = document.getElementById('member-card-bg');
+    if (!cardElement) return;
+    
+    let originalBg = '';
+    // If there is a logo, try to convert it to base64 so html2canvas doesn't fail on CORS
+    if (bgElement && community.logo) {
+      originalBg = bgElement.style.backgroundImage;
+      try {
+        const res = await fetch(community.logo, { mode: 'cors' });
+        if (res.ok) {
+           const blob = await res.blob();
+           const reader = new FileReader();
+           const base64 = await new Promise<string>((resolve) => {
+             reader.onloadend = () => resolve(reader.result as string);
+             reader.readAsDataURL(blob);
+           });
+           bgElement.style.backgroundImage = `url(${base64})`;
+        } else {
+           bgElement.style.backgroundImage = 'none'; // Fallback
+        }
+      } catch (e) {
+        bgElement.style.backgroundImage = 'none'; // Fallback
+      }
+    }
+    
+    // Give DOM a tiny moment to update background if changed
+    await new Promise(r => setTimeout(r, 50));
+
+    try {
+      const canvas = await html2canvas(cardElement, {
+        scale: 3, 
+        useCORS: true, 
+        backgroundColor: null,
+        logging: false
+      });
+      
+      const image = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = image;
+      link.download = `Membership-Card-${status?.membershipNumber || 'Draft'}.png`;
+      link.click();
+    } catch (err) {
+      console.error('Failed to download card:', err);
+      alert('Gagal mengunduh kartu. Pastikan koneksi stabil.');
+    } finally {
+      if (bgElement && originalBg) {
+        bgElement.style.backgroundImage = originalBg;
+      }
+    }
   };
 
   const fetchDashboardData = async () => {
@@ -1335,6 +1389,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                 <div className="relative rounded-[2rem] shadow-xl p-6 text-white overflow-hidden group border border-slate-800 text-left bg-slate-900 min-h-[200px] flex flex-col justify-between">
                                   {community.logo ? (
                                     <div 
+                                      id="member-card-bg"
                                       className="absolute inset-0 opacity-40 group-hover:scale-105 group-hover:opacity-50 transition-all duration-700 pointer-events-none bg-center bg-cover"
                                       style={{ backgroundImage: `url(${community.logo})` }}
                                     ></div>
@@ -1375,6 +1430,13 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                 </div>
                                 </div>
                               </div>
+                              <button 
+                                onClick={downloadCard}
+                                className="mt-4 w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                                Download Kartu
+                              </button>
                             </div>
 
                             {/* Riwayat Aktivitas & Sesi */}
