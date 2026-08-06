@@ -36,7 +36,8 @@ export class MembershipService {
     if (!community) throw new NotFoundException('Community not found');
 
     const membership = await this.prisma.communityMember.findUnique({
-      where: { userId_communityId: { userId, communityId: community.id } }
+      where: { userId_communityId: { userId, communityId: community.id } },
+      include: { user: { select: { name: true } } }
     });
     return membership;
   }

@@ -8,7 +8,8 @@ import { Home, Info, Phone, Calendar, Clock, MapPin, CheckCircle, Image as Image
 import ConfirmModal from './ui/ConfirmModal';
 import imageCompression from 'browser-image-compression';
 import { getAuthHeaders, removeToken } from '../lib/auth';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import html2canvas from 'html2canvas';
 import { Community, SessionPackage, GalleryImage, CommunityMember, SessionWallet, UserMembershipWithMembership, Membership, User, Event } from '../types';
 
 interface ActiveWalletView {
@@ -103,6 +104,28 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     const diffTime = maxDate - Date.now();
     if (diffTime <= 0) return 0;
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const downloadCard = async () => {
+    const cardElement = document.getElementById('member-card');
+    if (!cardElement) return;
+    
+    try {
+      const canvas = await html2canvas(cardElement, {
+        scale: 3, // Higher resolution
+        useCORS: true, // Allow loading external images like logos
+        backgroundColor: null
+      });
+      
+      const image = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = image;
+      link.download = `Membership-Card-${status?.membershipNumber || 'Draft'}.png`;
+      link.click();
+    } catch (err) {
+      console.error('Failed to download card:', err);
+      alert('Gagal mengunduh kartu. Pastikan koneksi stabil.');
+    }
   };
 
   const fetchDashboardData = async () => {
@@ -1330,7 +1353,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                           {/* Right Column: NFC Card Pass & Activity Timeline */}
                           <div className="lg:col-span-1 space-y-8">
                             {/* Digital Membership Pass Card (Vertical card!) */}
-                            <div className="bg-white dark:bg-slate-950 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800/80 p-1.5 overflow-hidden">
+                            <div>
+                              <div id="member-card" className="bg-white dark:bg-slate-950 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800/80 p-1.5 overflow-hidden">
                                 <div className="relative rounded-[2rem] shadow-xl p-6 text-white overflow-hidden group border border-slate-800 text-left bg-slate-900 min-h-[200px] flex flex-col justify-between">
                                   {community.logo ? (
                                     <div 
@@ -1353,16 +1377,17 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                     <CreditCard className="w-6 h-6 mt-3 opacity-60 text-indigo-300" />
                                   </div>
                                   <div className="w-9 h-9 bg-white dark:bg-slate-950/10 backdrop-blur-md rounded-xl border border-white/10 flex items-center justify-center font-black text-sm text-indigo-200 shadow-inner">
-                                    OS
+                                    {status?.user?.name ? status.user.name.substring(0, 2).toUpperCase() : 'MB'}
                                   </div>
                                 </div>
                                 
-                                <div className="relative z-10 mt-10">
+                                <div className="relative z-10 mt-10 flex flex-col">
                                   <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider mb-0.5">Member ID</p>
                                   <p className="font-mono text-lg tracking-widest font-black text-white">{status.membershipNumber || 'PENDING'}</p>
+                                  {status?.user?.name && <p className="text-xs font-bold text-indigo-100 mt-1 truncate">{status.user.name}</p>}
                                 </div>
                                 
-                                <div className="relative z-10 mt-8 flex justify-between items-end border-t border-white/10 pt-4">
+                                <div className="relative z-10 mt-6 flex justify-between items-end border-t border-white/10 pt-4">
                                   <div>
                                     <p className="text-[9px] text-indigo-300 font-bold uppercase tracking-wider">Joined Date</p>
                                     <p className="text-xs font-extrabold text-white mt-0.5">{new Date(status.createdAt).toLocaleDateString()}</p>
@@ -1371,7 +1396,15 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                     {status.role}
                                   </div>
                                 </div>
+                                </div>
                               </div>
+                              <button 
+                                onClick={downloadCard}
+                                className="mt-4 w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                                Download Kartu
+                              </button>
                             </div>
 
                             {/* Riwayat Aktivitas & Sesi */}
