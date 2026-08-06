@@ -1761,7 +1761,10 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                       paymentProofUrl: renewalProofUrl
                     })
                   });
-                  if (!res.ok) throw new Error('Gagal mengirim permintaan perpanjangan');
+                  if (!res.ok) {
+                    const errorData = await res.json().catch(() => null);
+                    throw new Error(errorData?.message || 'Gagal mengirim permintaan perpanjangan');
+                  }
                   
                   alert('Permintaan perpanjangan membership berhasil dikirim! Menunggu persetujuan admin.');
                   setShowRenewalModal(false);
@@ -1954,7 +1957,10 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                       paymentProofUrl: bundleProofUrl
                     })
                   });
-                  if (!res.ok) throw new Error('Gagal mengirim pembelian bundling');
+                  if (!res.ok) {
+                    const errorData = await res.json().catch(() => null);
+                    throw new Error(errorData?.message || 'Gagal mengirim pembelian bundling');
+                  }
                   
                   alert('Permintaan bundling membership dan paket sesi berhasil dikirim! Menunggu verifikasi pembayaran oleh admin.');
                   setShowBundleModal(false);

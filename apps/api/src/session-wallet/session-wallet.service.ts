@@ -467,12 +467,19 @@ export class SessionWalletService {
       where: {
         userId,
         communityId,
-        status: 'ACTIVE',
-        endDate: { gt: new Date() }
+        status: 'ACTIVE'
       },
       orderBy: { endDate: 'desc' },
       take: 1
     });
+
+    if (activeMemberships.length > 0) {
+      const diffTime = activeMemberships[0].endDate.getTime() - Date.now();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays > 7) {
+        throw new Error(`Membership masih aktif. Anda baru bisa memperpanjang H-7 sebelum masa berlaku habis (Sisa: ${diffDays} hari).`);
+      }
+    }
 
     const start = activeMemberships.length > 0 ? new Date(activeMemberships[0].endDate) : new Date();
     const end = new Date(start);

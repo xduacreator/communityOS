@@ -6,6 +6,25 @@ export class UserMembershipService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: { userId: string; communityId: string; membershipId: string; startDate?: Date; endDate?: Date; status?: string; paymentProofUrl?: string }) {
+    // Validate H-7 renewal
+    const activeMemberships = await this.prisma.userMembership.findMany({
+      where: {
+        userId: data.userId,
+        communityId: data.communityId,
+        status: 'ACTIVE'
+      },
+      orderBy: { endDate: 'desc' },
+      take: 1
+    });
+
+    if (activeMemberships.length > 0) {
+      const diffTime = activeMemberships[0].endDate.getTime() - Date.now();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays > 7) {
+        throw new Error(`Membership masih aktif. Anda baru bisa memperpanjang H-7 sebelum masa berlaku habis (Sisa: ${diffDays} hari).`);
+      }
+    }
+
     const start = data.startDate || new Date();
     let end = data.endDate;
     
