@@ -1331,7 +1331,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                 
                                 <div className="relative z-10 mt-10">
                                   <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider mb-0.5">Member ID</p>
-                                  <p className="font-mono text-lg tracking-widest font-black text-white">{status.id.split('-')[0].toUpperCase()}</p>
+                                  <p className="font-mono text-lg tracking-widest font-black text-white">{status.membershipNumber || 'PENDING'}</p>
                                 </div>
                                 
                                 <div className="relative z-10 mt-8 flex justify-between items-end border-t border-white/10 pt-4">
