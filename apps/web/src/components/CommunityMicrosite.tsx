@@ -1331,9 +1331,21 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                           <div className="lg:col-span-1 space-y-8">
                             {/* Digital Membership Pass Card (Vertical card!) */}
                             <div className="bg-white dark:bg-slate-950 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800/80 p-1.5 overflow-hidden">
-                              <div className="bg-gradient-to-tr from-slate-900 via-indigo-950 to-indigo-900 rounded-[2rem] shadow-xl p-6 text-white relative overflow-hidden group border border-slate-800 text-left">
-                                <div className="absolute top-0 right-0 -mr-6 -mt-6 w-32 h-32 rounded-full bg-white dark:bg-slate-950 opacity-[0.03] group-hover:scale-125 transition-transform duration-700"></div>
-                                <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-primary opacity-[0.08] blur-2xl group-hover:scale-110 transition-transform duration-700"></div>
+                                <div className="relative rounded-[2rem] shadow-xl p-6 text-white overflow-hidden group border border-slate-800 text-left bg-slate-900 min-h-[200px] flex flex-col justify-between">
+                                  {community.logo ? (
+                                    <div 
+                                      className="absolute inset-0 opacity-40 group-hover:scale-105 group-hover:opacity-50 transition-all duration-700 pointer-events-none bg-center bg-cover"
+                                      style={{ backgroundImage: `url(${community.logo})` }}
+                                    ></div>
+                                  ) : (
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-slate-900 via-indigo-950 to-indigo-900 pointer-events-none"></div>
+                                  )}
+                                  
+                                  {/* Gradient overlay to ensure text is always readable over any logo */}
+                                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-slate-900/30 pointer-events-none"></div>
+
+                                  <div className="absolute top-0 right-0 -mr-6 -mt-6 w-32 h-32 rounded-full bg-white opacity-[0.03] group-hover:scale-125 transition-transform duration-700 pointer-events-none"></div>
+                                  <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-primary opacity-[0.15] blur-2xl group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
                                 
                                 <div className="relative z-10 flex justify-between items-start">
                                   <div>
