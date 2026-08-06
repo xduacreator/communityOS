@@ -1264,7 +1264,16 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                 <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div>
                                       <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Paket Membership</h4>
-                                      {userMemberships.length > 0 ? (
+                                      {community.registrationMode === 'FREE' ? (
+                                        <div className="mt-1.5">
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <div className="text-sm font-bold text-slate-800 dark:text-slate-200">Gratis</div>
+                                            <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md bg-emerald-100 text-emerald-700">
+                                              Seumur Hidup
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ) : userMemberships.length > 0 ? (
                                         <div className="mt-1.5">
                                           <div className="flex items-center gap-2 mb-1">
                                             <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{userMemberships[0].membership?.name}</div>
@@ -1283,6 +1292,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                       )}
                                     </div>
                                     
+                                    {community.registrationMode === 'PAID' && (
                                     <button
                                       type="button"
                                       onClick={() => {
@@ -1306,6 +1316,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                       <span>Perpanjang</span>
                                       <Plus className="w-3.5 h-3.5" />
                                     </button>
+                                    )}
                                   </div>
                               </div>
                             </div>
