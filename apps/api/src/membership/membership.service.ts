@@ -46,8 +46,44 @@ export class MembershipService {
     const updateData: any = { status };
     if (status === 'APPROVED') {
       const existing = await this.prisma.communityMember.findUnique({ where: { id } });
-      if (existing && !existing.membershipNumber) {
-        updateData.membershipNumber = 'MEM-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+      if (existing) {
+        if (!existing.membershipNumber) {
+          updateData.membershipNumber = 'MEM-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        }
+        
+        // Auto-approve pending UserMembership if exists (so admin doesn't need to approve twice)
+        const pendingUserMembership = await this.prisma.userMembership.findFirst({
+          where: { userId: existing.userId, communityId: existing.communityId, status: 'PENDING' },
+          include: { membership: true }
+        });
+        
+        if (pendingUserMembership) {
+           const start = new Date();
+           const end = new Date(start);
+           end.setDate(end.getDate() + pendingUserMembership.membership.durationDays);
+           
+           await this.prisma.userMembership.update({
+             where: { id: pendingUserMembership.id },
+             data: { status: 'ACTIVE', startDate: start, endDate: end }
+           });
+           
+           // Also approve linked session wallets
+           const linkedWallets = await this.prisma.sessionWallet.findMany({
+             where: { userMembershipId: pendingUserMembership.id }
+           });
+           for (const w of linkedWallets) {
+             const pkg = await this.prisma.sessionPackage.findUnique({ where: { id: w.packageId } });
+             if (pkg) {
+                const walletStart = new Date();
+                const walletEnd = new Date(walletStart);
+                walletEnd.setDate(walletEnd.getDate() + pkg.validDays);
+                await this.prisma.sessionWallet.update({
+                  where: { id: w.id },
+                  data: { walletStatus: 'ACTIVE', startDate: walletStart, expiredDate: walletEnd }
+                });
+             }
+           }
+        }
       }
     }
     return this.prisma.communityMember.update({
