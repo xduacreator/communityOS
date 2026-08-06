@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getAuthHeaders } from '../../../lib/auth';
 import { Users, CheckCircle, XCircle, Edit2, Trash2, Mail, Hash } from 'lucide-react';
 import ConfirmModal from '../../../components/ui/ConfirmModal';
+import AlertModal from '../../../components/ui/AlertModal';
 
 import { CommunityMember, Community, Membership, SessionWallet } from '../../../types';
 
@@ -50,6 +51,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
   const resolvedParams = React.use(params);
   const [members, setMembers] = useState<CommunityMember[]>([]);
   const [confirmModalConfig, setConfirmModalConfig] = useState({ isOpen: false, title: '', message: '', confirmText: 'Konfirmasi', onConfirm: () => {} });
+  const [alertModalConfig, setAlertModalConfig] = useState({ isOpen: false, type: 'success' as 'success' | 'error', title: '', message: '' });
   const [community, setCommunity] = useState<Community | null>(null);
   const [pendingRenewals, setPendingRenewals] = useState<PendingRenewal[]>([]);
   const [pendingPackages, setPendingPackages] = useState<PendingSessionPackage[]>([]);
@@ -141,7 +143,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
       setModalOpen(false);
       fetchData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'An error occurred');
+      setAlertModalConfig({ isOpen: true, type: 'error', title: 'Error', message: err instanceof Error ? err.message : 'An error occurred' });
     }
   };
 
@@ -168,7 +170,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
       setDeleteModalOpen(false);
       fetchData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'An error occurred');
+      setAlertModalConfig({ isOpen: true, type: 'error', title: 'Error', message: err instanceof Error ? err.message : 'An error occurred' });
     }
   };
 
@@ -214,7 +216,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
       setEditModalOpen(false);
       fetchData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'An error occurred');
+      setAlertModalConfig({ isOpen: true, type: 'error', title: 'Error', message: err instanceof Error ? err.message : 'An error occurred' });
     }
   };
 
@@ -425,10 +427,10 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                                 }
                               });
                               if (!res.ok) throw new Error('Gagal menyetujui perpanjangan');
-                              alert('Perpanjangan membership berhasil disetujui!');
+                              setAlertModalConfig({ isOpen: true, type: 'success', title: 'Berhasil', message: 'Perpanjangan membership berhasil disetujui!' });
                               fetchData();
                             } catch (err) {
-                              alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
+                              setAlertModalConfig({ isOpen: true, type: 'error', title: 'Error', message: err instanceof Error ? err.message : 'Terjadi kesalahan' });
                             }
                               }
                             });
@@ -518,10 +520,10 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                               }
                             });
                             if (!res.ok) throw new Error('Gagal menyetujui paket');
-                            alert('Pembelian paket sesi berhasil disetujui!');
+                            setAlertModalConfig({ isOpen: true, type: 'success', title: 'Berhasil', message: 'Pembelian paket sesi berhasil disetujui!' });
                             fetchData();
                           } catch (err) {
-                            alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
+                            setAlertModalConfig({ isOpen: true, type: 'error', title: 'Error', message: err instanceof Error ? err.message : 'Terjadi kesalahan' });
                           }
                             }
                           });
@@ -566,6 +568,23 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
         isDestructive={true}
         onConfirm={handleDeleteMember}
         onCancel={() => setDeleteModalOpen(false)}
+      />
+
+      <ConfirmModal 
+        isOpen={confirmModalConfig.isOpen}
+        title={confirmModalConfig.title}
+        message={confirmModalConfig.message}
+        confirmText={confirmModalConfig.confirmText}
+        onConfirm={confirmModalConfig.onConfirm}
+        onCancel={() => setConfirmModalConfig(prev => ({ ...prev, isOpen: false }))}
+      />
+      
+      <AlertModal
+        isOpen={alertModalConfig.isOpen}
+        type={alertModalConfig.type}
+        title={alertModalConfig.title}
+        message={alertModalConfig.message}
+        onClose={() => setAlertModalConfig(prev => ({ ...prev, isOpen: false }))}
       />
 
       {/* Edit Role Modal */}
