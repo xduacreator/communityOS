@@ -163,7 +163,7 @@ export class UserMembershipService {
       include: {
         user: {
           include: {
-            communityMembers: true
+            memberships: true
           }
         },
         sessionWallets: true
