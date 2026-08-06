@@ -1264,16 +1264,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                 <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div>
                                       <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Paket Membership</h4>
-                                      {community.registrationMode === 'FREE' ? (
-                                        <div className="mt-1.5">
-                                          <div className="flex items-center gap-2 mb-1">
-                                            <div className="text-sm font-bold text-slate-800 dark:text-slate-200">Gratis</div>
-                                            <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md bg-emerald-100 text-emerald-700">
-                                              Seumur Hidup
-                                            </span>
-                                          </div>
-                                        </div>
-                                      ) : userMemberships.length > 0 ? (
+                                      {userMemberships.length > 0 ? (
                                         <div className="mt-1.5">
                                           <div className="flex items-center gap-2 mb-1">
                                             <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{userMemberships[0].membership?.name}</div>
@@ -1287,12 +1278,21 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                             Masa Berlaku s/d: <span className="text-slate-700 dark:text-slate-300 font-bold">{new Date(userMemberships[0].endDate).toLocaleDateString()}</span>
                                           </div>
                                         </div>
+                                      ) : community.registrationMode === 'FREE' ? (
+                                        <div className="mt-1.5">
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <div className="text-sm font-bold text-slate-800 dark:text-slate-200">Gratis</div>
+                                            <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md bg-emerald-100 text-emerald-700">
+                                              Akun Basic
+                                            </span>
+                                          </div>
+                                        </div>
                                       ) : (
                                         <p className="text-xs text-rose-500 font-bold mt-1">⚠️ Belum ada paket membership aktif.</p>
                                       )}
                                     </div>
                                     
-                                    {community.registrationMode === 'PAID' && (
+                                    {(community.memberships && community.memberships.length > 0) && (
                                     <button
                                       type="button"
                                       onClick={() => {
@@ -1313,7 +1313,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                       }}
                                       className="py-3 px-5 bg-primary hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-600/10 flex items-center justify-center gap-1.5 active:scale-[0.98] shrink-0"
                                     >
-                                      <span>Perpanjang</span>
+                                      <span>{userMemberships.length > 0 ? 'Perpanjang' : 'Beli Membership'}</span>
                                       <Plus className="w-3.5 h-3.5" />
                                     </button>
                                     )}
