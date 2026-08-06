@@ -9,7 +9,6 @@ import ConfirmModal from './ui/ConfirmModal';
 import imageCompression from 'browser-image-compression';
 import { getAuthHeaders, removeToken } from '../lib/auth';
 import { useParams, useRouter } from 'next/navigation';
-import html2canvas from 'html2canvas';
 import { Community, SessionPackage, GalleryImage, CommunityMember, SessionWallet, UserMembershipWithMembership, Membership, User, Event } from '../types';
 
 interface ActiveWalletView {
@@ -104,28 +103,6 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     const diffTime = maxDate - Date.now();
     if (diffTime <= 0) return 0;
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
-
-  const downloadCard = async () => {
-    const cardElement = document.getElementById('member-card');
-    if (!cardElement) return;
-    
-    try {
-      const canvas = await html2canvas(cardElement, {
-        scale: 3, // Higher resolution
-        useCORS: true, // Allow loading external images like logos
-        backgroundColor: null
-      });
-      
-      const image = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = image;
-      link.download = `Membership-Card-${status?.membershipNumber || 'Draft'}.png`;
-      link.click();
-    } catch (err) {
-      console.error('Failed to download card:', err);
-      alert('Gagal mengunduh kartu. Pastikan koneksi stabil.');
-    }
   };
 
   const fetchDashboardData = async () => {
@@ -1398,13 +1375,6 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                 </div>
                                 </div>
                               </div>
-                              <button 
-                                onClick={downloadCard}
-                                className="mt-4 w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                                Download Kartu
-                              </button>
                             </div>
 
                             {/* Riwayat Aktivitas & Sesi */}

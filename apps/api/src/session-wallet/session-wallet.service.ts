@@ -578,12 +578,56 @@ export class SessionWalletService {
       }
     }
 
-    return this.prisma.sessionWallet.update({
+    const updatedWallet = await this.prisma.sessionWallet.update({
       where: { id },
       data: {
         walletStatus: newStatus,
         ...(newStatus === 'ACTIVE' ? { startDate, expiredDate } : {})
       }
     });
+
+    // Automatically approve bundled membership if it exists
+    if (newStatus === 'ACTIVE' && pendingWallet.userMembershipId) {
+      const userMembership = await this.prisma.userMembership.findUnique({
+        where: { id: pendingWallet.userMembershipId },
+        include: { membership: true }
+      });
+      if (userMembership && userMembership.status === 'PENDING') {
+        const membershipStart = new Date();
+        const membershipEnd = new Date(membershipStart);
+        membershipEnd.setDate(membershipEnd.getDate() + (userMembership.membership?.durationDays || 30));
+        
+        await this.prisma.userMembership.update({
+          where: { id: userMembership.id },
+          data: {
+            status: 'ACTIVE',
+            startDate: membershipStart,
+            endDate: membershipEnd
+          }
+        });
+
+        // Also ensure they are an APPROVED community member
+        const member = await this.prisma.communityMember.findUnique({
+          where: { userId_communityId: { userId: pendingWallet.userId, communityId: pendingWallet.communityId } }
+        });
+        if (!member) {
+          await this.prisma.communityMember.create({
+            data: {
+              userId: pendingWallet.userId,
+              communityId: pendingWallet.communityId,
+              status: 'APPROVED',
+              role: 'MEMBER'
+            }
+          });
+        } else if (member.status !== 'APPROVED') {
+          await this.prisma.communityMember.update({
+            where: { id: member.id },
+            data: { status: 'APPROVED' }
+          });
+        }
+      }
+    }
+
+    return updatedWallet;
   }
 }
