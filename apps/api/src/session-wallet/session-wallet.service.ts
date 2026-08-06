@@ -504,7 +504,7 @@ export class SessionWalletService {
         communityId,
         packageId,
         userMembershipId: userMembership.id,
-        walletStatus: 'WAITING',
+        walletStatus: 'PENDING',
         totalSession: pkg.totalSession,
         remainingSession: pkg.totalSession,
         purchaseDate: new Date(),
