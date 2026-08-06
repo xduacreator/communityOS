@@ -1265,19 +1265,24 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                     <div>
                                       <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Paket Membership</h4>
                                       {userMemberships.length > 0 ? (
-                                        <div className="mt-1.5">
-                                          <div className="flex items-center gap-2 mb-1">
-                                            <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{userMemberships[0].membership?.name}</div>
-                                            <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md ${
-                                              userMemberships[0].status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                                            }`}>
-                                              {userMemberships[0].status === 'ACTIVE' ? 'Aktif' : 'Menunggu Approval'}
-                                            </span>
-                                          </div>
-                                          <div className="text-xs text-slate-400 font-semibold mt-0.5">
-                                            Masa Berlaku s/d: <span className="text-slate-700 dark:text-slate-300 font-bold">{new Date(userMemberships[0].endDate).toLocaleDateString()}</span>
-                                          </div>
-                                        </div>
+                                        (() => {
+                                          const displayMem = userMemberships.find((m: any) => m.status === 'ACTIVE') || userMemberships[0];
+                                          return (
+                                            <div className="mt-1.5">
+                                              <div className="flex items-center gap-2 mb-1">
+                                                <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{displayMem.membership?.name}</div>
+                                                <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md ${
+                                                  displayMem.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                                                }`}>
+                                                  {displayMem.status === 'ACTIVE' ? 'Aktif' : 'Menunggu Approval'}
+                                                </span>
+                                              </div>
+                                              <div className="text-xs text-slate-400 font-semibold mt-0.5">
+                                                Masa Berlaku s/d: <span className="text-slate-700 dark:text-slate-300 font-bold">{new Date(displayMem.endDate).toLocaleDateString()}</span>
+                                              </div>
+                                            </div>
+                                          );
+                                        })()
                                       ) : community.registrationMode === 'FREE' ? (
                                         <div className="mt-1.5">
                                           <div className="flex items-center gap-2 mb-1">
@@ -1297,12 +1302,12 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                       type="button"
                                       onClick={() => {
                                         if (userMemberships.length > 0) {
-                                          const activeMem = userMemberships[0];
-                                          const end = new Date(activeMem.endDate);
+                                          const displayMem = userMemberships.find((m: any) => m.status === 'ACTIVE') || userMemberships[0];
+                                          const end = new Date(displayMem.endDate);
                                           const now = new Date();
                                           const diffTime = end.getTime() - now.getTime();
                                           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                          if (diffDays > 7) {
+                                          if (diffDays > 7 && displayMem.status === 'ACTIVE') {
                                             alert(`Anda baru bisa memperpanjang membership 7 hari sebelum masa berlaku habis. (Sisa: ${diffDays} hari)`);
                                             return;
                                           }
