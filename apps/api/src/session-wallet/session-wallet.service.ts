@@ -587,7 +587,7 @@ export class SessionWalletService {
     });
 
     // Automatically approve bundled membership if it exists
-    if (newStatus === 'ACTIVE' && pendingWallet.userMembershipId) {
+    if (pendingWallet.userMembershipId) {
       const userMembership = await this.prisma.userMembership.findUnique({
         where: { id: pendingWallet.userMembershipId },
         include: { membership: true }
