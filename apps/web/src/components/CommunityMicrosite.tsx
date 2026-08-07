@@ -201,7 +201,15 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
           const groupedWallets = new Map<string, ActiveWalletView>();
 
           wallets.forEach((w) => {
-            if (w.walletStatus === 'ACTIVE' || w.walletStatus === 'WAITING' || w.walletStatus === 'PENDING' || w.walletStatus === 'WAITLIST') {
+            let isCheckedIn = false;
+            if (w.transactions && w.transactions.length > 0) {
+              const attendanceTxs = w.transactions.filter(t => t.transactionType === 'ATTENDANCE').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+              if (attendanceTxs.length > 0 && attendanceTxs[0].remarks?.startsWith('Check-in')) {
+                isCheckedIn = true;
+              }
+            }
+
+            if (w.walletStatus === 'ACTIVE' || w.walletStatus === 'WAITING' || w.walletStatus === 'PENDING' || w.walletStatus === 'WAITLIST' || (w.walletStatus === 'COMPLETED' && isCheckedIn)) {
               const pid = w.packageId;
               if (!groupedWallets.has(pid)) {
                 groupedWallets.set(pid, {
@@ -1262,9 +1270,9 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                         <div className="w-px h-10 bg-slate-150"></div>
                                         <button
                                           onClick={() => handleCheckInOut(wallet.packageId)}
-                                          disabled={checkingInOut || wallet.status !== 'ACTIVE'}
+                                          disabled={checkingInOut || (wallet.status !== 'ACTIVE' && wallet.status !== 'COMPLETED')}
                                           className={`px-8 py-4 font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 active:scale-[0.97] ${
-                                            wallet.status !== 'ACTIVE' 
+                                            (wallet.status !== 'ACTIVE' && wallet.status !== 'COMPLETED') 
                                               ? 'bg-slate-300 text-slate-500 shadow-none cursor-not-allowed opacity-70'
                                               : history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in'
                                                 ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20'
@@ -1274,7 +1282,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                           <Zap className="w-4 h-4 fill-current" />
                                           <span>{checkingInOut
                                             ? 'Processing...'
-                                            : wallet.status !== 'ACTIVE'
+                                            : wallet.status !== 'ACTIVE' && wallet.status !== 'COMPLETED'
                                               ? 'Belum Aktif'
                                               : (history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in')
                                                 ? 'Check Out Sesi'
