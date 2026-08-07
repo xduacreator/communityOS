@@ -5,11 +5,11 @@ import { useState, useEffect } from 'react';
 import JoinButton from './JoinButton';
 import ProfileSettings from './ProfileSettings';
 import { Home, Info, Phone, Calendar, Clock, MapPin, CheckCircle, Image as ImageIcon, Users, Trophy, Sun, ArrowRight, X, LayoutGrid, Shield, CreditCard, Activity, Zap, Plus, LogOut } from 'lucide-react';
+import { toPng } from 'html-to-image';
 import ConfirmModal from './ui/ConfirmModal';
 import imageCompression from 'browser-image-compression';
 import { getAuthHeaders, removeToken } from '../lib/auth';
 import { useParams, useRouter } from 'next/navigation';
-import html2canvas from 'html2canvas';
 import { Community, SessionPackage, GalleryImage, CommunityMember, SessionWallet, UserMembershipWithMembership, Membership, User, Event } from '../types';
 
 interface ActiveWalletView {
@@ -137,16 +137,14 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     await new Promise(r => setTimeout(r, 50));
 
     try {
-      const canvas = await html2canvas(cardElement, {
-        scale: 3, 
-        useCORS: true, 
-        backgroundColor: null,
-        logging: false
+      const dataUrl = await toPng(cardElement, {
+        pixelRatio: 3, 
+        cacheBust: true,
+        backgroundColor: 'transparent',
       });
       
-      const image = canvas.toDataURL('image/png');
       const link = document.createElement('a');
-      link.href = image;
+      link.href = dataUrl;
       link.download = `Membership-Card-${status?.membershipNumber || 'Draft'}.png`;
       link.click();
     } catch (err) {
