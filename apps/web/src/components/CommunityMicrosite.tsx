@@ -149,9 +149,9 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       link.href = image;
       link.download = `Membership-Card-${status?.membershipNumber || 'Draft'}.png`;
       link.click();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to download card:', err);
-      alert('Gagal mengunduh kartu. Pastikan koneksi stabil.');
+      alert('Gagal mengunduh kartu. Error: ' + (err?.message || String(err)));
     } finally {
       if (bgElement && originalBg) {
         bgElement.style.backgroundImage = originalBg;
