@@ -151,8 +151,15 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       link.click();
     } catch (err) {
       console.error('Failed to download card:', err);
-      // @ts-ignore - we know err might not be an Error, but we safely convert it
-      alert('Gagal mengunduh kartu. Error: ' + (err?.message || String(err)));
+      let errorMessage = 'Unknown error';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      } else {
+        errorMessage = String(err);
+      }
+      alert('Gagal mengunduh kartu. Error: ' + errorMessage);
     } finally {
       if (bgElement && originalBg) {
         bgElement.style.backgroundImage = originalBg;
