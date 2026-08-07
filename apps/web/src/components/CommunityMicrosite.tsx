@@ -99,7 +99,9 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
   const getMembershipRemainingDays = () => {
     if (!userMemberships || userMemberships.length === 0) return 0;
-    const dates = userMemberships.map((m: UserMembershipWithMembership) => new Date(m.endDate).getTime());
+    const activeMemberships = userMemberships.filter((m: any) => m.status === 'ACTIVE');
+    if (activeMemberships.length === 0) return 0;
+    const dates = activeMemberships.map((m: UserMembershipWithMembership) => new Date(m.endDate).getTime());
     const maxDate = Math.max(...dates);
     const diffTime = maxDate - Date.now();
     if (diffTime <= 0) return 0;
@@ -209,7 +211,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
               }
             }
 
-            if (w.walletStatus === 'ACTIVE' || w.walletStatus === 'WAITING' || w.walletStatus === 'PENDING' || w.walletStatus === 'WAITLIST' || (w.walletStatus === 'COMPLETED' && isCheckedIn)) {
+            if (w.walletStatus === 'ACTIVE' || w.walletStatus === 'WAITING' || w.walletStatus === 'PENDING' || w.walletStatus === 'WAITLIST' || w.walletStatus === 'COMPLETED') {
               const pid = w.packageId;
               if (!groupedWallets.has(pid)) {
                 groupedWallets.set(pid, {
@@ -1258,7 +1260,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                         <h3 className="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight mt-2">{wallet.packageName}</h3>
                                         <p className="text-xs text-slate-400 font-semibold flex items-center gap-1">
                                           <Clock className="w-3.5 h-3.5 text-slate-350" />
-                                          <span>Berlaku s/d: {wallet.expiredDate ? new Date(wallet.expiredDate).toLocaleDateString() : (wallet.status === 'ACTIVE' ? 'N/A' : 'Menunggu Aktif')}</span>
+                                          <span>Berlaku s/d: {wallet.expiredDate ? new Date(wallet.expiredDate).toLocaleDateString() : (wallet.status === 'ACTIVE' ? 'N/A' : (wallet.status === 'COMPLETED' ? 'Selesai' : 'Menunggu Aktif'))}</span>
                                         </p>
                                       </div>
 
@@ -1270,9 +1272,9 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                         <div className="w-px h-10 bg-slate-150"></div>
                                         <button
                                           onClick={() => handleCheckInOut(wallet.packageId)}
-                                          disabled={checkingInOut || (wallet.status !== 'ACTIVE' && wallet.status !== 'COMPLETED')}
+                                          disabled={checkingInOut || (wallet.status !== 'ACTIVE' && !(wallet.status === 'COMPLETED' && history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in'))}
                                           className={`px-8 py-4 font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 active:scale-[0.97] ${
-                                            (wallet.status !== 'ACTIVE' && wallet.status !== 'COMPLETED') 
+                                            (wallet.status !== 'ACTIVE' && !(wallet.status === 'COMPLETED' && history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in')) 
                                               ? 'bg-slate-300 text-slate-500 shadow-none cursor-not-allowed opacity-70'
                                               : history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in'
                                                 ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20'
@@ -1282,11 +1284,13 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                           <Zap className="w-4 h-4 fill-current" />
                                           <span>{checkingInOut
                                             ? 'Processing...'
-                                            : wallet.status !== 'ACTIVE' && wallet.status !== 'COMPLETED'
-                                              ? 'Belum Aktif'
-                                              : (history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in')
-                                                ? 'Check Out Sesi'
-                                                : 'Check In Sesi'}</span>
+                                            : wallet.status === 'COMPLETED' && history.find(h => h.packageId === wallet.packageId)?.remarks !== 'Check-in'
+                                              ? 'Selesai'
+                                              : wallet.status !== 'ACTIVE' && wallet.status !== 'COMPLETED'
+                                                ? 'Belum Aktif'
+                                                : (history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in')
+                                                  ? 'Check Out Sesi'
+                                                  : 'Check In Sesi'}</span>
                                         </button>
                                       </div>
                                     </div>
