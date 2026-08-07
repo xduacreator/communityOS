@@ -99,7 +99,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
   const getMembershipRemainingDays = () => {
     if (!userMemberships || userMemberships.length === 0) return 0;
-    const activeMemberships = userMemberships.filter((m: any) => m.status === 'ACTIVE');
+    const activeMemberships = userMemberships.filter((m: UserMembershipWithMembership) => m.status === 'ACTIVE');
     if (activeMemberships.length === 0) return 0;
     const dates = activeMemberships.map((m: UserMembershipWithMembership) => new Date(m.endDate).getTime());
     const maxDate = Math.max(...dates);
@@ -203,14 +203,6 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
           const groupedWallets = new Map<string, ActiveWalletView>();
 
           wallets.forEach((w) => {
-            let isCheckedIn = false;
-            if (w.transactions && w.transactions.length > 0) {
-              const attendanceTxs = w.transactions.filter(t => t.transactionType === 'ATTENDANCE').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-              if (attendanceTxs.length > 0 && attendanceTxs[0].remarks?.startsWith('Check-in')) {
-                isCheckedIn = true;
-              }
-            }
-
             if (w.walletStatus === 'ACTIVE' || w.walletStatus === 'WAITING' || w.walletStatus === 'PENDING' || w.walletStatus === 'WAITLIST' || w.walletStatus === 'COMPLETED') {
               const pid = w.packageId;
               if (!groupedWallets.has(pid)) {
