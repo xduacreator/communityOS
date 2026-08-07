@@ -149,8 +149,9 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       link.href = image;
       link.download = `Membership-Card-${status?.membershipNumber || 'Draft'}.png`;
       link.click();
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to download card:', err);
+      // @ts-ignore - we know err might not be an Error, but we safely convert it
       alert('Gagal mengunduh kartu. Error: ' + (err?.message || String(err)));
     } finally {
       if (bgElement && originalBg) {
