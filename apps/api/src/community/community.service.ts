@@ -216,24 +216,27 @@ export class CommunityService {
   async resetData(id: string, options: string[]) {
     return this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
       const deleteTransactions = options.includes('TRANSACTIONS') || options.includes('MEMBERS') || options.includes('PACKAGES');
-      const deleteEvents = options.includes('EVENTS');
+      const deleteEvents = options.includes('EVENTS') || options.includes('MEMBERS');
       const deleteGallery = options.includes('GALLERY');
       const deleteMembers = options.includes('MEMBERS');
-      const deletePackages = options.includes('PACKAGES');
-      const deleteMemberships = options.includes('MEMBERSHIPS');
-      const deleteUserMemberships = deleteMemberships || deleteMembers;
+      const deletePackages = options.includes('PACKAGES') || options.includes('MEMBERS');
+      const deleteMemberships = options.includes('MEMBERSHIPS') || options.includes('MEMBERS');
 
+      // 1. DELETE TRANSACTIONS & WALLETS (Lowest level)
       if (deleteTransactions) {
-        const wallets = await prisma.sessionWallet.findMany({ where: { communityId: id } });
+        // Delete all transactions linked to wallets in this community
+        const wallets = await prisma.sessionWallet.findMany({ where: { communityId: id }, select: { id: true } });
         const walletIds = wallets.map(w => w.id);
         if (walletIds.length > 0) {
           await prisma.sessionTransaction.deleteMany({ where: { walletId: { in: walletIds } } });
         }
+        // Then delete the wallets themselves
         await prisma.sessionWallet.deleteMany({ where: { communityId: id } });
       }
 
+      // 2. DELETE EVENT REGISTRATIONS & EVENTS
       if (deleteEvents) {
-        const events = await prisma.event.findMany({ where: { communityId: id } });
+        const events = await prisma.event.findMany({ where: { communityId: id }, select: { id: true } });
         const eventIds = events.map(e => e.id);
         if (eventIds.length > 0) {
           await prisma.eventRegistration.deleteMany({ where: { eventId: { in: eventIds } } });
@@ -241,23 +244,27 @@ export class CommunityService {
         await prisma.event.deleteMany({ where: { communityId: id } });
       }
 
+      // 3. DELETE GALLERY
       if (deleteGallery) {
         await prisma.galleryImage.deleteMany({ where: { communityId: id } });
       }
 
-      if (deleteUserMemberships) {
-        await prisma.userMembership.deleteMany({ where: { communityId: id } });
-      }
-
+      // 4. DELETE PACKAGES, CATEGORIES, ACTIVITIES & GUEST REGISTRATIONS
       if (deletePackages) {
-        const activities = await prisma.activity.findMany({ where: { communityId: id } });
+        // Delete guest registrations first as they reference SessionPackages and Community
+        await prisma.guestRegistration.deleteMany({ where: { communityId: id } });
+        
+        // Find all activities in the community
+        const activities = await prisma.activity.findMany({ where: { communityId: id }, select: { id: true } });
         const activityIds = activities.map(a => a.id);
         
         if (activityIds.length > 0) {
-          const categories = await prisma.category.findMany({ where: { activityId: { in: activityIds } } });
+          // Find all categories linked to these activities
+          const categories = await prisma.category.findMany({ where: { activityId: { in: activityIds } }, select: { id: true } });
           const categoryIds = categories.map(c => c.id);
           
           if (categoryIds.length > 0) {
+            // Wallets and Transactions were deleted in Step 1, so packages are safe to delete
             await prisma.sessionPackage.deleteMany({ where: { categoryId: { in: categoryIds } } });
             await prisma.category.deleteMany({ where: { activityId: { in: activityIds } } });
           }
@@ -265,10 +272,14 @@ export class CommunityService {
         }
       }
 
+      // 5. DELETE USER MEMBERSHIPS & MEMBERSHIPS
       if (deleteMemberships) {
+        // Step 1 already deleted Wallets, which were the only dependents of UserMembership
+        await prisma.userMembership.deleteMany({ where: { communityId: id } });
         await prisma.membership.deleteMany({ where: { communityId: id } });
       }
 
+      // 6. DELETE MEMBERS (Except Admin)
       if (deleteMembers) {
         await prisma.communityMember.deleteMany({
           where: { 
