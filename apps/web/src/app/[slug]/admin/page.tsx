@@ -91,14 +91,12 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
       const memData = await memRes.json();
       setMembers(memData);
 
-      if (commData.registrationMode === 'PAID') {
-        const renewalRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/user-membership/pending/${commData.id}`, {
-          headers: { ...headers },
-        });
-        if (renewalRes.ok) {
-          const renewalData = await renewalRes.json();
-          setPendingRenewals(renewalData);
-        }
+      const renewalRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/user-membership/pending/${commData.id}`, {
+        headers: { ...headers },
+      });
+      if (renewalRes.ok) {
+        const renewalData = await renewalRes.json();
+        setPendingRenewals(renewalData);
       }
 
       // Fetch pending session packages
@@ -356,8 +354,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
       </div>
 
       {/* Pending Membership Renewals Section */}
-      {community?.registrationMode === 'PAID' && (
-        <div className="bg-white rounded-[2rem] shadow-xl p-8 border border-slate-150 space-y-6 mt-8">
+      <div className="bg-white rounded-[2rem] shadow-xl p-8 border border-slate-150 space-y-6 mt-8">
           <div>
             <h2 className="text-2xl font-black text-slate-900 tracking-tight text-left">Pending Membership Renewals</h2>
             <p className="text-sm text-slate-500 mt-1 text-left">Verify payment receipts and approve active membership extensions.</p>
@@ -456,7 +453,6 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
             </table>
           </div>
         </div>
-      )}
 
       {/* Pending Session Packages Section */}
       <div className="bg-white rounded-[2rem] shadow-xl p-8 border border-slate-150 space-y-6 mt-8">
