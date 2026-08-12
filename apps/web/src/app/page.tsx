@@ -69,17 +69,11 @@ export default async function Home() {
           </nav>
 
           <div className="flex items-center space-x-3">
-            <Link 
-              href="/login" 
-              className="hidden sm:inline-flex items-center text-xs font-extrabold text-slate-700 hover:text-indigo-600 px-5 py-2.5 rounded-full border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50/50 transition-all duration-200 shadow-sm"
-            >
-              Masuk
-            </Link>
             <a 
               href="https://wa.me/6287722125859?text=Halo%20tim%20CommunityOS,%20saya%20ingin%20konsultasi%20mengenai%20platform%20ini" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="inline-flex items-center gap-2 text-xs font-extrabold bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 text-white px-6 py-2.5 rounded-full hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-extrabold bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 text-white px-4 py-2.5 sm:px-6 sm:py-2.5 rounded-full hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:-translate-y-0.5 whitespace-nowrap shrink-0"
             >
               <span>Konsultasi Expert</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -88,52 +82,52 @@ export default async function Home() {
         </div>
       </header>
 
-      <main className="pt-32 pb-24">
+      <main className="pt-28 sm:pt-32 pb-20 sm:pb-24">
         {/* 2-Column Hero Section */}
-        <section className="relative px-6 lg:px-10 max-w-[1400px] mx-auto z-10 pt-6 pb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+        <section className="relative px-4 sm:px-6 lg:px-10 max-w-[1400px] mx-auto z-10 pt-4 sm:pt-6 pb-16 sm:pb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
             {/* Left Content */}
             <div className="lg:col-span-7 flex flex-col items-start text-left">
               {/* Floating Pill Status */}
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-500/20 text-xs font-extrabold text-indigo-700 shadow-sm backdrop-blur-md mb-8">
-                <span className="relative flex h-2.5 w-2.5">
+              <div className="inline-flex items-center gap-2 sm:gap-2.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-500/20 text-[11px] sm:text-xs font-extrabold text-indigo-700 shadow-sm backdrop-blur-md mb-6 sm:mb-8 max-w-full truncate">
+                <span className="relative flex h-2.5 w-2.5 shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-600"></span>
                 </span>
                 <span>CommunityOS 2.0</span>
                 <span className="text-indigo-300">•</span>
-                <span className="text-slate-600 font-semibold">Platform Manajemen Kelas #1</span>
+                <span className="text-slate-600 font-semibold truncate">Platform Manajemen Kelas #1</span>
               </div>
 
               {/* Dynamic Headline */}
               <h1 
-                className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight mb-6 leading-[1.08]"
+                className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight mb-5 sm:mb-6 leading-[1.1] sm:leading-[1.08]"
                 dangerouslySetInnerHTML={{
                   __html: settings['landing.hero.headline'] || 'Ubah Audiens Anda<br />Menjadi Bisnis Kelas<br />& Aktivitas yang<br /><span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Laris Manis</span>'
                 }}
               />
 
               {/* Subheadline */}
-              <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-10 max-w-2xl font-normal">
+              <p className="text-sm sm:text-lg text-slate-600 leading-relaxed mb-8 sm:mb-10 max-w-2xl font-normal">
                 {settings['landing.hero.subheadline'] || (
                   <>Platform <i>all-in-one</i> untuk membangun, mengelola, dan mengelola bisnis kelas Anda. Luncurkan microsite kustom, kelola jadwal acara dengan cerdas, atur keanggotaan berbayar, dan dapatkan analisis real-time dengan mudah.</>
                 )}
               </p>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto mb-14">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 w-full sm:w-auto mb-10 sm:mb-14">
                 <a 
                   href="https://wa.me/6287722125859?text=Halo%20tim%20CommunityOS,%20saya%20ingin%20konsultasi%20mengenai%20platform%20ini" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="flex items-center justify-center gap-3 px-8 py-4 text-sm font-extrabold rounded-2xl text-white bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 shadow-xl shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:-translate-y-1"
+                  className="flex items-center justify-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold rounded-2xl text-white bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 shadow-xl shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:-translate-y-1"
                 >
                   <span>Konsultasi dengan Expert</span>
                   <ArrowRight className="w-4 h-4" />
                 </a>
                 <a 
                   href="#showcase" 
-                  className="flex items-center justify-center gap-2.5 px-8 py-4 text-sm font-extrabold rounded-2xl text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 shadow-sm hover:-translate-y-0.5"
+                  className="flex items-center justify-center gap-2.5 px-6 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold rounded-2xl text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 shadow-sm hover:-translate-y-0.5"
                 >
                   <Play className="w-4 h-4 text-indigo-600 fill-indigo-600" />
                   <span>Lihat Demo Kelas</span>
@@ -141,7 +135,7 @@ export default async function Home() {
               </div>
 
               {/* Micro Features Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full pt-8 border-t border-slate-200/70">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 w-full pt-6 sm:pt-8 border-t border-slate-200/70">
                 <div className="flex items-center gap-3 p-3.5 bg-white/80 rounded-2xl border border-slate-150 shadow-sm backdrop-blur-sm">
                   <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100">
                     <Zap className="w-5 h-5" />
@@ -175,26 +169,26 @@ export default async function Home() {
             </div>
 
             {/* Right Hero Image / Interactive Mockup */}
-            <div className="lg:col-span-5 relative mt-6 lg:mt-0">
+            <div className="lg:col-span-5 relative mt-4 lg:mt-0">
               <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-[3rem] blur-3xl -z-10"></div>
               
               {/* Main Card Container */}
-              <div className="relative bg-white rounded-[2.5rem] p-3 shadow-2xl shadow-indigo-950/15 border border-slate-200/80 transform hover:scale-[1.01] transition-transform duration-500">
+              <div className="relative bg-white rounded-[2rem] sm:rounded-[2.5rem] p-2.5 sm:p-3 shadow-2xl shadow-indigo-950/15 border border-slate-200/80 transform hover:scale-[1.01] transition-transform duration-500">
                 
                 {/* Fake Browser Window */}
-                <div className="bg-slate-950 rounded-[2rem] overflow-hidden border border-slate-800 shadow-inner">
+                <div className="bg-slate-950 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden border border-slate-800 shadow-inner">
                   {/* Top Bar */}
-                  <div className="h-11 bg-slate-900/90 border-b border-slate-800 flex items-center px-4 justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 rounded-full bg-rose-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                  <div className="h-9 sm:h-11 bg-slate-900/90 border-b border-slate-800 flex items-center px-3 sm:px-4 justify-between">
+                    <div className="flex items-center space-x-1.5 sm:space-x-2">
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-rose-500"></div>
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-500"></div>
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500"></div>
                     </div>
-                    <div className="bg-slate-800/80 px-4 py-1 rounded-full border border-slate-700/50 text-[11px] text-slate-300 font-mono flex items-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>communityos.app/dashboard</span>
+                    <div className="bg-slate-800/80 px-3 sm:px-4 py-0.5 sm:py-1 rounded-full border border-slate-700/50 text-[10px] sm:text-[11px] text-slate-300 font-mono flex items-center gap-1.5 truncate max-w-[180px] sm:max-w-none">
+                      <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 shrink-0" />
+                      <span className="truncate">communityos.app/dashboard</span>
                     </div>
-                    <div className="w-12"></div>
+                    <div className="w-8 sm:w-12"></div>
                   </div>
 
                   {/* Inner Mockup Image */}
@@ -207,28 +201,17 @@ export default async function Home() {
                   </div>
                 </div>
 
-                {/* Floating Stat Badge 1 (Top Left Overlay) */}
-                <div className="absolute -top-6 -left-6 bg-white/95 backdrop-blur-xl p-4 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-3 animate-bounce-slow">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                    <CheckCircle2 className="w-6 h-6" />
+                {/* Floating Stat Badge (Top Left Overlay) */}
+                <div className="absolute -top-4 sm:-top-6 -left-2 sm:-left-6 bg-white/95 backdrop-blur-xl p-3 sm:p-4 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-2.5 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0">
+                    <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div>
-                    <div className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Absensi Kelas</div>
-                    <div className="text-xs font-black text-slate-900 flex items-center gap-1">
+                    <div className="text-[9px] sm:text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Absensi Kelas</div>
+                    <div className="text-[11px] sm:text-xs font-black text-slate-900 flex items-center gap-1">
                       <span>99.8% Terverifikasi</span>
-                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Floating Stat Badge 2 (Bottom Right Overlay) */}
-                <div className="absolute -bottom-6 -right-6 bg-slate-900 text-white backdrop-blur-xl p-4 rounded-2xl shadow-2xl border border-slate-800 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold shadow-lg shadow-indigo-500/30">
-                    <TrendingUp className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Pendapatan Komunitas</div>
-                    <div className="text-sm font-black text-emerald-400">Rp 48.5M+ <span className="text-[10px] font-normal text-slate-400">terproses</span></div>
                   </div>
                 </div>
 
