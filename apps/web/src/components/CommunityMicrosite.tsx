@@ -495,24 +495,24 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-primary selection:text-white transition-colors duration-300">
       
       {/* Mobile Top Navigation (Mockup) */}
-      <nav className="flex md:hidden items-center justify-between px-4 py-4 bg-white dark:bg-slate-950 sticky top-0 z-[100] pointer-events-auto shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold shadow-md shrink-0">
+      <nav className="flex md:hidden items-center justify-between px-3.5 py-3.5 bg-white dark:bg-slate-950 sticky top-0 z-[100] pointer-events-auto shadow-sm gap-2">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center font-bold shadow-md shrink-0">
             {community.logo ? (
               <img src={community.logo} alt="Logo" className="w-full h-full object-cover rounded-full" />
             ) : (
-              <Users className="w-5 h-5" />
+              <Users className="w-4 h-4" />
             )}
           </div>
-          <div className="flex flex-col">
-            <span className="font-extrabold text-base text-slate-900 dark:text-slate-50 leading-tight">{community.name}</span>
-            {community.tagline && <span className="text-xs text-slate-500 dark:text-slate-400">{community.tagline}</span>}
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="font-extrabold text-sm text-slate-900 dark:text-slate-50 leading-tight truncate">{community.name}</span>
+            {community.tagline && <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{community.tagline}</span>}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button 
             onClick={toggleDarkMode}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors shrink-0"
             title="Toggle Dark Mode"
           >
             <Sun className="w-4 h-4" />
@@ -525,13 +525,13 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
               registrationMode={community.registrationMode}
               memberships={community.memberships}
               label={community.joinCtaLabel || undefined}
-              className="px-4 py-2 bg-primary hover:opacity-90 text-white font-bold rounded-2xl shadow-md transition-colors text-xs flex items-center gap-1"
+              className="px-3.5 py-1.5 bg-primary hover:opacity-90 text-white font-bold rounded-xl shadow-md transition-colors text-xs flex items-center gap-1 shrink-0"
               icon={<ArrowRight className="w-3 h-3 ml-1" />}
             />
           ) : (
             <button 
               onClick={() => handleTabChange('dashboard')}
-              className="px-4 py-2 bg-primary text-white font-bold rounded-2xl shadow-md text-xs"
+              className="px-3 py-1.5 bg-primary text-white font-bold rounded-xl shadow-md text-xs shrink-0"
             >
               Dashboard
             </button>
@@ -1167,30 +1167,30 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 </div>
                 
                 {/* Segmented Tab Controls */}
-                <div className="relative z-10 shrink-0 bg-white dark:bg-slate-950/5 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 flex gap-1">
+                <div className="relative z-10 w-full sm:w-auto bg-white/95 dark:bg-slate-950/40 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 grid grid-cols-3 sm:flex gap-1 shadow-md">
                   <button
                     type="button"
                     onClick={() => setDashboardSubTab('wallet')}
-                    className={`px-5 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                    className={`px-2 sm:px-5 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap min-w-0 ${
                       dashboardSubTab === 'wallet'
                         ? 'bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 shadow-md'
-                        : 'text-indigo-200 hover:text-white hover:bg-white dark:bg-slate-950/5'
+                        : 'text-indigo-200 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <Activity className="w-4 h-4" />
-                    <span>My Hub</span>
+                    <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                    <span className="truncate">My Hub</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setDashboardSubTab('profile')}
-                    className={`px-5 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                    className={`px-2 sm:px-5 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap min-w-0 ${
                       dashboardSubTab === 'profile'
                         ? 'bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 shadow-md'
-                        : 'text-indigo-200 hover:text-white hover:bg-white dark:bg-slate-950/5'
+                        : 'text-indigo-200 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <Users className="w-4 h-4" />
-                    <span>Settings</span>
+                    <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                    <span className="truncate">Settings</span>
                   </button>
                   <button
                     type="button"
@@ -1202,10 +1202,10 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                       setHistory([]);
                       handleTabChange('home');
                     }}
-                    className="px-4 py-3 rounded-xl text-xs font-bold text-rose-300 hover:text-rose-100 hover:bg-white dark:bg-slate-950/5 transition-all flex items-center gap-1.5"
+                    className="px-2 sm:px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-xs font-bold text-rose-300 hover:text-rose-100 hover:bg-rose-500/20 transition-all flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap min-w-0"
                   >
-                    <LogOut className="w-4 h-4" />
-                    <span>Logout</span>
+                    <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                    <span className="truncate">Logout</span>
                   </button>
                 </div>
               </div>
