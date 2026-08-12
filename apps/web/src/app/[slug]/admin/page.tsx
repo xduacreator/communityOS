@@ -479,7 +479,14 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                     <div className="text-xs text-slate-400 mt-0.5">{pkg.user?.email}</div>
                   </td>
                   <td className="px-6 py-4 text-left">
-                    <div className="text-sm font-bold text-slate-800">{pkg.package?.name}</div>
+                    <div className="text-sm font-bold text-slate-800">
+                      {pkg.package?.name}
+                      {pkg.walletStatus === 'WAITLIST' && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                          WAITLIST (Kuota Penuh)
+                        </span>
+                      )}
+                    </div>
                     <div className="text-[10px] text-slate-400 font-semibold mt-0.5">Total Sesi: {pkg.package?.totalSession}</div>
                   </td>
                   <td className="px-6 py-4 text-left">

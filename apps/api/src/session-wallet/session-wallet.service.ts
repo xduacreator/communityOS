@@ -348,7 +348,7 @@ export class SessionWalletService {
       where: { communityId, walletStatus: { in: ['ACTIVE', 'EXPIRED'] } },
       include: { package: true }
     });
-    const sessionRevenue = approvedWallets.reduce((sum: number, w: any) => sum + (w.package?.memberPrice || 0), 0);
+    const sessionRevenue = approvedWallets.reduce((sum: number, w: any) => sum + (w.isPrivate ? (w.package?.vipPrice || 0) : (w.package?.memberPrice || 0)), 0);
     const totalRevenue = membershipRevenue + sessionRevenue;
 
     // Daily check-ins last 7 days
@@ -440,7 +440,7 @@ export class SessionWalletService {
       include: { package: true }
     });
     
-    const revenueMtd = mtdWallets.reduce((sum: number, w: any) => sum + (w.package?.memberPrice || 0), 0);
+    const revenueMtd = mtdWallets.reduce((sum: number, w: any) => sum + (w.isPrivate ? (w.package?.vipPrice || 0) : (w.package?.memberPrice || 0)), 0);
 
     const expiredFrozenCount = await this.prisma.sessionWallet.count({
       where: { walletStatus: { in: ['EXPIRED', 'FROZEN'] } }
@@ -485,6 +485,31 @@ export class SessionWalletService {
     const end = new Date(start);
     end.setDate(end.getDate() + membership.durationDays);
 
+    // Quota check
+    let initialStatus = 'PENDING';
+    if (isPrivate) {
+      if (pkg.privateQuota !== null) {
+        const privateCount = await this.prisma.sessionWallet.count({
+          where: { packageId, isPrivate: true, walletStatus: { in: ['PENDING', 'ACTIVE', 'WAITING'] } }
+        });
+        if (privateCount >= pkg.privateQuota) {
+          initialStatus = 'WAITLIST';
+        }
+      }
+    } else {
+      if (pkg.quota !== null) {
+        const walletCount = await this.prisma.sessionWallet.count({
+          where: { packageId, isPrivate: false, walletStatus: { in: ['PENDING', 'ACTIVE', 'WAITING'] } }
+        });
+        const guestCount = await this.prisma.guestRegistration.count({
+          where: { packageId, status: { in: ['PENDING', 'APPROVED'] } }
+        });
+        if (walletCount + guestCount >= pkg.quota) {
+          initialStatus = 'WAITLIST';
+        }
+      }
+    }
+
     const userMembership = await this.prisma.userMembership.create({
       data: {
         userId,
@@ -497,14 +522,14 @@ export class SessionWalletService {
       }
     });
 
-    // Create the session wallet in WAITING status linked to this pending userMembership
+    // Create the session wallet in PENDING or WAITLIST status linked to this pending userMembership
     const sessionWallet = await this.prisma.sessionWallet.create({
       data: {
         userId,
         communityId,
         packageId,
         userMembershipId: userMembership.id,
-        walletStatus: 'PENDING',
+        walletStatus: initialStatus,
         totalSession: pkg.totalSession,
         remainingSession: pkg.totalSession,
         purchaseDate: new Date(),
@@ -522,7 +547,7 @@ export class SessionWalletService {
     return this.prisma.sessionWallet.findMany({
       where: {
         communityId,
-        walletStatus: 'PENDING'
+        walletStatus: { in: ['PENDING', 'WAITLIST'] }
       },
       include: {
         user: true,
@@ -593,7 +618,18 @@ export class SessionWalletService {
         include: { membership: true }
       });
       if (userMembership && userMembership.status === 'PENDING') {
-        const membershipStart = new Date();
+        const activeMemberships = await this.prisma.userMembership.findMany({
+          where: {
+            userId: pendingWallet.userId,
+            communityId: pendingWallet.communityId,
+            status: 'ACTIVE',
+            endDate: { gt: new Date() }
+          },
+          orderBy: { endDate: 'desc' },
+          take: 1
+        });
+
+        const membershipStart = activeMemberships.length > 0 ? new Date(activeMemberships[0].endDate) : new Date();
         const membershipEnd = new Date(membershipStart);
         membershipEnd.setDate(membershipEnd.getDate() + (userMembership.membership?.durationDays || 30));
         
