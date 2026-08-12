@@ -271,7 +271,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     if (activeTab === 'home' || activeTab === 'events') {
       fetchEvents();
     }
-    if (activeTab === 'dashboard') {
+    if (activeTab === 'dashboard' || activeTab === 'sessions' || activeTab === 'home') {
       fetchDashboardData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -2147,6 +2147,23 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   </div>
                 )}
 
+                {/* Waitlist Notice */}
+                {(() => {
+                  const isWaitlist = bundlePackage && (isPrivateSession 
+                    ? bundlePackage.privateQuota !== null && bundlePackage.privateQuota !== undefined && (bundlePackage.currentPrivateParticipants || 0) >= bundlePackage.privateQuota 
+                    : bundlePackage.quota !== null && bundlePackage.quota !== undefined && (bundlePackage.currentParticipants || 0) >= bundlePackage.quota);
+
+                  if (isWaitlist) {
+                    return (
+                      <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-2 mb-2 mt-2">
+                        <div className="font-bold text-amber-800">Kuota Penuh - Masuk Waiting List</div>
+                        <div className="text-amber-700">Kuota untuk paket ini sudah penuh. Anda akan otomatis didaftarkan ke dalam Waiting List. Silakan selesaikan pembayaran untuk mengamankan posisi antrean Anda. Jika kuota tidak tersedia, pembayaran akan direfund.</div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
                 {/* Rekening Transfer */}
                 <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 rounded-2xl text-xs space-y-3 text-slate-600 dark:text-slate-400 font-medium">
                   {community.qrisImageUrl && (
@@ -2274,7 +2291,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   ? purchasePackage.privateQuota !== null && purchasePackage.privateQuota !== undefined && (purchasePackage.currentPrivateParticipants || 0) >= purchasePackage.privateQuota 
                   : purchasePackage.quota !== null && purchasePackage.quota !== undefined && (purchasePackage.currentParticipants || 0) >= purchasePackage.quota);
 
-                if (!isWaitlist && !purchaseProofUrl) {
+                if (!purchaseProofUrl) {
                   alert('Silakan unggah bukti transfer pembayaran Anda');
                   return;
                 }
@@ -2365,16 +2382,12 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
                   if (isWaitlist) {
                     return (
-                      <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-2">
-                        <div className="font-bold text-amber-800">Kuota Penuh - Waiting List</div>
-                        <div className="text-amber-700">Kuota untuk paket ini sudah penuh. Anda dapat mendaftar untuk masuk ke dalam Waiting List. Kami akan menghubungi Anda jika ada kuota yang tersedia. Pembayaran dapat dilakukan nanti jika kuota sudah dikonfirmasi.</div>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <>
-                      {/* Rekening Transfer */}
+                      <>
+                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-2 mb-4">
+                          <div className="font-bold text-amber-800">Kuota Penuh - Masuk Waiting List</div>
+                          <div className="text-amber-700">Kuota untuk paket ini sudah penuh. Anda akan otomatis didaftarkan ke dalam Waiting List. Silakan selesaikan pembayaran untuk mengamankan posisi antrean Anda. Jika kuota tidak tersedia, pembayaran akan direfund.</div>
+                        </div>
+                        {/* Rekening Transfer */}
                       <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 rounded-2xl text-xs space-y-3 text-slate-600 dark:text-slate-400 font-medium">
                         {community.qrisImageUrl && (
                           <div className="mb-2">
