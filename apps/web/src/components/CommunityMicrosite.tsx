@@ -2374,7 +2374,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   </div>
                 </div>
 
-                {/* Payment Section OR Waitlist Notice */}
+                {/* Waitlist Notice */}
                 {(() => {
                   const isWaitlist = purchasePackage && (isPrivateSession 
                     ? purchasePackage.privateQuota !== null && purchasePackage.privateQuota !== undefined && (purchasePackage.currentPrivateParticipants || 0) >= purchasePackage.privateQuota 
@@ -2382,40 +2382,44 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
                   if (isWaitlist) {
                     return (
-                      <>
-                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-2 mb-4">
-                          <div className="font-bold text-amber-800">Kuota Penuh - Masuk Waiting List</div>
-                          <div className="text-amber-700">Kuota untuk paket ini sudah penuh. Anda akan otomatis didaftarkan ke dalam Waiting List. Silakan selesaikan pembayaran untuk mengamankan posisi antrean Anda. Jika kuota tidak tersedia, pembayaran akan direfund.</div>
-                        </div>
-                        {/* Rekening Transfer */}
-                      <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 rounded-2xl text-xs space-y-3 text-slate-600 dark:text-slate-400 font-medium">
-                        {community.qrisImageUrl && (
-                          <div className="mb-2">
-                            <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">Scan QRIS:</p>
-                            <div className="bg-white dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 inline-block">
-                              <img src={community.qrisImageUrl} alt="QRIS" className="max-h-40 object-contain rounded-lg" />
-                            </div>
-                          </div>
-                        )}
-                        <p className="font-bold text-slate-800 dark:text-slate-200">
-                          {community.paymentInstructions ? 'Instruksi Pembayaran:' : 'Silakan lakukan transfer ke salah satu rekening pengelola:'}
-                        </p>
-                        {community.paymentInstructions ? (
-                          <div className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-                            {community.paymentInstructions}
-                          </div>
-                        ) : (
-                          <div className="space-y-1 text-slate-500 dark:text-slate-400">
-                            <div>• Bank BCA: <span className="font-extrabold text-slate-700 dark:text-slate-300">8002931293</span> a/n Kas Komunitas</div>
-                            <div>• Bank Mandiri: <span className="font-extrabold text-slate-700 dark:text-slate-300">120001828828</span> a/n Kas Komunitas</div>
-                          </div>
-                        )}
+                      <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-2 mb-4">
+                        <div className="font-bold text-amber-800">Kuota Penuh - Masuk Waiting List</div>
+                        <div className="text-amber-700">Kuota untuk paket ini sudah penuh. Anda akan otomatis didaftarkan ke dalam Waiting List. Silakan selesaikan pembayaran untuk mengamankan posisi antrean Anda. Jika kuota tidak tersedia, pembayaran akan direfund.</div>
                       </div>
+                    );
+                  }
+                  return null;
+                })()}
 
-                      {/* Bukti Transfer */}
-                      <div className="space-y-2">
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Unggah Bukti Transfer (Image)</label>
-                        {purchaseProofUrl ? (
+                {/* Rekening Transfer */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 rounded-2xl text-xs space-y-3 text-slate-600 dark:text-slate-400 font-medium">
+                  {community.qrisImageUrl && (
+                    <div className="mb-2">
+                      <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">Scan QRIS:</p>
+                      <div className="bg-white dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 inline-block">
+                        <img src={community.qrisImageUrl} alt="QRIS" className="max-h-40 object-contain rounded-lg" />
+                      </div>
+                    </div>
+                  )}
+                  <p className="font-bold text-slate-800 dark:text-slate-200">
+                    {community.paymentInstructions ? 'Instruksi Pembayaran:' : 'Silakan lakukan transfer ke salah satu rekening pengelola:'}
+                  </p>
+                  {community.paymentInstructions ? (
+                    <div className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                      {community.paymentInstructions}
+                    </div>
+                  ) : (
+                    <div className="space-y-1 text-slate-500 dark:text-slate-400">
+                      <div>• Bank BCA: <span className="font-extrabold text-slate-700 dark:text-slate-300">8002931293</span> a/n Kas Komunitas</div>
+                      <div>• Bank Mandiri: <span className="font-extrabold text-slate-700 dark:text-slate-300">120001828828</span> a/n Kas Komunitas</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Bukti Transfer */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Unggah Bukti Transfer (Image)</label>
+                  {purchaseProofUrl ? (
                     <div className="space-y-2">
                       <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-950 p-2">
                         <img src={purchaseProofUrl} alt="Bukti Transfer" className="w-full h-auto object-contain max-h-32 rounded-lg mx-auto" />
@@ -2459,11 +2463,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                       }}
                       className="w-full text-xs font-semibold text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-extrabold file:bg-primary/5 file:text-primary hover:file:bg-primary/20"
                     />
-                        )}
-                      </div>
-                    </>
-                  );
-                })()}
+                  )}
+                </div>
               </div>
 
               <div className="p-6 pt-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
