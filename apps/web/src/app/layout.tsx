@@ -9,8 +9,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "CommunityOS",
-  description: "Modern Community Management Platform",
+  title: "Latih.Club - Platform Manajemen Kelas & Komunitas",
+  description: "Platform all-in-one untuk membangun, mengelola, dan melejitkan bisnis kelas & aktivitas Anda.",
 };
 
 export default function RootLayout({

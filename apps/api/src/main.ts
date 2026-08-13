@@ -18,8 +18,8 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
-    .setTitle('CommunityOS API')
-    .setDescription('The CommunityOS backend API description')
+    .setTitle('Latih.Club API')
+    .setDescription('The Latih.Club backend API description')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

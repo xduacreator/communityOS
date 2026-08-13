@@ -147,7 +147,7 @@ export default function LoginPage() {
           <div className="max-w-lg text-white">
             <h1 className="text-5xl font-bold mb-6">Connect, collaborate, and grow together.</h1>
             <p className="text-xl text-indigo-100 opacity-90">
-              CommunityOS is your modern platform for managing events, memberships, and engaging with your tribe.
+              Latih.Club is your modern platform for managing events, memberships, and engaging with your tribe.
             </p>
           </div>
         </div>

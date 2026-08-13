@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 140" fill="none" width="100%" height="100%">
+  <defs>
+    <!-- Gradients for vibrant L emblem -->
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00E5C0" />
+      <stop offset="100%" stop-color="#00B894" />
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A855F7" />
+      <stop offset="100%" stop-color="#7C3AED" />
+    </linearGradient>
+    <linearGradient id="yellowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+  </defs>
+
+  <!-- L Emblem Icon Group -->
+  <g transform="translate(10, 10)">
+    <!-- Top vertical teal bar -->
+    <rect x="0" y="0" width="34" height="65" rx="17" fill="url(#tealGrad)" />
+    
+    <!-- Bottom vertical blue bar -->
+    <rect x="0" y="45" width="34" height="65" rx="17" fill="url(#blueGrad)" />
+    
+    <!-- Corner purple overlap accent -->
+    <path d="M0 80 C0 65, 34 65, 34 80 C34 95, 0 95, 0 80 Z" fill="url(#purpleGrad)" opacity="0.9" />
+
+    <!-- Bottom horizontal yellow bar -->
+    <rect x="20" y="80" width="75" height="34" rx="17" fill="url(#yellowGrad)" />
+  </g>
+
+  <!-- Brand Typography: Latih.Club -->
+  <g transform="translate(145, 72)">
+    <text font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" font-size="62" font-weight="900" letter-spacing="-1.5">
+      <tspan fill="#0F172A">Latih</tspan>
+      <tspan fill="#8B5CF6">.</tspan>
+      <tspan fill="#0F172A" font-weight="700">Club</tspan>
+    </text>
+  </g>
+
+  <!-- Tagline: Kelola. Kembangkan. Hubungkan. -->
+  <g transform="translate(148, 108)">
+    <text font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" font-size="19" font-weight="800" letter-spacing="-0.2">
+      <tspan fill="#00B894">Kelola.</tspan>
+      <tspan dx="12" fill="#2563EB">Kembangkan.</tspan>
+      <tspan dx="12" fill="#F59E0B">Hubungkan.</tspan>
+    </text>
+  </g>
+</svg>

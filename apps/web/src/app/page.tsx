@@ -3,7 +3,6 @@ import Link from "next/link";
 import { 
   ArrowRight, 
   Globe, 
-  Layers, 
   Users, 
   Zap, 
   QrCode, 
@@ -12,7 +11,6 @@ import {
   ShieldCheck, 
   BarChart3, 
   Sparkles, 
-  TrendingUp, 
   CheckCircle2, 
   ChevronRight,
   Star
@@ -44,19 +42,12 @@ export default async function Home() {
       {/* Navbar */}
       <header className="fixed top-0 inset-x-0 bg-white/80 backdrop-blur-2xl z-50 border-b border-slate-200/60 shadow-sm shadow-slate-900/5 transition-all duration-300">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 h-16 sm:h-20 flex justify-between items-center gap-2">
-          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group min-w-0 flex-1 sm:flex-initial">
-            {settings['platform.logo'] ? (
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center overflow-hidden bg-white shadow-md border border-slate-100 group-hover:scale-105 transition-transform duration-300 shrink-0">
-                <img src={settings['platform.logo']} alt="Platform Logo" className="w-full h-full object-contain p-1" />
-              </div>
-            ) : (
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-600/25 group-hover:scale-105 transition-transform duration-300 shrink-0">
-                <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-            )}
-            <span className="text-base sm:text-xl font-black text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors truncate max-w-[130px] sm:max-w-none">
-              {settings['platform.name'] || 'CommunityOS'}
-            </span>
+          <Link href="/" className="flex items-center group shrink-0">
+            <img 
+              src={settings['platform.logo'] || '/images/logo.svg'} 
+              alt={settings['platform.name'] || 'Latih.Club'} 
+              className="h-9 sm:h-11 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02]" 
+            />
           </Link>
 
           <nav className="hidden md:flex items-center space-x-1 bg-slate-100/60 p-1.5 rounded-full border border-slate-200/50 backdrop-blur-md">
@@ -70,7 +61,7 @@ export default async function Home() {
 
           <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
             <a 
-              href="https://wa.me/6287722125859?text=Halo%20tim%20CommunityOS,%20saya%20ingin%20konsultasi%20mengenai%20platform%20ini" 
+              href="https://wa.me/6287722125859?text=Halo%20tim%20Latih.Club,%20saya%20ingin%20konsultasi%20mengenai%20platform%20ini" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="inline-flex items-center gap-1 sm:gap-2 text-[11px] sm:text-xs font-extrabold bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 text-white px-3.5 py-2 sm:px-6 sm:py-2.5 rounded-full hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:-translate-y-0.5 whitespace-nowrap shrink-0"
@@ -94,7 +85,7 @@ export default async function Home() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-indigo-600"></span>
                 </span>
-                <span className="shrink-0">CommunityOS 2.0</span>
+                <span className="shrink-0">Latih.Club 2.0</span>
                 <span className="text-indigo-300 shrink-0">•</span>
                 <span className="text-slate-600 font-semibold truncate">Platform Manajemen Kelas #1</span>
               </div>
@@ -117,7 +108,7 @@ export default async function Home() {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 w-full sm:w-auto mb-10 sm:mb-14">
                 <a 
-                  href="https://wa.me/6287722125859?text=Halo%20tim%20CommunityOS,%20saya%20ingin%20konsultasi%20mengenai%20platform%20ini" 
+                  href="https://wa.me/6287722125859?text=Halo%20tim%20Latih.Club,%20saya%20ingin%20konsultasi%20mengenai%20platform%20ini" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="flex items-center justify-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold rounded-2xl text-white bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 shadow-xl shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:-translate-y-1"
@@ -186,7 +177,7 @@ export default async function Home() {
                     </div>
                     <div className="bg-slate-800/80 px-3 sm:px-4 py-0.5 sm:py-1 rounded-full border border-slate-700/50 text-[10px] sm:text-[11px] text-slate-300 font-mono flex items-center gap-1.5 truncate max-w-[180px] sm:max-w-none">
                       <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 shrink-0" />
-                      <span className="truncate">communityos.app/dashboard</span>
+                      <span className="truncate">latih.club/dashboard</span>
                     </div>
                     <div className="w-8 sm:w-12"></div>
                   </div>
@@ -256,7 +247,7 @@ export default async function Home() {
                       <Globe className="w-4 h-4" />
                     </div>
                     <span className="font-mono text-xs font-extrabold text-slate-700">
-                      communityos.app/<span className="text-indigo-600">yourbrand</span>
+                      latih.club/<span className="text-indigo-600">yourbrand</span>
                     </span>
                   </div>
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -322,7 +313,7 @@ export default async function Home() {
 
                   <div className="shrink-0 w-full lg:w-auto">
                     <a 
-                      href="https://wa.me/6287722125859?text=Halo%20tim%20CommunityOS,%20saya%20ingin%20konsultasi%20mengenai%20platform%20ini" 
+                      href="https://wa.me/6287722125859?text=Halo%20tim%20Latih.Club,%20saya%20ingin%20konsultasi%20mengenai%20platform%20ini" 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-white text-slate-900 hover:bg-slate-100 font-extrabold text-sm transition-all duration-300 shadow-xl hover:scale-105"
@@ -422,13 +413,13 @@ export default async function Home() {
                   {settings['landing.cta.headline'] || 'Siap Melejitkan Bisnis Kelas & Aktivitas Anda?'}
                 </h2>
                 <p className="text-indigo-200 text-base leading-relaxed">
-                  {settings['landing.cta.subheadline'] || 'Bergabunglah dengan ratusan owner kursus dan studio yang menggunakan CommunityOS untuk membesarkan audiens mereka, mengelola event, dan menghasilkan pendapatan secara mulus.'}
+                  {settings['landing.cta.subheadline'] || 'Bergabunglah dengan ratusan owner kursus dan studio yang menggunakan Latih.Club untuk membesarkan audiens mereka, mengelola event, dan menghasilkan pendapatan secara mulus.'}
                 </p>
               </div>
 
               <div className="shrink-0 flex flex-col items-center lg:items-end w-full lg:w-auto">
                 <a 
-                  href="https://wa.me/6287722125859?text=Halo%20tim%20CommunityOS,%20saya%20ingin%20konsultasi%20mengenai%20platform%20ini" 
+                  href="https://wa.me/6287722125859?text=Halo%20tim%20Latih.Club,%20saya%20ingin%20konsultasi%20mengenai%20platform%20ini" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-5 text-sm font-black rounded-2xl text-slate-900 bg-white hover:bg-indigo-50 transition-all duration-300 shadow-2xl hover:scale-105"
@@ -445,19 +436,12 @@ export default async function Home() {
       {/* Footer */}
       <footer className="border-t border-slate-200/70 bg-white py-12">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 flex flex-col sm:flex-row justify-between items-center gap-6">
-          <div className="flex items-center space-x-3">
-            {settings['platform.logo'] ? (
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center overflow-hidden bg-white border border-slate-200 shadow-sm">
-                <img src={settings['platform.logo']} alt="Platform Logo" className="w-full h-full object-contain p-0.5" />
-              </div>
-            ) : (
-              <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center">
-                <Layers className="w-4 h-4 text-white" />
-              </div>
-            )}
-            <span className="font-black text-slate-900 text-base">
-              {settings['platform.name'] || 'CommunityOS'}
-            </span>
+          <div className="flex items-center">
+            <img 
+              src={settings['platform.logo'] || '/images/logo.svg'} 
+              alt={settings['platform.name'] || 'Latih.Club'} 
+              className="h-8 sm:h-9 w-auto object-contain" 
+            />
           </div>
 
           <div className="flex items-center space-x-8 text-xs font-bold text-slate-500">
@@ -466,7 +450,7 @@ export default async function Home() {
           </div>
 
           <p className="text-xs text-slate-400 font-medium">
-            © {new Date().getFullYear()} {settings['platform.name'] || 'CommunityOS'}. Hak Cipta Dilindungi.
+            © {new Date().getFullYear()} {settings['platform.name'] || 'Latih.Club'}. Hak Cipta Dilindungi.
           </p>
         </div>
       </footer>
