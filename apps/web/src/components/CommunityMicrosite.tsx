@@ -1333,20 +1333,28 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                       <h4 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Paket Membership</h4>
                                       {userMemberships.length > 0 ? (
                                         (() => {
-                                          const displayMem = userMemberships.find((m) => m.status === 'ACTIVE') || userMemberships[0];
+                                          const activeMem = userMemberships.find((m) => m.status === 'ACTIVE' && new Date(m.endDate) >= new Date());
+                                          const displayMem = activeMem || userMemberships.find((m) => m.status === 'ACTIVE') || userMemberships[0];
+                                          const isExpired = displayMem.status === 'ACTIVE' && new Date(displayMem.endDate) < new Date();
+                                          const isPending = displayMem.status === 'PENDING';
+                                          const isActive = displayMem.status === 'ACTIVE' && !isExpired;
+
                                           return (
                                             <div className="mt-1.5">
-                                              <div className="flex items-center gap-2 mb-1">
+                                              <div className="flex items-center gap-2 mb-1 flex-wrap">
                                                 <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{displayMem.membership?.name}</div>
                                                 <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md ${
-                                                  displayMem.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                                                  isActive ? 'bg-emerald-100 text-emerald-700' : isExpired ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
                                                 }`}>
-                                                  {displayMem.status === 'ACTIVE' ? 'Aktif' : 'Menunggu Approval'}
+                                                  {isActive ? 'Aktif' : isExpired ? 'Kedaluwarsa' : 'Menunggu Approval'}
                                                 </span>
                                               </div>
                                               <div className="text-xs text-slate-400 font-semibold mt-0.5">
                                                 Masa Berlaku s/d: <span className="text-slate-700 dark:text-slate-300 font-bold">{new Date(displayMem.endDate).toLocaleDateString()}</span>
                                               </div>
+                                              {isExpired && (
+                                                <p className="text-[11px] text-rose-500 font-bold mt-1">⚠️ Membership Anda telah berakhir. Klik "Perpanjang" untuk memperbarui.</p>
+                                              )}
                                             </div>
                                           );
                                         })()
@@ -1369,12 +1377,14 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                       type="button"
                                       onClick={() => {
                                         if (userMemberships.length > 0) {
-                                          const displayMem = userMemberships.find((m) => m.status === 'ACTIVE') || userMemberships[0];
+                                          const activeMem = userMemberships.find((m) => m.status === 'ACTIVE' && new Date(m.endDate) >= new Date());
+                                          const displayMem = activeMem || userMemberships.find((m) => m.status === 'ACTIVE') || userMemberships[0];
                                           const end = new Date(displayMem.endDate);
                                           const now = new Date();
+                                          const isExpired = end < now;
                                           const diffTime = end.getTime() - now.getTime();
                                           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                          if (diffDays > 7 && displayMem.status === 'ACTIVE') {
+                                          if (!isExpired && diffDays > 7 && displayMem.status === 'ACTIVE') {
                                             alert(`Anda baru bisa memperpanjang membership 7 hari sebelum masa berlaku habis. (Sisa: ${diffDays} hari)`);
                                             return;
                                           }
