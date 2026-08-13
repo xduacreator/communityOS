@@ -427,16 +427,15 @@ export default async function Home() {
               </div>
 
               <div className="shrink-0 flex flex-col items-center lg:items-end w-full lg:w-auto">
-                <Link 
-                  href="/login" 
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-5 text-sm font-black rounded-2xl text-slate-900 bg-white hover:bg-indigo-50 transition-all duration-300 shadow-2xl hover:scale-105 mb-4"
+                <a 
+                  href="https://wa.me/6287722125859?text=Halo%20tim%20CommunityOS,%20saya%20ingin%20konsultasi%20mengenai%20platform%20ini" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-5 text-sm font-black rounded-2xl text-slate-900 bg-white hover:bg-indigo-50 transition-all duration-300 shadow-2xl hover:scale-105"
                 >
-                  <span>Buka Kelas Anda Sekarang</span>
+                  <span>Konsultasi Sekarang</span>
                   <ArrowRight className="w-4 h-4 text-indigo-600" />
-                </Link>
-                <div className="text-[11px] text-indigo-300 font-extrabold tracking-wider uppercase">
-                  ✓ Gratis 14 hari • Tanpa kartu kredit
-                </div>
+                </a>
               </div>
             </div>
           </div>
