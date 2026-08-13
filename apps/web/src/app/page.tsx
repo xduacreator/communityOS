@@ -32,29 +32,29 @@ export default async function Home() {
   const settings = await getSettings();
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] text-slate-900 font-sans overflow-x-hidden selection:bg-indigo-500 selection:text-white">
-      {/* Background Ornaments & Glows */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1500px] h-[900px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-200/50 via-purple-100/30 to-transparent -z-10 pointer-events-none blur-3xl"></div>
-      <div className="absolute top-40 -left-40 w-96 h-96 bg-purple-300/30 rounded-full blur-3xl -z-10 pointer-events-none"></div>
-      <div className="absolute top-90 -right-40 w-96 h-96 bg-indigo-300/30 rounded-full blur-3xl -z-10 pointer-events-none"></div>
-
-      {/* Grid Pattern Overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px] -z-10 pointer-events-none"></div>
+    <div className="min-h-screen bg-[#fafbfc] text-slate-900 font-sans overflow-x-hidden selection:bg-indigo-500 selection:text-white relative">
+      {/* Background Ornaments & Glows Container (Clipping horizontal overflows) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1500px] h-[900px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-200/50 via-purple-100/30 to-transparent blur-3xl"></div>
+        <div className="absolute top-40 -left-40 w-96 h-96 bg-purple-300/30 rounded-full blur-3xl"></div>
+        <div className="absolute top-90 -right-40 w-96 h-96 bg-indigo-300/30 rounded-full blur-3xl"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+      </div>
 
       {/* Navbar */}
-      <header className="fixed top-0 inset-x-0 bg-white/70 backdrop-blur-2xl z-50 border-b border-slate-200/60 shadow-sm shadow-slate-900/5 transition-all duration-300">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 h-20 flex justify-between items-center">
-          <Link href="/" className="flex items-center space-x-3 group">
+      <header className="fixed top-0 inset-x-0 bg-white/80 backdrop-blur-2xl z-50 border-b border-slate-200/60 shadow-sm shadow-slate-900/5 transition-all duration-300">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 h-16 sm:h-20 flex justify-between items-center gap-2">
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group min-w-0 flex-1 sm:flex-initial">
             {settings['platform.logo'] ? (
-              <div className="w-10 h-10 rounded-2xl flex items-center justify-center overflow-hidden bg-white shadow-md border border-slate-100 group-hover:scale-105 transition-transform duration-300">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center overflow-hidden bg-white shadow-md border border-slate-100 group-hover:scale-105 transition-transform duration-300 shrink-0">
                 <img src={settings['platform.logo']} alt="Platform Logo" className="w-full h-full object-contain p-1" />
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-600/25 group-hover:scale-105 transition-transform duration-300">
-                <Layers className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-600/25 group-hover:scale-105 transition-transform duration-300 shrink-0">
+                <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
             )}
-            <span className="text-xl font-black text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors">
+            <span className="text-base sm:text-xl font-black text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors truncate max-w-[130px] sm:max-w-none">
               {settings['platform.name'] || 'CommunityOS'}
             </span>
           </Link>
@@ -68,34 +68,34 @@ export default async function Home() {
             </a>
           </nav>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
             <a 
               href="https://wa.me/6287722125859?text=Halo%20tim%20CommunityOS,%20saya%20ingin%20konsultasi%20mengenai%20platform%20ini" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="inline-flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-extrabold bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 text-white px-4 py-2.5 sm:px-6 sm:py-2.5 rounded-full hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:-translate-y-0.5 whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-1 sm:gap-2 text-[11px] sm:text-xs font-extrabold bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 text-white px-3.5 py-2 sm:px-6 sm:py-2.5 rounded-full hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:-translate-y-0.5 whitespace-nowrap shrink-0"
             >
-              <span>Konsultasi Expert</span>
+              <span>Konsultasi<span className="hidden sm:inline"> Expert</span></span>
               <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>
       </header>
 
-      <main className="pt-28 sm:pt-32 pb-20 sm:pb-24">
+      <main className="pt-24 sm:pt-32 pb-20 sm:pb-24">
         {/* 2-Column Hero Section */}
-        <section className="relative px-4 sm:px-6 lg:px-10 max-w-[1400px] mx-auto z-10 pt-4 sm:pt-6 pb-16 sm:pb-20">
+        <section className="relative px-4 sm:px-6 lg:px-10 max-w-[1400px] mx-auto z-10 pt-2 sm:pt-6 pb-16 sm:pb-20">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
             {/* Left Content */}
             <div className="lg:col-span-7 flex flex-col items-start text-left">
               {/* Floating Pill Status */}
-              <div className="inline-flex items-center gap-2 sm:gap-2.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-500/20 text-[11px] sm:text-xs font-extrabold text-indigo-700 shadow-sm backdrop-blur-md mb-6 sm:mb-8 max-w-full truncate">
-                <span className="relative flex h-2.5 w-2.5 shrink-0">
+              <div className="inline-flex items-center gap-2 sm:gap-2.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-500/20 text-[10px] sm:text-xs font-extrabold text-indigo-700 shadow-sm backdrop-blur-md mb-5 sm:mb-8 max-w-full">
+                <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5 shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-600"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-indigo-600"></span>
                 </span>
-                <span>CommunityOS 2.0</span>
-                <span className="text-indigo-300">•</span>
+                <span className="shrink-0">CommunityOS 2.0</span>
+                <span className="text-indigo-300 shrink-0">•</span>
                 <span className="text-slate-600 font-semibold truncate">Platform Manajemen Kelas #1</span>
               </div>
 
