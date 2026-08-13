@@ -497,9 +497,9 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       {/* Mobile Top Navigation (Mockup) */}
       <nav className="flex md:hidden items-center justify-between px-3.5 py-3.5 bg-white dark:bg-slate-950 sticky top-0 z-[100] pointer-events-auto shadow-sm gap-2">
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center font-bold shadow-md shrink-0">
+          <div className="w-9 h-9 rounded-xl overflow-hidden bg-primary text-white flex items-center justify-center font-bold shadow-md shrink-0 border border-slate-100 dark:border-slate-800">
             {community.logo ? (
-              <img src={community.logo} alt="Logo" className="w-full h-full object-cover rounded-full" />
+              <img src={community.logo} alt="Logo" className="w-full h-full object-cover" />
             ) : (
               <Users className="w-4 h-4" />
             )}
@@ -542,14 +542,17 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       {/* Desktop Top Navigation */}
       <nav className="hidden md:flex items-center justify-between px-8 py-4 bg-white dark:bg-slate-950/80 backdrop-blur-md sticky top-0 z-[100] border-b border-slate-100 dark:border-slate-800 pointer-events-auto">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-tr from-indigo-100 to-purple-100 text-primary flex items-center justify-center font-bold text-lg md:text-xl shadow-inner overflow-hidden border border-slate-100 dark:border-slate-800">
+          <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-tr from-indigo-100 to-purple-100 text-primary flex items-center justify-center font-bold text-lg md:text-xl shadow-inner overflow-hidden border border-slate-100 dark:border-slate-800 shrink-0">
             {community.logo ? (
               <img src={community.logo} alt="Logo" className="w-full h-full object-cover" />
             ) : (
               <Users className="w-4 h-4 md:w-6 md:h-6" />
             )}
           </div>
-          <span className="font-extrabold text-lg md:text-xl text-slate-900 dark:text-slate-50 tracking-tight truncate max-w-[120px] md:max-w-xs">{community.name}</span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-extrabold text-base md:text-lg text-slate-900 dark:text-slate-50 tracking-tight truncate max-w-[150px] md:max-w-xs leading-tight">{community.name}</span>
+            {community.tagline && <span className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[150px] md:max-w-xs">{community.tagline}</span>}
+          </div>
         </div>
 
         <div className="flex items-center gap-1 md:gap-4 shrink-0">
