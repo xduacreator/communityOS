@@ -17,6 +17,29 @@ export class CommunityService {
     });
   }
 
+  async findPublicShowcase() {
+    return this.prisma.community.findMany({
+      where: {
+        isActive: true,
+      },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        tagline: true,
+        shortDescription: true,
+        about: true,
+        logo: true,
+        heroBanner: true,
+        theme: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 6,
+    });
+  }
+
   async findBySlug(slug: string) {
     const community = await this.prisma.community.findFirst({
       where: {

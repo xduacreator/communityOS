@@ -24,5 +24,9 @@ jobs:
             # Tarik perubahan terbaru dari branch main
             git pull origin main
             
-            # Jalankan ulang dan bangun docker container
-            docker compose up -d --build
+            # Build ulang dari nol tanpa cache dan restart container
+            docker compose build --no-cache
+            docker compose up -d --force-recreate
+            
+            # Bersihkan cache image lama yang tidak terpakai
+            docker image prune -f

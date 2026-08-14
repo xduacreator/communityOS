@@ -34,10 +34,30 @@ async function bootstrap() {
     }),
   );
 
-  // Restrict CORS origins in production
+  // Enable CORS with full support for credentials and dynamic origins
+  const corsOrigin = process.env.CORS_ORIGIN;
+  let originConfig: any = true;
+  if (corsOrigin && corsOrigin !== '*') {
+    originConfig = corsOrigin.includes(',')
+      ? corsOrigin.split(',').map((o) => o.trim())
+      : corsOrigin;
+  }
+
   app.enableCors({
-    origin: true,
+    origin: originConfig,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'X-Requested-With',
+      'Origin',
+      'Access-Control-Request-Method',
+      'Access-Control-Request-Headers',
+    ],
     credentials: true,
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    maxAge: 3600,
   });
 
   await app.listen(process.env.PORT ?? 3001, '0.0.0.0');

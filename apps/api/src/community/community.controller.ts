@@ -9,6 +9,11 @@ import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
 export class CommunityController {
   constructor(private readonly communityService: CommunityService) {}
 
+  @Get('public/showcase')
+  findPublicShowcase() {
+    return this.communityService.findPublicShowcase();
+  }
+
   @Get(':slug')
   findBySlug(@Param('slug') slug: string) {
     return this.communityService.findBySlug(slug);

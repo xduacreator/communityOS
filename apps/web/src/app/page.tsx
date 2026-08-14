@@ -17,7 +17,27 @@ import {
 } from "lucide-react";
 import { getApiUrl } from "@/lib/api";
 
-async function getSettings() {
+interface ShowcaseCommunity {
+  id: string;
+  slug: string;
+  name: string;
+  tagline?: string | null;
+  shortDescription?: string | null;
+  about?: string | null;
+  logo?: string | null;
+  heroBanner?: string | null;
+  theme?: string | null;
+}
+
+interface ShowcaseCardItem {
+  id: string;
+  name: string;
+  type: string;
+  desc: string;
+  image: string;
+}
+
+async function getSettings(): Promise<Record<string, string>> {
   const candidateUrls = [
     process.env.INTERNAL_API_URL,
     'http://api:3001/api',
@@ -51,8 +71,45 @@ async function getSettings() {
   return {};
 }
 
+async function getShowcaseCommunities(): Promise<ShowcaseCommunity[]> {
+  const candidateUrls = [
+    process.env.INTERNAL_API_URL,
+    'http://api:3001/api',
+    getApiUrl(),
+    'http://localhost:3001/api',
+    'http://127.0.0.1:3001/api',
+  ].filter(Boolean) as string[];
+
+  const uniqueUrls = Array.from(new Set(candidateUrls));
+
+  for (const baseUrl of uniqueUrls) {
+    try {
+      const cleanBase = baseUrl.replace(/\/$/, '');
+      const url = cleanBase.endsWith('/api')
+        ? `${cleanBase}/communities/public/showcase`
+        : `${cleanBase}/api/communities/public/showcase`;
+
+      const res = await fetch(url, {
+        next: { revalidate: 5 },
+        signal: AbortSignal.timeout(3000),
+      });
+
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Try next endpoint candidate
+    }
+  }
+
+  return [];
+}
+
 export default async function Home() {
-  const settings = await getSettings();
+  const [settings, dynamicCommunities] = await Promise.all([
+    getSettings(),
+    getShowcaseCommunities(),
+  ]);
 
   return (
     <div className="min-h-screen bg-[#fafbfc] text-slate-900 font-sans overflow-x-hidden selection:bg-indigo-500 selection:text-white relative">
@@ -369,29 +426,38 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { 
-                id: settings['landing.showcase.1.id'] || 'jakartarunners', 
-                name: settings['landing.showcase.1.name'] || 'Jakarta Runners', 
-                type: settings['landing.showcase.1.type'] || 'Komunitas Lari', 
-                desc: settings['landing.showcase.1.desc'] || 'Klub olahraga yang mengedukasi sekaligus aktif dalam penggunaan data absensi berbayar.', 
-                image: settings['landing.showcase.1.image'] || '/images/jakarta-runners.png' 
-              },
-              { 
-                id: settings['landing.showcase.2.id'] || 'tech-enthusiasts', 
-                name: settings['landing.showcase.2.name'] || 'Tech Enthusiasts', 
-                type: settings['landing.showcase.2.type'] || 'Komunitas Teknologi', 
-                desc: settings['landing.showcase.2.desc'] || 'Penyelenggara bootcamp dan kompetisi hackathon rutin untuk para developer.', 
-                image: settings['landing.showcase.2.image'] || '/images/tech-enthusiasts.png' 
-              },
-              { 
-                id: settings['landing.showcase.3.id'] || 'art-club', 
-                name: settings['landing.showcase.3.name'] || 'Art Studio Club', 
-                type: settings['landing.showcase.3.type'] || 'Studio & Kelas Seni', 
-                desc: settings['landing.showcase.3.desc'] || 'Studio kreatif yang sukses menjual berbagai paket kelas seni eksklusif.', 
-                image: settings['landing.showcase.3.image'] || '/images/art-studio.png' 
-              }
-            ].map((item) => (
+            {(dynamicCommunities && dynamicCommunities.length > 0
+              ? dynamicCommunities.map((comm: ShowcaseCommunity): ShowcaseCardItem => ({
+                  id: comm.slug,
+                  name: comm.name,
+                  type: comm.tagline || 'Komunitas & Kelas',
+                  desc: comm.shortDescription || comm.about || 'Komunitas resmi yang aktif dalam program latihan dan sesi aktivitas bersama.',
+                  image: comm.heroBanner || comm.logo || '/images/jakarta-runners.png',
+                }))
+              : [
+                  { 
+                    id: settings['landing.showcase.1.id'] || 'jakartarunners', 
+                    name: settings['landing.showcase.1.name'] || 'Jakarta Runners', 
+                    type: settings['landing.showcase.1.type'] || 'Komunitas Lari', 
+                    desc: settings['landing.showcase.1.desc'] || 'Klub olahraga yang mengedukasi sekaligus aktif dalam penggunaan data absensi berbayar.', 
+                    image: settings['landing.showcase.1.image'] || '/images/jakarta-runners.png' 
+                  },
+                  { 
+                    id: settings['landing.showcase.2.id'] || 'tech-enthusiasts', 
+                    name: settings['landing.showcase.2.name'] || 'Tech Enthusiasts', 
+                    type: settings['landing.showcase.2.type'] || 'Komunitas Teknologi', 
+                    desc: settings['landing.showcase.2.desc'] || 'Penyelenggara bootcamp dan kompetisi hackathon rutin untuk para developer.', 
+                    image: settings['landing.showcase.2.image'] || '/images/tech-enthusiasts.png' 
+                  },
+                  { 
+                    id: settings['landing.showcase.3.id'] || 'art-club', 
+                    name: settings['landing.showcase.3.name'] || 'Art Studio Club', 
+                    type: settings['landing.showcase.3.type'] || 'Studio & Kelas Seni', 
+                    desc: settings['landing.showcase.3.desc'] || 'Studio kreatif yang sukses menjual berbagai paket kelas seni eksklusif.', 
+                    image: settings['landing.showcase.3.image'] || '/images/art-studio.png' 
+                  }
+                ]
+            ).map((item: ShowcaseCardItem) => (
               <div key={item.id} className="bg-white rounded-[2.5rem] border border-slate-200/80 overflow-hidden shadow-lg shadow-slate-900/5 hover:shadow-2xl hover:border-indigo-200 transition-all duration-500 group flex flex-col">
                 <div className="h-56 overflow-hidden relative">
                   <img 

@@ -1,7 +1,7 @@
 /**
  * Helper to get the correct API Base URL
- * - Server-side (SSR in Docker): Prioritizes INTERNAL_API_URL or http://api:3001/api
- * - Client-side (Browser): Defaults to '/api' or NEXT_PUBLIC_API_URL (if custom remote host provided)
+ * - Server-side (SSR in Docker/Local): Prioritizes INTERNAL_API_URL or NEXT_PUBLIC_API_URL or http://localhost:3001/api
+ * - Client-side (Browser): Defaults to NEXT_PUBLIC_API_URL if set, or relative '/api' (proxied seamlessly by Next.js or Nginx)
  */
 export function getApiUrl(): string {
   if (typeof window === 'undefined') {
@@ -17,13 +17,8 @@ export function getApiUrl(): string {
   }
 
   // Client-Side in browser:
-  // If NEXT_PUBLIC_API_URL is set and not pointing to localhost, use it
-  if (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost')) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '');
-  }
-
-  // Default for all browser requests in production:
-  // Relative '/api' will automatically resolve against current domain (e.g. https://latih.club/api)
+  // Relative '/api' will automatically resolve against current browser origin
+  // (works on VPS IP, localhost, custom domain, and latih.club without CORS!)
   return '/api';
 }
 
@@ -40,3 +35,4 @@ export function apiUrl(endpoint: string): string {
   }
   return `${base}${cleanEndpoint}`;
 }
+

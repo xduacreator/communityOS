@@ -71,7 +71,7 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
     try {
       const headers = getAuthHeaders();
       // First get community details to get communityId
-      const comRes = await fetch(`${getApiUrl()}/communities/slug/${resolvedParams.slug}`);
+      const comRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
       if (!comRes.ok) throw new Error('Komunitas tidak ditemukan');
       const comData = await comRes.json();
       setCommunityId(comData.id);
