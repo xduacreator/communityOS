@@ -15,18 +15,40 @@ import {
   ChevronRight,
   Star
 } from "lucide-react";
-
 import { getApiUrl } from "@/lib/api";
 
 async function getSettings() {
-  try {
-    const apiUrl = getApiUrl();
-    const res = await fetch(`${apiUrl}/system-settings`, { next: { revalidate: 5 } });
-    if (!res.ok) return {};
-    return await res.json();
-  } catch (err) {
-    return {};
+  const candidateUrls = [
+    process.env.INTERNAL_API_URL,
+    'http://api:3001/api',
+    getApiUrl(),
+    'http://localhost:3001/api',
+    'http://127.0.0.1:3001/api',
+  ].filter(Boolean) as string[];
+
+  const uniqueUrls = Array.from(new Set(candidateUrls));
+
+  for (const baseUrl of uniqueUrls) {
+    try {
+      const cleanBase = baseUrl.replace(/\/$/, '');
+      const url = cleanBase.endsWith('/api')
+        ? `${cleanBase}/system-settings`
+        : `${cleanBase}/api/system-settings`;
+
+      const res = await fetch(url, {
+        next: { revalidate: 5 },
+        signal: AbortSignal.timeout(3000),
+      });
+
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Try next endpoint candidate
+    }
   }
+
+  return {};
 }
 
 export default async function Home() {

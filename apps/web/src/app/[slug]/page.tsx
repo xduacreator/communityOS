@@ -3,22 +3,42 @@ import CommunityMicrosite from '../../components/CommunityMicrosite';
 import { getApiUrl } from '../../lib/api';
 
 async function getCommunityData(slug: string) {
-  try {
-    const apiUrl = getApiUrl();
-    const res = await fetch(`${apiUrl}/communities/${slug}`, {
-      cache: 'no-store',
-    });
-    
-    if (!res.ok) {
-      if (res.status === 404) return null;
-      throw new Error('Failed to fetch data');
+  const candidateUrls = [
+    process.env.INTERNAL_API_URL,
+    'http://api:3001/api',
+    getApiUrl(),
+    'http://localhost:3001/api',
+    'http://127.0.0.1:3001/api',
+  ].filter(Boolean) as string[];
+
+  // Remove duplicate URLs
+  const uniqueUrls = Array.from(new Set(candidateUrls));
+
+  for (const baseUrl of uniqueUrls) {
+    try {
+      const cleanBase = baseUrl.replace(/\/$/, '');
+      const url = cleanBase.endsWith('/api')
+        ? `${cleanBase}/communities/${slug}`
+        : `${cleanBase}/api/communities/${slug}`;
+
+      const res = await fetch(url, {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(3000),
+      });
+
+      if (res.ok) {
+        return await res.json();
+      }
+      if (res.status === 404) {
+        // Community not found in this backend
+        return null;
+      }
+    } catch {
+      // Try next endpoint candidate
     }
-    
-    return res.json();
-  } catch (error) {
-    console.error(error);
-    return null;
   }
+
+  return null;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
