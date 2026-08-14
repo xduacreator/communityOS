@@ -11,14 +11,11 @@ import {
   CheckCircle2, 
   XCircle, 
   Loader2, 
-  Calendar, 
-  Tag, 
   Percent, 
   DollarSign, 
   Copy, 
   Check, 
   Sparkles,
-  Layers,
   AlertCircle
 } from 'lucide-react';
 import ConfirmModal from '../../../../components/ui/ConfirmModal';
@@ -358,8 +355,8 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                 {filteredVouchers.map((voucher) => {
-                  const isExpired = voucher.validUntil && new Date(voucher.validUntil) < new Date();
-                  const isLimitReached = voucher.maxUses !== null && voucher.usedCount >= voucher.maxUses;
+                  const isExpired = Boolean(voucher.validUntil && new Date(voucher.validUntil) < new Date());
+                  const isLimitReached = typeof voucher.maxUses === 'number' && voucher.usedCount >= voucher.maxUses;
 
                   return (
                     <tr key={voucher.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
@@ -667,7 +664,7 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
         message="Apakah Anda yakin ingin menghapus voucher ini? Tindakan ini tidak dapat dibatalkan."
         confirmText="Hapus"
         cancelText="Batal"
-        type="danger"
+        isDestructive={true}
         onConfirm={handleDelete}
         onCancel={() => {
           setDeleteModalOpen(false);

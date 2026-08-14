@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import JoinButton from './JoinButton';
 import ProfileSettings from './ProfileSettings';
-import { Home, Info, Phone, Calendar, Clock, MapPin, CheckCircle, Image as ImageIcon, Users, Trophy, Sun, ArrowRight, X, LayoutGrid, Shield, CreditCard, Activity, Zap, Plus, LogOut, Ticket, Tag, Check, Loader2 } from 'lucide-react';
+import { Home, Info, Phone, Calendar, Clock, MapPin, CheckCircle, Image as ImageIcon, Users, Trophy, Sun, ArrowRight, X, LayoutGrid, Shield, CreditCard, Activity, Zap, Plus, LogOut, Tag, Check, Loader2 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import ConfirmModal from './ui/ConfirmModal';
 import imageCompression from 'browser-image-compression';
@@ -1346,7 +1346,6 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                           const activeMem = userMemberships.find((m) => m.status === 'ACTIVE' && new Date(m.endDate) >= new Date());
                                           const displayMem = activeMem || userMemberships.find((m) => m.status === 'ACTIVE') || userMemberships[0];
                                           const isExpired = displayMem.status === 'ACTIVE' && new Date(displayMem.endDate) < new Date();
-                                          const isPending = displayMem.status === 'PENDING';
                                           const isActive = displayMem.status === 'ACTIVE' && !isExpired;
 
                                           return (
@@ -1363,7 +1362,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                                 Masa Berlaku s/d: <span className="text-slate-700 dark:text-slate-300 font-bold">{new Date(displayMem.endDate).toLocaleDateString()}</span>
                                               </div>
                                               {isExpired && (
-                                                <p className="text-[11px] text-rose-500 font-bold mt-1">⚠️ Membership Anda telah berakhir. Klik "Perpanjang" untuk memperbarui.</p>
+                                                <p className="text-[11px] text-rose-500 font-bold mt-1">⚠️ Membership Anda telah berakhir. Klik &quot;Perpanjang&quot; untuk memperbarui.</p>
                                               )}
                                             </div>
                                           );
@@ -2058,7 +2057,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                       </div>
                     )}
                   </div>
-                )}
+                </div>
+              )}
 
                 <div className="space-y-2">
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Unggah Bukti Transfer (Image)</label>
