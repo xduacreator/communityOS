@@ -16,9 +16,12 @@ import {
   Star
 } from "lucide-react";
 
+import { getApiUrl } from "@/lib/api";
+
 async function getSettings() {
   try {
-    const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/system-settings', { next: { revalidate: 5 } });
+    const apiUrl = getApiUrl();
+    const res = await fetch(`${apiUrl}/system-settings`, { next: { revalidate: 5 } });
     if (!res.ok) return {};
     return await res.json();
   } catch (err) {

@@ -1,10 +1,12 @@
 import { notFound } from 'next/navigation';
 import CommunityMicrosite from '../../components/CommunityMicrosite';
+import { getApiUrl } from '../../lib/api';
 
 async function getCommunityData(slug: string) {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${slug}`, {
-      cache: 'no-store', // Always fetch fresh data for development
+    const apiUrl = getApiUrl();
+    const res = await fetch(`${apiUrl}/communities/${slug}`, {
+      cache: 'no-store',
     });
     
     if (!res.ok) {
