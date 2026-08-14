@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../lib/api';
 
 import { useState, useEffect } from 'react';
 import { 
@@ -35,9 +36,9 @@ export default function SessionsManagementPage() {
       try {
         const headers = getAuthHeaders();
         const [statsRes, pkgsRes, attRes] = await Promise.all([
-          fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/session-wallet/superadmin/dashboard', { headers }),
-          fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/session-package/superadmin/all', { headers }),
-          fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/session-wallet/superadmin/attendance', { headers })
+          fetch(getApiUrl() + '/session-wallet/superadmin/dashboard', { headers }),
+          fetch(getApiUrl() + '/session-package/superadmin/all', { headers }),
+          fetch(getApiUrl() + '/session-wallet/superadmin/attendance', { headers })
         ]);
         
         if (statsRes.ok) setStats(await statsRes.json());

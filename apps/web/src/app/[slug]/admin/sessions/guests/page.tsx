@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../../../lib/api';
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -34,11 +35,11 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
     }
 
     try {
-      const commRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`);
+      const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
       if (!commRes.ok) throw new Error('Community not found');
       const commData = await commRes.json();
 
-      const guestRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/guest-registrations/community/${commData.id}`, {
+      const guestRes = await fetch(`${getApiUrl()}/guest-registrations/community/${commData.id}`, {
         headers: { ...headers },
       });
       if (!guestRes.ok) throw new Error('Failed to fetch guest registrations');
@@ -59,7 +60,7 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
   const handleUpdateStatus = async (id: string, status: string) => {
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/guest-registrations/${id}/status`, {
+      const res = await fetch(`${getApiUrl()}/guest-registrations/${id}/status`, {
         method: 'PATCH',
         headers: {
           ...headers,

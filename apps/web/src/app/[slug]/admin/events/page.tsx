@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../../lib/api';
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -22,12 +23,12 @@ export default function AdminEvents({ params }: { params: Promise<{ slug: string
 
   const fetchData = async () => {
     try {
-      const commRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`);
+      const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
       if (!commRes.ok) throw new Error('Community not found');
       const commData = await commRes.json();
       setCommunity(commData);
 
-      const eventsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/events/community/${commData.id}`);
+      const eventsRes = await fetch(`${getApiUrl()}/events/community/${commData.id}`);
       if (!eventsRes.ok) throw new Error('Failed to fetch events');
       const eventsData = await eventsRes.json();
       setEvents(eventsData);
@@ -51,7 +52,7 @@ export default function AdminEvents({ params }: { params: Promise<{ slug: string
     if (!deleteData) return;
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/events/${deleteData.id}`, {
+      const res = await fetch(`${getApiUrl()}/events/${deleteData.id}`, {
         method: 'DELETE',
         headers,
       });

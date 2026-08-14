@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../lib/api';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -17,7 +18,7 @@ export default function GlobalMembersPage() {
     const fetchMembers = async () => {
       const headers = getAuthHeaders();
       try {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/memberships/all', { headers });
+        const res = await fetch(getApiUrl() + '/memberships/all', { headers });
         if (!res.ok) throw new Error('Failed to fetch memberships');
         const data = await res.json();
         setMembers(data);

@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../lib/api';
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -78,12 +79,12 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
     }
 
     try {
-      const commRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`);
+      const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
       if (!commRes.ok) throw new Error('Community not found');
       const commData = await commRes.json();
       setCommunity(commData);
 
-      const memRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/memberships/community/${commData.id}`, {
+      const memRes = await fetch(`${getApiUrl()}/memberships/community/${commData.id}`, {
         headers: { ...headers },
       });
 
@@ -91,7 +92,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
       const memData = await memRes.json();
       setMembers(memData);
 
-      const renewalRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/user-membership/pending/${commData.id}`, {
+      const renewalRes = await fetch(`${getApiUrl()}/user-membership/pending/${commData.id}`, {
         headers: { ...headers },
       });
       if (renewalRes.ok) {
@@ -100,7 +101,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
       }
 
       // Fetch pending session packages
-      const pkgRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/pending/${commData.id}`, {
+      const pkgRes = await fetch(`${getApiUrl()}/session-wallet/pending/${commData.id}`, {
         headers: { ...headers },
       });
       if (pkgRes.ok) {
@@ -127,7 +128,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
     if (!actionData) return;
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/memberships/${actionData.id}/status`, {
+      const res = await fetch(`${getApiUrl()}/memberships/${actionData.id}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -154,7 +155,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
     if (!deleteData) return;
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/memberships/${deleteData.id}`, {
+      const res = await fetch(`${getApiUrl()}/memberships/${deleteData.id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -204,7 +205,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
         communityId: community?.id
       };
       
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/memberships/${editData.id}`, {
+      const res = await fetch(`${getApiUrl()}/memberships/${editData.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify(payload),
@@ -417,7 +418,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                               onConfirm: async () => {
                                 try {
                               const headers = getAuthHeaders();
-                              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/user-membership/approve/${renewal.id}?communityId=${community?.id}`, {
+                              const res = await fetch(`${getApiUrl()}/user-membership/approve/${renewal.id}?communityId=${community?.id}`, {
                                 method: 'PATCH',
                                 headers: {
                                   'Authorization': headers.Authorization || ''
@@ -516,7 +517,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                             onConfirm: async () => {
                               try {
                             const headers = getAuthHeaders();
-                            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/approve/${pkg.id}`, {
+                            const res = await fetch(`${getApiUrl()}/session-wallet/approve/${pkg.id}`, {
                               method: 'PATCH',
                               headers: {
                                 'Authorization': headers.Authorization || ''

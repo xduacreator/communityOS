@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../lib/api';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -29,7 +30,7 @@ export default function AdminLayout({
         return;
       }
       try {
-        const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/auth/me`, { headers: { ...headers } });
+        const userRes = await fetch(`${getApiUrl()}/auth/me`, { headers: { ...headers } });
         if (!userRes.ok) throw new Error('Unauthorized');
         const userData = await userRes.json();
         
@@ -38,7 +39,7 @@ export default function AdminLayout({
           return;
         }
 
-        const memRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/memberships/my-status/${resolvedParams.slug}`, { headers: { ...headers } });
+        const memRes = await fetch(`${getApiUrl()}/memberships/my-status/${resolvedParams.slug}`, { headers: { ...headers } });
         if (!memRes.ok) {
           router.push(`/${resolvedParams.slug}/dashboard`);
           return;

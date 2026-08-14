@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../../lib/api';
 
 import React, { useEffect, useState } from 'react';
 import { getAuthHeaders } from '../../../../lib/auth';
@@ -17,7 +18,7 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
   useEffect(() => {
     const fetchCommunityId = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`);
+        const res = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
         if (res.ok) {
           const data = await res.json();
           setCommunityId(data.id);
@@ -33,7 +34,7 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
     if (!communityId) return;
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/admin/community/${communityId}/wallets`, {
+      const res = await fetch(`${getApiUrl()}/session-wallet/admin/community/${communityId}/wallets`, {
         headers
       });
       if (res.ok) {
@@ -57,7 +58,7 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
     
     setApprovingId(id);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/approve/${id}`, {
+      const res = await fetch(`${getApiUrl()}/session-wallet/approve/${id}`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
       });

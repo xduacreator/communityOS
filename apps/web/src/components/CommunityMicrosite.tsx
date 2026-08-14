@@ -1,5 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
+import { getApiUrl } from '../lib/api';
+/* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect } from 'react';
 import JoinButton from './JoinButton';
@@ -183,28 +184,28 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     setLoadingDashboard(true);
     setErrorDashboard('');
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/memberships/my-status/${slug}`, {
+      const res = await fetch(`${getApiUrl()}/memberships/my-status/${slug}`, {
         headers: { ...headers },
       });
       if (!res.ok) throw new Error('Failed to fetch membership status');
       const data = await res.json();
       setStatus(data);
 
-      const meRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/me', { headers });
+      const meRes = await fetch(getApiUrl() + '/auth/me', { headers });
       if (meRes.ok) {
         const meData = await meRes.json();
         setCurrentUser(meData);
       }
 
       if (data && data.userId && data.communityId) {
-        const activeMembershipsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/user-membership/active/${data.userId}?communityId=${data.communityId}`, {
+        const activeMembershipsRes = await fetch(`${getApiUrl()}/user-membership/active/${data.userId}?communityId=${data.communityId}`, {
           headers: { ...headers }
         });
         if (activeMembershipsRes.ok) {
           const membershipsData = await activeMembershipsRes.json();
           setUserMemberships(membershipsData);
         }
-        const walletRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/user/${data.userId}?communityId=${data.communityId}`, {
+        const walletRes = await fetch(`${getApiUrl()}/session-wallet/user/${data.userId}?communityId=${data.communityId}`, {
           headers: { ...headers }
         });
         if (walletRes.ok) {
@@ -295,7 +296,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     if (tokenExists) {
       const fetchStatus = async () => {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/memberships/my-status/${slug}`, {
+          const res = await fetch(`${getApiUrl()}/memberships/my-status/${slug}`, {
             headers: { ...headers },
           });
           if (res.ok) {
@@ -334,7 +335,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
   const fetchGallery = async () => {
     setLoadingGallery(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/gallery/community/${community.id}`);
+      const res = await fetch(`${getApiUrl()}/gallery/community/${community.id}`);
       if (res.ok) {
         const data = await res.json();
         setGalleryImages(data);
@@ -349,7 +350,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
   const fetchSessions = async () => {
     setLoadingSessions(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-package/community/${community.id}`);
+      const res = await fetch(`${getApiUrl()}/session-package/community/${community.id}`);
       if (res.ok) {
         const data = await res.json();
         setSessions(data);
@@ -364,7 +365,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
   const fetchEvents = async () => {
     setLoadingEvents(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/events/community/${community.id}`);
+      const res = await fetch(`${getApiUrl()}/events/community/${community.id}`);
       if (res.ok) {
         const data = await res.json();
         setEvents(data);
@@ -414,7 +415,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     setPurchasingMap(prev => ({ ...prev, [pkgId]: true }));
     try {
       // Get current user ID
-      const meRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/me', { headers });
+      const meRes = await fetch(getApiUrl() + '/auth/me', { headers });
       if (!meRes.ok) throw new Error('Please login again');
       const meData = await meRes.json();
 
@@ -455,7 +456,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
     
     setCheckingInOut(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/${endpoint}`, {
+      const res = await fetch(`${getApiUrl()}/session-wallet/${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1638,7 +1639,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                                 const formData = new FormData();
                                                 formData.append('file', compressedFile);
                                                 const headers = getAuthHeaders();
-                                                const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
+                                                const uploadRes = await fetch(getApiUrl() + '/upload', {
                                                   method: 'POST',
                                                   headers: {
                                                     'Authorization': headers.Authorization || ''
@@ -1649,7 +1650,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                                 const uploadData = await uploadRes.json();
                                                 const fileUrl = uploadData.url;
 
-                                                const confirmRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/memberships/confirm-payment/${status.id}`, {
+                                                const confirmRes = await fetch(`${getApiUrl()}/memberships/confirm-payment/${status.id}`, {
                                                   method: 'PATCH',
                                                   headers: {
                                                     'Content-Type': 'application/json',
@@ -1856,7 +1857,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 setSubmittingRenewal(true);
                 try {
                   const headers = getAuthHeaders();
-                  const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/user-membership', {
+                  const res = await fetch(getApiUrl() + '/user-membership', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -1971,7 +1972,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                               setValidatingVoucher(true);
                               setVoucherError('');
                               try {
-                                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/promo-vouchers/validate`, {
+                                const res = await fetch(`${getApiUrl()}/promo-vouchers/validate`, {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({
@@ -2089,7 +2090,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                             const formData = new FormData();
                             formData.append('file', compressedFile);
                             const headers = getAuthHeaders();
-                            const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
+                            const uploadRes = await fetch(getApiUrl() + '/upload', {
                               method: 'POST',
                               headers: {
                                 'Authorization': headers.Authorization || ''
@@ -2167,7 +2168,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 setSubmittingBundle(true);
                 try {
                   const headers = getAuthHeaders();
-                  const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/session-wallet/purchase-bundle', {
+                  const res = await fetch(getApiUrl() + '/session-wallet/purchase-bundle', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -2357,7 +2358,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                             const formData = new FormData();
                             formData.append('file', compressedFile);
                             const headers = getAuthHeaders();
-                            const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
+                            const uploadRes = await fetch(getApiUrl() + '/upload', {
                               method: 'POST',
                               headers: {
                                 'Authorization': headers.Authorization || ''
@@ -2437,11 +2438,11 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 setPurchasingMap(prev => ({ ...prev, [purchasePackage.id]: true }));
                 try {
                   const headers = getAuthHeaders();
-                  const meRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/me', { headers });
+                  const meRes = await fetch(getApiUrl() + '/auth/me', { headers });
                   if (!meRes.ok) throw new Error('Please login again');
                   const meData = await meRes.json();
 
-                  const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/session-wallet/purchase', {
+                  const res = await fetch(getApiUrl() + '/session-wallet/purchase', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -2584,7 +2585,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                             const formData = new FormData();
                             formData.append('file', compressedFile);
                             const headers = getAuthHeaders();
-                            const uploadRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
+                            const uploadRes = await fetch(getApiUrl() + '/upload', {
                               method: 'POST',
                               headers: {
                                 'Authorization': headers.Authorization || ''
@@ -2653,7 +2654,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 }
                 setSubmittingGuest(true);
                 try {
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/guest-registrations/submit`, {
+                  const res = await fetch(`${getApiUrl()}/guest-registrations/submit`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

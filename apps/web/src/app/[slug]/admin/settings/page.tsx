@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../../lib/api';
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -33,7 +34,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`);
+      const res = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
       if (!res.ok) throw new Error('Community not found');
       const data = await res.json() as Community;
       setCommunity(data);
@@ -47,7 +48,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
 
       // Fetch active membership packages/tiers
       const headers = getAuthHeaders();
-      const tiersRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/membership-tier?communityId=${data.id}`, { headers });
+      const tiersRes = await fetch(`${getApiUrl()}/membership-tier?communityId=${data.id}`, { headers });
       if (tiersRes.ok) {
         const tiersData = await tiersRes.json();
         setMembershipTiers(tiersData);
@@ -80,7 +81,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
 
       if (editingTier) {
         // Update
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/membership-tier/${editingTier.id}`, {
+        const res = await fetch(`${getApiUrl()}/membership-tier/${editingTier.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', ...headers },
           body: JSON.stringify(payload),
@@ -88,7 +89,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
         if (!res.ok) throw new Error('Failed to update membership tier');
       } else {
         // Create
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/membership-tier', {
+        const res = await fetch(getApiUrl() + '/membership-tier', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...headers },
           body: JSON.stringify(payload),
@@ -97,7 +98,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
       }
 
       // Refresh list
-      const tiersRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/membership-tier?communityId=${community.id}`, { headers });
+      const tiersRes = await fetch(`${getApiUrl()}/membership-tier?communityId=${community.id}`, { headers });
       if (tiersRes.ok) {
         setMembershipTiers(await tiersRes.json());
       }
@@ -128,14 +129,14 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
     if (!tierToDelete || !community) return;
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/membership-tier/${tierToDelete}`, {
+      const res = await fetch(`${getApiUrl()}/membership-tier/${tierToDelete}`, {
         method: 'DELETE',
         headers,
       });
       if (!res.ok) throw new Error('Failed to delete membership tier');
 
       // Refresh list
-      const tiersRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/membership-tier?communityId=${community.id}`, { headers });
+      const tiersRes = await fetch(`${getApiUrl()}/membership-tier?communityId=${community.id}`, { headers });
       if (tiersRes.ok) {
         setMembershipTiers(await tiersRes.json());
       }
@@ -150,7 +151,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
   const uploadFile = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
+    const res = await fetch(getApiUrl() + '/upload', {
       method: 'POST',
       body: formData,
     });
@@ -183,7 +184,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
       }
 
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${community.id}`, {
+      const res = await fetch(`${getApiUrl()}/communities/${community.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify({

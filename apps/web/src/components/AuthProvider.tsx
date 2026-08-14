@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../lib/api';
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { getAuthHeaders, getToken, removeToken } from '../lib/auth';
@@ -35,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/me', {
+      const res = await fetch(getApiUrl() + '/auth/me', {
         headers: getAuthHeaders(),
       });
       if (res.ok) {

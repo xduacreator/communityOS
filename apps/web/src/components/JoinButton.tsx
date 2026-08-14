@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../lib/api';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -94,12 +95,12 @@ export default function JoinButton({
     try {
       // 1. If paid registration is active, subscribe user to selected membership first
       if (registrationMode === 'PAID' && selectedMembershipId) {
-        const meRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/me', { headers });
+        const meRes = await fetch(getApiUrl() + '/auth/me', { headers });
         if (!meRes.ok) throw new Error('Please login again');
         const meData = await meRes.json();
         const userId = meData.id;
 
-        const subRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/user-membership', {
+        const subRes = await fetch(getApiUrl() + '/user-membership', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -117,7 +118,7 @@ export default function JoinButton({
       }
 
       // 2. Submit join request
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/memberships/join', {
+      const res = await fetch(getApiUrl() + '/memberships/join', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

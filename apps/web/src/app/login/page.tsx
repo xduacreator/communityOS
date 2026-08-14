@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../lib/api';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -19,7 +20,7 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/login', {
+      const res = await fetch(getApiUrl() + '/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -33,7 +34,7 @@ export default function LoginPage() {
       setToken(data.access_token);
       
       // Fetch user profile to determine redirect
-      const meRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/me', {
+      const meRes = await fetch(getApiUrl() + '/auth/me', {
         headers: { 'Authorization': `Bearer ${data.access_token}` },
         cache: 'no-store'
       });

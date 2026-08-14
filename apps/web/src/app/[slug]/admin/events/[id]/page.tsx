@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../../../lib/api';
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -18,12 +19,12 @@ export default function EventAttendees({ params }: { params: Promise<{ slug: str
     const fetchData = async () => {
       try {
         const headers = getAuthHeaders();
-        const eventRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/events/${resolvedParams.id}`, { headers });
+        const eventRes = await fetch(`${getApiUrl()}/events/${resolvedParams.id}`, { headers });
         if (!eventRes.ok) throw new Error('Event not found');
         const eventData = await eventRes.json();
         setEvent(eventData);
 
-        const attendeesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/events/${resolvedParams.id}/attendees`, { headers });
+        const attendeesRes = await fetch(`${getApiUrl()}/events/${resolvedParams.id}/attendees`, { headers });
         if (!attendeesRes.ok) throw new Error('Failed to fetch attendees');
         const attendeesData = await attendeesRes.json();
         setAttendees(attendeesData);

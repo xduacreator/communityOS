@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../lib/api';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -51,7 +52,7 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
   React.useEffect(() => {
     const fetchCommunity = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`);
+        const res = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
         if (res.ok) {
           const data = await res.json() as CommunityWithMemberships;
           setCommunity(data);
@@ -86,7 +87,7 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
 
     try {
       // 1. Register the user
-      const registerRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/register', {
+      const registerRes = await fetch(getApiUrl() + '/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, role: 'USER' }), // Default to USER role
@@ -98,7 +99,7 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
       }
 
       // 2. Automatically log them in
-      const loginRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/login', {
+      const loginRes = await fetch(getApiUrl() + '/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email, password: formData.password }),
@@ -114,7 +115,7 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
       setToken(loginData.access_token);
       
       // Retrieve logged-in user profile to get ID
-      const meRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/me', {
+      const meRes = await fetch(getApiUrl() + '/auth/me', {
         headers: { 'Authorization': `Bearer ${loginData.access_token}` }
       });
       if (!meRes.ok) throw new Error('Failed to retrieve user details');
@@ -123,13 +124,13 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
 
       // 3. Auto-join them to the community
       try {
-        const commRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`);
+        const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
         if (commRes.ok) {
           const commData = await commRes.json();
 
           // Subcribe to paid membership tier upfront if required
           if (commData.registrationMode === 'PAID' && selectedMembershipId) {
-            const subRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/user-membership', {
+            const subRes = await fetch(getApiUrl() + '/user-membership', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -146,7 +147,7 @@ export default function MemberRegister({ params }: { params: Promise<{ slug: str
             }
           }
 
-          await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/memberships/join', {
+          await fetch(getApiUrl() + '/memberships/join', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

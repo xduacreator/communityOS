@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../lib/api';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -16,7 +17,7 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
   const [community, setCommunity] = useState<Community | null>(null);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`)
+    fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`)
       .then(res => res.ok ? res.json() : null)
       .then(data => { if(data) setCommunity(data) })
       .catch(console.error);
@@ -28,7 +29,7 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
     setLoading(true);
 
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/login', {
+      const res = await fetch(getApiUrl() + '/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -46,10 +47,10 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
       
       // Auto-join them to the community if they haven't already
       try {
-        const commRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`);
+        const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
         if (commRes.ok) {
           const commData = await commRes.json();
-          await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/memberships/join', {
+          await fetch(getApiUrl() + '/memberships/join', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

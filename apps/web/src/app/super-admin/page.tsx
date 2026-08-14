@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../lib/api';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -45,7 +46,7 @@ export default function SuperAdminDashboard() {
     }
 
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/communities', {
+      const res = await fetch(getApiUrl() + '/communities', {
         headers: { ...headers },
       });
 
@@ -78,7 +79,7 @@ export default function SuperAdminDashboard() {
     try {
       const headers = getAuthHeaders();
       const endpoint = actionData.isActive ? 'suspend' : 'activate';
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${actionData.id}/${endpoint}`, {
+      const res = await fetch(`${getApiUrl()}/communities/${actionData.id}/${endpoint}`, {
         method: 'PATCH',
         headers: { ...headers },
       });
@@ -95,7 +96,7 @@ export default function SuperAdminDashboard() {
     e.preventDefault();
     try {
       const headers = getAuthHeaders();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/communities', {
+      const res = await fetch(getApiUrl() + '/communities', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify(newComm),
@@ -136,7 +137,7 @@ export default function SuperAdminDashboard() {
         ...(editComm.adminEmail && { adminEmail: editComm.adminEmail, adminName: editComm.adminName, adminPassword: editComm.adminPassword })
       };
       
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${editComm.id}`, {
+      const res = await fetch(`${getApiUrl()}/communities/${editComm.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify(payload),
@@ -183,7 +184,7 @@ export default function SuperAdminDashboard() {
 
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resetDataId}/reset-data`, {
+      const res = await fetch(`${getApiUrl()}/communities/${resetDataId}/reset-data`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify({ options: selectedOptions }),

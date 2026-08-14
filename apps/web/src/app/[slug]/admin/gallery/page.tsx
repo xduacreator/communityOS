@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../../lib/api';
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -27,12 +28,12 @@ export default function AdminGallery({ params }: { params: Promise<{ slug: strin
 
   const fetchData = async () => {
     try {
-      const commRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`);
+      const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
       if (!commRes.ok) throw new Error('Community not found');
       const commData = await commRes.json();
       setCommunity(commData);
 
-      const galleryRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/gallery/community/${commData.id}`);
+      const galleryRes = await fetch(`${getApiUrl()}/gallery/community/${commData.id}`);
       if (!galleryRes.ok) throw new Error('Failed to fetch gallery images');
       const galleryData = await galleryRes.json();
       setImages(galleryData);
@@ -50,7 +51,7 @@ export default function AdminGallery({ params }: { params: Promise<{ slug: strin
   const uploadFile = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
+    const res = await fetch(getApiUrl() + '/upload', {
       method: 'POST',
       body: formData,
     });
@@ -73,7 +74,7 @@ export default function AdminGallery({ params }: { params: Promise<{ slug: strin
     try {
       const uploadedUrl = await uploadFile(imageFile);
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/gallery/community/${community.id}`, {
+      const res = await fetch(`${getApiUrl()}/gallery/community/${community.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +105,7 @@ export default function AdminGallery({ params }: { params: Promise<{ slug: strin
     if (!deleteData) return;
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/gallery/${deleteData.id}`, {
+      const res = await fetch(`${getApiUrl()}/gallery/${deleteData.id}`, {
         method: 'DELETE',
         headers,
       });

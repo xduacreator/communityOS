@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../../lib/api';
 
 import React, { useEffect, useState } from 'react';
 import { getAuthHeaders } from '../../../../lib/auth';
@@ -70,12 +71,12 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
     try {
       const headers = getAuthHeaders();
       // First get community details to get communityId
-      const comRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/slug/${resolvedParams.slug}`);
+      const comRes = await fetch(`${getApiUrl()}/communities/slug/${resolvedParams.slug}`);
       if (!comRes.ok) throw new Error('Komunitas tidak ditemukan');
       const comData = await comRes.json();
       setCommunityId(comData.id);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/promo-vouchers/community/${comData.id}`, { headers });
+      const res = await fetch(`${getApiUrl()}/promo-vouchers/community/${comData.id}`, { headers });
       if (res.ok) {
         const data = await res.json();
         setVouchers(data);
@@ -155,8 +156,8 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
       };
 
       const url = editingVoucher
-        ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/promo-vouchers/${editingVoucher.id}`
-        : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/promo-vouchers`;
+        ? `${getApiUrl()}/promo-vouchers/${editingVoucher.id}`
+        : `${getApiUrl()}/promo-vouchers`;
 
       const res = await fetch(url, {
         method: editingVoucher ? 'PUT' : 'POST',
@@ -186,7 +187,7 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
     try {
       const headers = getAuthHeaders();
       const newStatus = voucher.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/promo-vouchers/${voucher.id}`, {
+      const res = await fetch(`${getApiUrl()}/promo-vouchers/${voucher.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -211,7 +212,7 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
     if (!voucherToDelete) return;
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/promo-vouchers/${voucherToDelete}`, {
+      const res = await fetch(`${getApiUrl()}/promo-vouchers/${voucherToDelete}`, {
         method: 'DELETE',
         headers,
       });

@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../lib/api';
 
 import { useEffect, useState } from 'react';
 import { getAuthHeaders } from '../../../lib/auth';
@@ -18,7 +19,7 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     const headers = getAuthHeaders();
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/users', { headers });
+      const res = await fetch(getApiUrl() + '/users', { headers });
       if (!res.ok) throw new Error('Failed to fetch users');
       const data = await res.json();
       setUsers(data);
@@ -36,7 +37,7 @@ export default function UsersPage() {
   const toggleSuperAdmin = async (userId: string, currentStatus: boolean) => {
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/users/${userId}/role`, {
+      const res = await fetch(`${getApiUrl()}/users/${userId}/role`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify({ isSuperAdmin: !currentStatus }),
@@ -52,7 +53,7 @@ export default function UsersPage() {
     e.preventDefault();
     try {
       const headers = getAuthHeaders();
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/users', {
+      const res = await fetch(getApiUrl() + '/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify(newUser),

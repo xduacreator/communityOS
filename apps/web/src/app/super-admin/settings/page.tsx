@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../lib/api';
 
 import { useEffect, useState } from 'react';
 import { getAuthHeaders } from '../../../lib/auth';
@@ -26,7 +27,7 @@ export default function SettingsPage() {
       }
 
       try {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/system-settings', {
+        const res = await fetch(getApiUrl() + '/system-settings', {
           headers,
         });
         
@@ -57,7 +58,7 @@ export default function SettingsPage() {
       setSaving(true);
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', {
+      const res = await fetch(getApiUrl() + '/upload', {
         method: 'POST',
         body: formData,
       });
@@ -85,7 +86,7 @@ export default function SettingsPage() {
         .filter(([key, value]) => key && value !== null && value !== undefined)
         .map(([key, value]) => ({ key, value: String(value) }));
 
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/system-settings', {
+      const res = await fetch(getApiUrl() + '/system-settings', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -107,7 +108,7 @@ export default function SettingsPage() {
   const handleResetTransactions = async () => {
     setResetting(true);
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/system-settings/reset-transactions', {
+      const res = await fetch(getApiUrl() + '/system-settings/reset-transactions', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../lib/api';
 
 import { useEffect, useState } from 'react';
 import { getAuthHeaders } from '../lib/auth';
@@ -17,7 +18,7 @@ export default function ProfileSettings() {
     const fetchProfile = async () => {
       const headers = getAuthHeaders();
       try {
-        const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/me', { headers });
+        const res = await fetch(getApiUrl() + '/auth/me', { headers });
         if (res.ok) {
           const data = await res.json();
           setProfile(data);
@@ -42,7 +43,7 @@ export default function ProfileSettings() {
     if (password) body.password = password;
 
     try {
-      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/auth/me', {
+      const res = await fetch(getApiUrl() + '/auth/me', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

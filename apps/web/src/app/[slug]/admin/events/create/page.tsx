@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../../../lib/api';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -24,14 +25,14 @@ export default function CreateEvent({ params }: { params: Promise<{ slug: string
 
     try {
       const headers = getAuthHeaders();
-      const commRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`);
+      const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
       if (!commRes.ok) throw new Error('Community not found');
       const commData = await commRes.json();
 
       // Combine date and time
       const datetime = new Date(`${formData.date}T${formData.time}`).toISOString();
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/events/community/${commData.id}`, {
+      const res = await fetch(`${getApiUrl()}/events/community/${commData.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,4 +1,5 @@
 'use client';
+import { getApiUrl } from '../../../../lib/api';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -59,7 +60,7 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
     if (!confirm('Apakah Anda yakin ingin meng-approve peserta waitlist ini? Statusnya akan menjadi ACTIVE.')) return;
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/approve/${id}`, {
+      const res = await fetch(`${getApiUrl()}/session-wallet/approve/${id}`, {
         method: 'PATCH',
         headers,
       });
@@ -79,7 +80,7 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
 
   const fetchData = async () => {
     try {
-      const commRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/communities/${resolvedParams.slug}`);
+      const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
       if (!commRes.ok) throw new Error('Community not found');
       const comm = await commRes.json();
       setCommunity(comm);
@@ -100,7 +101,7 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
   const fetchMembers = async (commId: string) => {
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/memberships/community/${commId}`, { headers });
+      const res = await fetch(`${getApiUrl()}/memberships/community/${commId}`, { headers });
       if (res.ok) setMembers(await res.json());
     } catch (e) { console.error(e); }
   };
@@ -108,21 +109,21 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
   const fetchWallets = async (commId: string) => {
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/admin/community/${commId}/wallets`, { headers });
+      const res = await fetch(`${getApiUrl()}/session-wallet/admin/community/${commId}/wallets`, { headers });
       if (res.ok) setWallets(await res.json());
     } catch (e) { console.error(e); }
   };
 
   const fetchPackages = async (commId: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-package/community/${commId}`);
+      const res = await fetch(`${getApiUrl()}/session-package/community/${commId}`);
       if (res.ok) setPackages(await res.json());
     } catch (e) { console.error(e); }
   };
 
   const fetchActivities = async (commId: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/activity?communityId=${commId}`);
+      const res = await fetch(`${getApiUrl()}/activity?communityId=${commId}`);
       if (res.ok) setActivities(await res.json());
     } catch (e) { console.error(e); }
   };
@@ -130,7 +131,7 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
   const uploadFile = async (file: File) => {
     const fd = new FormData();
     fd.append('file', file);
-    const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/upload', { method: 'POST', body: fd });
+    const res = await fetch(getApiUrl() + '/upload', { method: 'POST', body: fd });
     if (!res.ok) throw new Error('Failed to upload image');
     const data = await res.json();
     return data.url;
@@ -148,7 +149,7 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
 
       // 1. Create Activity if new
       if (formData.activityMode === 'new' && formData.activityName) {
-        const actRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/activity', {
+        const actRes = await fetch(getApiUrl() + '/activity', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...headers },
           body: JSON.stringify({ name: formData.activityName, communityId: community.id })
@@ -160,7 +161,7 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
 
       // 2. Create Category if new
       if ((formData.categoryMode === 'new' || formData.activityMode === 'new') && formData.categoryName && actId) {
-        const catRes = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/activity/category', {
+        const catRes = await fetch(getApiUrl() + '/activity/category', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...headers },
           body: JSON.stringify({ name: formData.categoryName, activityId: actId })
@@ -180,8 +181,8 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
 
       // 4. Create or Update Session Package
       const url = editPackageId 
-        ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-package/${editPackageId}`
-        : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/session-package';
+        ? `${getApiUrl()}/session-package/${editPackageId}`
+        : getApiUrl() + '/session-package';
       
       const method = editPackageId ? 'PATCH' : 'POST';
 
@@ -242,7 +243,7 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
       // Let's decode token or just let backend handle it?
       const adminId = JSON.parse(atob(headers.Authorization.split('.')[1])).sub || '';
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/session-wallet/check-in`, {
+      const res = await fetch(`${getApiUrl()}/session-wallet/check-in`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify({
