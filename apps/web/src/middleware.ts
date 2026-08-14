@@ -8,7 +8,7 @@ export const config = {
      * 1. /api routes
      * 2. /_next (Next.js internals)
      * 3. /_static (inside /public)
-     * 4. all root files inside /public (e.g. favicon.ico)
+     * 4. all root files inside /public (e.g. favicon.ico, images, logo.svg)
      */
     '/((?!api/|_next/|_static/|_vercel|[\\w-]+\\.\\w+).*)',
   ],
@@ -16,41 +16,54 @@ export const config = {
 
 export default function middleware(req: NextRequest) {
   const url = req.nextUrl;
-  
-  // Get hostname of request (e.g. demo.communityos.com, demo.localhost:3000)
-  const hostname = req.headers.get('host')!;
-  
-  // Extract custom domain or subdomain
-  // For local development, we might use community.localhost:3000
-  // For production, we use actual domain like mycommunity.com
-  
-  // Example simplistic logic:
-  // If the path starts with something like /_sites, block it directly from users
-  if (url.pathname.startsWith(`/_sites`)) {
-    return NextResponse.rewrite(new URL(`/404`, req.url));
-  }
+  const rawHost = req.headers.get('host') || 'localhost:3000';
+  // Strip port from host if present (e.g. latih.club:3000 -> latih.club)
+  const hostname = rawHost.split(':')[0].toLowerCase();
 
-  // We rewrite based on the path. The PRD says "Default URL: /slug".
-  // This means the user goes to `communityos.com/slug`.
-  // If the PRD specifically says "Default URL: /slug", then we don't necessarily need subdomain routing by default, but we DO need custom domain routing.
-  
   const searchParams = req.nextUrl.searchParams.toString();
-  const path = `${url.pathname}${searchParams.length > 0 ? `?${searchParams}` : ''}`;
+  const queryString = searchParams.length > 0 ? `?${searchParams}` : '';
+  const pathname = url.pathname;
 
-  // Let's assume our root domain is communityos.com
-  // If the hostname is NOT our root domain (meaning it's a custom domain like mycommunity.com),
-  // we rewrite to our dynamic route `/[domain]/...`
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000';
-  
-  // Cek apakah hostname adalah IP Address (contoh: 123.45.67.89 atau 123.45.67.89:3000)
-  const isIP = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}(:\d+)?$/.test(hostname);
-  
-  if (hostname !== rootDomain && !hostname.includes('localhost') && !isIP) {
-    // Custom domain rewrite
-    // We rewrite to /[domain] so that the app/[slug] dynamic route can handle it
-    return NextResponse.rewrite(new URL(`/${hostname}${path}`, req.url));
+  // List of primary/root domains that serve the main landing page and standard /:slug paths
+  const rootDomains = [
+    'latih.club',
+    'www.latih.club',
+    'communityos.com',
+    'www.communityos.com',
+    'localhost',
+    '127.0.0.1',
+  ];
+  const configuredRootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || '').toLowerCase();
+  if (configuredRootDomain) {
+    rootDomains.push(configuredRootDomain);
+    rootDomains.push(`www.${configuredRootDomain.replace(/^www\./, '')}`);
   }
 
-  // Otherwise, it's just the default behavior (e.g., /slug goes to app/[slug])
-  return NextResponse.next();
+  // Check if current hostname is an IP address
+  const isIP = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
+
+  // If visiting directly via main domain, localhost, or IP:
+  // Use standard routing without rewriting! (e.g. /jakartarunners -> app/[slug])
+  if (rootDomains.includes(hostname) || isIP || hostname.includes('localhost')) {
+    return NextResponse.next();
+  }
+
+  // Check if it's a subdomain of latih.club (e.g. jakartarunners.latih.club)
+  const isSubdomainOfLatih = hostname.endsWith('.latih.club');
+  const isSubdomainOfConfigured = configuredRootDomain && hostname.endsWith(`.${configuredRootDomain}`);
+
+  if (isSubdomainOfLatih || isSubdomainOfConfigured) {
+    const mainHost = isSubdomainOfLatih ? 'latih.club' : configuredRootDomain;
+    const subdomain = hostname.replace(`.${mainHost}`, '');
+    if (subdomain && subdomain !== 'www') {
+      // Rewrite subdomain request to /[slug]/path
+      // e.g. jakartarunners.latih.club/ -> /jakartarunners
+      // e.g. jakartarunners.latih.club/admin -> /jakartarunners/admin
+      return NextResponse.rewrite(new URL(`/${subdomain}${pathname}${queryString}`, req.url));
+    }
+  }
+
+  // Otherwise, it's a completely custom domain (e.g. jakartarunners.com)
+  // Rewrite to /[domain]/path so the app/[slug] dynamic route can fetch by domain
+  return NextResponse.rewrite(new URL(`/${hostname}${pathname}${queryString}`, req.url));
 }
