@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Shield, Users, Calendar, Settings, LogOut, ArrowLeft, Image, LayoutDashboard, Wallet, CheckSquare, Menu, X, UserPlus } from 'lucide-react';
+import { Shield, Users, Calendar, Settings, LogOut, ArrowLeft, Image, LayoutDashboard, Wallet, CheckSquare, Menu, X, UserPlus, Ticket } from 'lucide-react';
 import { removeToken, getAuthHeaders } from '../../../lib/auth';
 
 export default function AdminLayout({ 
@@ -81,6 +81,7 @@ export default function AdminLayout({
     { name: 'Attendance', href: `/${resolvedParams.slug}/admin/attendance`, icon: CheckSquare },
     { name: 'Sessions', href: `/${resolvedParams.slug}/admin/sessions`, icon: Calendar },
     { name: 'Guests', href: `/${resolvedParams.slug}/admin/sessions/guests`, icon: UserPlus },
+    { name: 'Vouchers & Promo', href: `/${resolvedParams.slug}/admin/vouchers`, icon: Ticket },
     { name: 'Gallery', href: `/${resolvedParams.slug}/admin/gallery`, icon: Image },
     { name: 'Settings', href: `/${resolvedParams.slug}/admin/settings`, icon: Settings },
   ];

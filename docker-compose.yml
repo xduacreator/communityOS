@@ -36,14 +36,15 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://latih.club/api}
+        - NEXT_PUBLIC_ROOT_DOMAIN=${NEXT_PUBLIC_ROOT_DOMAIN:-latih.club}
     container_name: community-os-web
     restart: always
     expose:
       - "3000"
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
-      # Add other Web environment variables here
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://latih.club/api}
+      - NEXT_PUBLIC_ROOT_DOMAIN=${NEXT_PUBLIC_ROOT_DOMAIN:-latih.club}
     depends_on:
       - api
 

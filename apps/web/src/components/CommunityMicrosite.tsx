@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import JoinButton from './JoinButton';
 import ProfileSettings from './ProfileSettings';
-import { Home, Info, Phone, Calendar, Clock, MapPin, CheckCircle, Image as ImageIcon, Users, Trophy, Sun, ArrowRight, X, LayoutGrid, Shield, CreditCard, Activity, Zap, Plus, LogOut } from 'lucide-react';
+import { Home, Info, Phone, Calendar, Clock, MapPin, CheckCircle, Image as ImageIcon, Users, Trophy, Sun, ArrowRight, X, LayoutGrid, Shield, CreditCard, Activity, Zap, Plus, LogOut, Ticket, Tag, Check, Loader2 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import ConfirmModal from './ui/ConfirmModal';
 import imageCompression from 'browser-image-compression';
@@ -68,6 +68,16 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
   const [selectedBundleTierId, setSelectedBundleTierId] = useState('');
   const [bundleProofUrl, setBundleProofUrl] = useState('');
   const [submittingBundle, setSubmittingBundle] = useState(false);
+
+  // Voucher states
+  const [voucherCodeInput, setVoucherCodeInput] = useState('');
+  const [appliedVoucher, setAppliedVoucher] = useState<{
+    code: string;
+    discountAmount: number;
+    message: string;
+  } | null>(null);
+  const [validatingVoucher, setValidatingVoucher] = useState(false);
+  const [voucherError, setVoucherError] = useState('');
   const [isPrivateSession, setIsPrivateSession] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [purchasePackage, setPurchasePackage] = useState<SessionPackage | null>(null);
@@ -1910,7 +1920,122 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 </div>
 
                 {selectedRenewalTierId && (
-                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl text-xs space-y-3 text-slate-600 dark:text-slate-400 font-medium">
+                  <div className="space-y-3">
+                    {/* Voucher Input Field */}
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5 text-indigo-600" />
+                        Punya Kode Promo / Voucher?
+                      </label>
+                      {appliedVoucher ? (
+                        <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <div>
+                              <div className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                                Kode: <span className="font-mono">{appliedVoucher.code}</span>
+                              </div>
+                              <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                Hemat Rp {appliedVoucher.discountAmount.toLocaleString('id-ID')}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAppliedVoucher(null);
+                              setVoucherCodeInput('');
+                            }}
+                            className="text-[11px] font-bold text-red-500 hover:underline px-2 py-1"
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={voucherCodeInput}
+                            onChange={(e) => {
+                              setVoucherCodeInput(e.target.value.toUpperCase());
+                              setVoucherError('');
+                            }}
+                            placeholder="Contoh: LATIHNEWBER"
+                            className="flex-1 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono uppercase font-bold text-indigo-600 outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                          <button
+                            type="button"
+                            disabled={validatingVoucher || !voucherCodeInput.trim()}
+                            onClick={async () => {
+                              const selectedMembership = (community.memberships || []).find((m: Membership) => m.id === selectedRenewalTierId);
+                              const subtotal = selectedMembership?.price || 0;
+                              setValidatingVoucher(true);
+                              setVoucherError('');
+                              try {
+                                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/promo-vouchers/validate`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    communityId: community.id,
+                                    code: voucherCodeInput.trim(),
+                                    purchaseAmount: subtotal,
+                                  }),
+                                });
+                                const data = await res.json();
+                                if (!res.ok) throw new Error(data.message || 'Voucher tidak valid');
+                                setAppliedVoucher({
+                                  code: data.code,
+                                  discountAmount: data.discountAmount,
+                                  message: data.message,
+                                });
+                              } catch (err) {
+                                setAppliedVoucher(null);
+                                setVoucherError(err instanceof Error ? err.message : 'Voucher tidak valid');
+                              } finally {
+                                setValidatingVoucher(false);
+                              }
+                            }}
+                            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1 shrink-0"
+                          >
+                            {validatingVoucher ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Pasang'}
+                          </button>
+                        </div>
+                      )}
+                      {voucherError && (
+                        <p className="text-[11px] text-rose-500 font-semibold mt-1.5">{voucherError}</p>
+                      )}
+                    </div>
+
+                    {/* Total Price Calculation Summary */}
+                    {(() => {
+                      const selectedMembership = (community.memberships || []).find((m: Membership) => m.id === selectedRenewalTierId);
+                      const original = selectedMembership?.price || 0;
+                      const discount = appliedVoucher ? appliedVoucher.discountAmount : 0;
+                      const finalTotal = Math.max(0, original - discount);
+
+                      return (
+                        <div className="p-3.5 bg-slate-900 text-white rounded-2xl flex items-center justify-between">
+                          <div>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total Pembayaran</span>
+                            {discount > 0 && (
+                              <span className="text-[11px] text-slate-400 line-through mr-2">
+                                Rp {original.toLocaleString('id-ID')}
+                              </span>
+                            )}
+                            <span className="text-sm font-black text-emerald-400">
+                              Rp {finalTotal.toLocaleString('id-ID')}
+                            </span>
+                          </div>
+                          {discount > 0 && (
+                            <span className="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded-lg">
+                              Hemat Rp {discount.toLocaleString('id-ID')}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
+
+                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl text-xs space-y-3 text-slate-600 dark:text-slate-400 font-medium">
                     {community.qrisImageUrl && (
                       <div className="mb-2">
                         <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">Scan QRIS:</p>

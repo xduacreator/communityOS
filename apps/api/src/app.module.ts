@@ -18,6 +18,7 @@ import { MembershipTierModule } from './membership-tier/membership-tier.module';
 import { CronModule } from './cron/cron.module';
 import { SystemSettingModule } from './system-setting/system-setting.module';
 import { GuestRegistrationModule } from './guest-registration/guest-registration.module';
+import { PromoVoucherModule } from './promo-voucher/promo-voucher.module';
 
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -42,7 +43,8 @@ import { APP_GUARD } from '@nestjs/core';
     EventModule, 
     GalleryModule, ActivityModule, SessionPackageModule, SessionWalletModule, UserMembershipModule, MembershipTierModule, CronModule,
     SystemSettingModule,
-    GuestRegistrationModule
+    GuestRegistrationModule,
+    PromoVoucherModule
   ],
   controllers: [AppController],
   providers: [

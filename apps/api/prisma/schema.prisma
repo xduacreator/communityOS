@@ -67,6 +67,7 @@ model Community {
   activities         Activity[]
   sessionWallets     SessionWallet[]
   guestRegistrations GuestRegistration[]
+  promoVouchers      PromoVoucher[]
 }
 
 model CommunityMember {
@@ -288,4 +289,26 @@ model SystemSetting {
   value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model PromoVoucher {
+  id           String    @id @default(uuid())
+  communityId  String
+  code         String
+  description  String?
+  discountType String    @default("FIXED") // FIXED or PERCENTAGE
+  discountValue Float
+  minPurchase  Float?
+  maxDiscount  Float?
+  maxUses      Int?
+  usedCount    Int       @default(0)
+  validFrom    DateTime  @default(now())
+  validUntil   DateTime?
+  status       String    @default("ACTIVE") // ACTIVE or INACTIVE
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([communityId, code])
 }

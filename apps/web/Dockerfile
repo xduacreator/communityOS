@@ -19,6 +19,8 @@ RUN npm install
 
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_ROOT_DOMAIN
+ENV NEXT_PUBLIC_ROOT_DOMAIN=$NEXT_PUBLIC_ROOT_DOMAIN
 
 COPY --from=builder /app/out/full/ .
 RUN npx turbo run build --filter=@repo/web...
