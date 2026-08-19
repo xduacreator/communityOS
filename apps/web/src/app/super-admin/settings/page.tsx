@@ -285,6 +285,79 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
+
+            <div className="pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-bold text-slate-700">Platform Favicon (Ikon Tab Browser)</label>
+                {settings['platform.favicon'] && (
+                  <button
+                    type="button"
+                    onClick={() => handleChange('platform.favicon', '')}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Reset Favicon
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 mb-4">
+                Ikon berukuran kecil yang muncul pada tab browser di semua halaman website. (Disarankan rasio 1:1, format .png atau .ico).
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Favicon Upload / URL Input */}
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+                    <label className="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-2">
+                      <Upload className="w-4 h-4 text-indigo-600" />
+                      Option 1: Upload File Favicon
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/x-icon,image/png,image/svg+xml"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handleImageUpload('platform.favicon', e.target.files[0]);
+                        }
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-extrabold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100 cursor-pointer"
+                    />
+                  </div>
+
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+                    <label className="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-purple-600" />
+                      Option 2: Input URL Favicon
+                    </label>
+                    <input
+                      type="text"
+                      value={settings['platform.favicon'] || ''}
+                      onChange={(e) => handleChange('platform.favicon', e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-white font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
+                      placeholder="https://example.com/favicon.png"
+                    />
+                  </div>
+                </div>
+
+                {/* Live Preview Favicon */}
+                <div className="p-5 bg-white rounded-2xl border border-slate-200 flex flex-col justify-center items-center relative overflow-hidden">
+                  <div className="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-4 text-center">Live Preview Tab Browser</div>
+                  
+                  {/* Fake Browser Tab UI */}
+                  <div className="w-full max-w-xs bg-slate-100 rounded-t-lg flex border-b border-slate-200 px-2 pt-2">
+                    <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-t-lg border border-slate-200 border-b-0 w-48 shadow-sm">
+                      <img 
+                        src={settings['platform.favicon'] || '/favicon.ico'} 
+                        alt="Favicon Preview" 
+                        className="w-4 h-4 object-contain"
+                      />
+                      <span className="text-xs text-slate-700 truncate font-medium">Latih.Club</span>
+                    </div>
+                  </div>
+                  <div className="w-full max-w-xs h-8 bg-white border border-slate-200 border-t-0 rounded-b-lg shadow-sm"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
