@@ -23,6 +23,8 @@ import { PromoVoucherModule } from './promo-voucher/promo-voucher.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { LandingPageModule } from './landing-page/landing-page.module';
+import { BlogPostModule } from './blog-post/blog-post.module';
 
 @Module({
   imports: [
@@ -44,7 +46,9 @@ import { APP_GUARD } from '@nestjs/core';
     GalleryModule, ActivityModule, SessionPackageModule, SessionWalletModule, UserMembershipModule, MembershipTierModule, CronModule,
     SystemSettingModule,
     GuestRegistrationModule,
-    PromoVoucherModule
+    PromoVoucherModule,
+    LandingPageModule,
+    BlogPostModule
   ],
   controllers: [AppController],
   providers: [
