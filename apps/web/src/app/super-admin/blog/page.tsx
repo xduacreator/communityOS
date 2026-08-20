@@ -21,6 +21,7 @@ export default function BlogAdmin() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [currentId, setCurrentId] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -132,6 +133,34 @@ export default function BlogAdmin() {
     } catch (error) {
       console.error(error);
       alert('Terjadi kesalahan');
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formDataUpload = new FormData();
+    formDataUpload.append('file', file);
+
+    try {
+      const res = await fetch(`${getApiUrl()}/upload`, {
+        method: 'POST',
+        body: formDataUpload,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setFormData({ ...formData, featuredImage: data.url });
+      } else {
+        alert('Gagal upload gambar');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Terjadi kesalahan saat upload');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -256,13 +285,20 @@ export default function BlogAdmin() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Image URL (Opsional)</label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                    value={formData.featuredImage}
-                    onChange={(e) => setFormData({...formData, featuredImage: e.target.value})}
-                  />
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Image / Banner</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"
+                      value={formData.featuredImage}
+                      onChange={(e) => setFormData({...formData, featuredImage: e.target.value})}
+                      placeholder="/api/uploads/... atau https://..."
+                    />
+                    <label className={`flex-shrink-0 flex items-center justify-center px-4 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <span className="text-sm font-medium text-slate-600">{isUploading ? 'Uploading...' : 'Upload'}</span>
+                      <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
+                    </label>
+                  </div>
                 </div>
               </div>
 
