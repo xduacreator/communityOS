@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ShieldAlert, Globe, Users, LogOut, LayoutGrid, Fingerprint, Settings, Menu, X } from 'lucide-react';
+import { ShieldAlert, Globe, Users, LogOut, LayoutGrid, Fingerprint, Settings, Menu, X, FileText, Search } from 'lucide-react';
 import { removeToken } from '../../lib/auth';
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
@@ -21,6 +21,8 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
     { name: 'Users & Roles', href: '/super-admin/users', icon: Fingerprint },
     { name: 'Global Members', href: '/super-admin/members', icon: Users },
     { name: 'Sessions', href: '/super-admin/sessions', icon: LayoutGrid },
+    { name: 'SEO Landing Pages', href: '/super-admin/seo-pages', icon: Search },
+    { name: 'Blog (Topical)', href: '/super-admin/blog', icon: FileText },
     { name: 'Settings', href: '/super-admin/settings', icon: Settings },
   ];
 

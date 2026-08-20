@@ -136,31 +136,7 @@ export default function BlogAdmin() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      {/* Sidebar */}
-      <div className="w-64 bg-slate-900 text-white min-h-screen p-6 shrink-0 hidden md:block">
-        <div className="flex items-center gap-3 mb-10">
-          <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
-            <LayoutDashboard className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-bold text-lg">Super Admin</span>
-        </div>
-        
-        <nav className="space-y-2">
-          <button onClick={() => router.push('/super-admin')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors text-left">
-            <LayoutDashboard className="w-4 h-4" />
-            Dashboard
-          </button>
-          <button onClick={() => router.push('/super-admin/seo-pages')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors text-left">
-            <Globe className="w-4 h-4" />
-            SEO Landing Pages
-          </button>
-          <button onClick={() => router.push('/super-admin/blog')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-indigo-500/10 text-indigo-400 text-left">
-            <FileText className="w-4 h-4" />
-            Blog (Topical Authority)
-          </button>
-        </nav>
-      </div>
+    <div className="flex bg-slate-50">
 
       <div className="flex-1 p-8 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
