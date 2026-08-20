@@ -110,6 +110,18 @@ export class CommunityService {
         
         if (existingUser) {
           adminUserId = existingUser.id;
+          
+          if (data.adminName || data.adminPassword) {
+            const updateData: any = {};
+            if (data.adminName) updateData.name = data.adminName;
+            if (data.adminPassword) {
+              updateData.password = await bcrypt.hash(data.adminPassword, 10);
+            }
+            await prisma.user.update({
+              where: { id: adminUserId },
+              data: updateData
+            });
+          }
         } else {
           const hashedPassword = await bcrypt.hash(data.adminPassword || 'password123', 10);
           

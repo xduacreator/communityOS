@@ -151,6 +151,7 @@ export default function SuperAdminDashboard() {
       if (!res.ok) throw new Error('Failed to update community');
       
       setEditModalOpen(false);
+      alert('Community updated successfully');
       fetchCommunities();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'An error occurred');
