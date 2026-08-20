@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class SessionWalletService {
   constructor(private prisma: PrismaService) {}
 
-  async purchasePackage(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, userMembershipId?: string, paymentProofUrl?: string) {
+  async purchasePackage(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, userMembershipId?: string, paymentProofUrl?: string, promoVoucherId?: string) {
     const pkg = await this.prisma.sessionPackage.findUnique({ where: { id: packageId } });
     if (!pkg) throw new NotFoundException('Package not found');
 
@@ -43,6 +43,13 @@ export class SessionWalletService {
           initialStatus = 'WAITLIST';
         }
       }
+    }
+    
+    if (promoVoucherId) {
+      await this.prisma.promoVoucher.update({
+        where: { id: promoVoucherId },
+        data: { usedCount: { increment: 1 } }
+      });
     }
     
     return this.prisma.sessionWallet.create({
