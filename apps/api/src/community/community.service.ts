@@ -157,7 +157,7 @@ export class CommunityService {
           name: data.name,
           tagline: data.tagline,
           shortDescription: data.shortDescription,
-          domain: data.domain,
+          domain: data.domain || null,
           logo: data.logo,
           theme: data.theme,
           about: data.about,

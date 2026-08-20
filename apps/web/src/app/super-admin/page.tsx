@@ -96,10 +96,15 @@ export default function SuperAdminDashboard() {
     e.preventDefault();
     try {
       const headers = getAuthHeaders();
+      const payload = {
+        ...newComm,
+        domain: newComm.domain ? newComm.domain.replace(/^https?:\/\//, '').replace(/\/$/, '') : null,
+      };
+
       const res = await fetch(getApiUrl() + '/communities', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers },
-        body: JSON.stringify(newComm),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error('Failed to create community');
