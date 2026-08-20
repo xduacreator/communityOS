@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class CommunityService {
@@ -110,7 +111,6 @@ export class CommunityService {
         if (existingUser) {
           adminUserId = existingUser.id;
         } else {
-          const bcrypt = require('bcrypt');
           const hashedPassword = await bcrypt.hash(data.adminPassword || 'password123', 10);
           
           const newUser = await prisma.user.create({
@@ -194,8 +194,6 @@ export class CommunityService {
         if (existingUser) {
           adminUserId = existingUser.id;
         } else {
-          // Need bcrypt for hashing
-          const bcrypt = require('bcrypt');
           const hashedPassword = await bcrypt.hash(data.adminPassword || 'password123', 10);
           
           const newUser = await prisma.user.create({
