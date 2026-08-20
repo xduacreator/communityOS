@@ -139,6 +139,9 @@ export default async function Home() {
             <a href="#showcase" className="text-xs font-bold text-slate-600 hover:text-indigo-600 px-5 py-2 rounded-full hover:bg-white transition-all duration-200 shadow-none hover:shadow-sm">
               Kelas Komunitas
             </a>
+            <Link href="/blog" className="text-xs font-bold text-slate-600 hover:text-indigo-600 px-5 py-2 rounded-full hover:bg-white transition-all duration-200 shadow-none hover:shadow-sm">
+              Blog & Edukasi
+            </Link>
           </nav>
 
           <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
@@ -536,6 +539,7 @@ export default async function Home() {
           </div>
 
           <div className="flex items-center space-x-8 text-xs font-bold text-slate-500">
+            <Link href="/blog" className="hover:text-indigo-600 transition-colors">Blog</Link>
             <a href="#" className="hover:text-indigo-600 transition-colors">Kebijakan Privasi</a>
             <a href="#" className="hover:text-indigo-600 transition-colors">Syarat & Ketentuan</a>
           </div>
