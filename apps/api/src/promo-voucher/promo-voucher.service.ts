@@ -1,28 +1,81 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { IsString, IsOptional, IsNumber, IsDateString } from 'class-validator';
 
 export class CreateVoucherDto {
+  @IsString()
   communityId: string;
+
+  @IsString()
   code: string;
+
+  @IsOptional()
+  @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
   discountType?: string; // 'FIXED' | 'PERCENTAGE'
+
+  @IsNumber()
   discountValue: number;
+
+  @IsOptional()
+  @IsNumber()
   minPurchase?: number;
+
+  @IsOptional()
+  @IsNumber()
   maxDiscount?: number;
+
+  @IsOptional()
+  @IsNumber()
   maxUses?: number;
-  validFrom?: Date;
-  validUntil?: Date;
+
+  @IsOptional()
+  @IsDateString()
+  validFrom?: string;
+
+  @IsOptional()
+  @IsDateString()
+  validUntil?: string;
+
+  @IsOptional()
+  @IsString()
   status?: string;
 }
 
 export class UpdateVoucherDto {
+  @IsOptional()
+  @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
   discountType?: string;
+
+  @IsOptional()
+  @IsNumber()
   discountValue?: number;
+
+  @IsOptional()
+  @IsNumber()
   minPurchase?: number;
+
+  @IsOptional()
+  @IsNumber()
   maxDiscount?: number;
+
+  @IsOptional()
+  @IsNumber()
   maxUses?: number;
-  validUntil?: Date;
+
+  @IsOptional()
+  @IsDateString()
+  validUntil?: string;
+
+  @IsOptional()
+  @IsString()
   status?: string;
 }
 
