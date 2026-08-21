@@ -25,6 +25,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { LandingPageModule } from './landing-page/landing-page.module';
 import { BlogPostModule } from './blog-post/blog-post.module';
+import { CustomPageModule } from './custom-page/custom-page.module';
 
 @Module({
   imports: [

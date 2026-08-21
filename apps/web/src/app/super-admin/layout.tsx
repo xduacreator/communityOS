@@ -22,6 +22,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
     { name: 'Global Members', href: '/super-admin/members', icon: Users },
     { name: 'Sessions', href: '/super-admin/sessions', icon: LayoutGrid },
     { name: 'SEO Landing Pages', href: '/super-admin/seo-pages', icon: Search },
+    { name: 'Custom Pages', href: '/super-admin/custom-pages', icon: FileText },
     { name: 'Blog (Topical)', href: '/super-admin/blog', icon: FileText },
     { name: 'Settings', href: '/super-admin/settings', icon: Settings },
   ];

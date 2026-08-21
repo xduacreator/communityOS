@@ -699,43 +699,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Legal Pages Section */}
-        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm mt-8 relative overflow-hidden">
-          <div className="flex items-center gap-3 mb-8 pb-6 border-b border-slate-100">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-              <Scale className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-xl font-extrabold text-slate-900">Halaman Legal & Ketentuan</h2>
-              <p className="text-sm text-slate-500 mt-1">Kelola konten halaman Kebijakan Privasi dan Syarat & Ketentuan. (Mendukung HTML)</p>
-            </div>
-          </div>
-
-          <div className="space-y-8">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Kebijakan Privasi (Privacy Policy)</label>
-              <textarea
-                value={settings['privacy_policy'] || ''}
-                onChange={(e) => handleChange('privacy_policy', e.target.value)}
-                rows={8}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all font-mono text-sm text-slate-700 bg-slate-50"
-                placeholder="<h2>Kebijakan Privasi</h2><p>Masukkan konten HTML di sini...</p>"
-              />
-              <p className="text-xs text-slate-500 mt-2">Konten ini akan ditampilkan di halaman /privacy-policy.</p>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Syarat & Ketentuan (Terms & Conditions)</label>
-              <textarea
-                value={settings['terms_conditions'] || ''}
-                onChange={(e) => handleChange('terms_conditions', e.target.value)}
-                rows={8}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all font-mono text-sm text-slate-700 bg-slate-50"
-                placeholder="<h2>Syarat & Ketentuan</h2><p>Masukkan konten HTML di sini...</p>"
-              />
-              <p className="text-xs text-slate-500 mt-2">Konten ini akan ditampilkan di halaman /terms-conditions.</p>
-            </div>
-          </div>
-        </div>
 
         {/* Danger Zone Section */}
         <div className="bg-white rounded-3xl p-8 border border-rose-200 shadow-sm mt-12 relative overflow-hidden">
