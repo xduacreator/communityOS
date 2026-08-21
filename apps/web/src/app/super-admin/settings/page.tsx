@@ -6,6 +6,7 @@ import { getAuthHeaders } from '../../../lib/auth';
 import { Save, Loader2, Globe, LayoutTemplate, AlertOctagon, Megaphone, Zap, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import ConfirmModal from '../../../components/ui/ConfirmModal';
+import imageCompression from 'browser-image-compression';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -56,8 +57,10 @@ export default function SettingsPage() {
   const handleImageUpload = async (key: string, file: File) => {
     try {
       setSaving(true);
+      const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+      const compressedFile = await imageCompression(file, options);
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile);
       const res = await fetch(getApiUrl() + '/upload', {
         method: 'POST',
         body: formData,
@@ -69,7 +72,7 @@ export default function SettingsPage() {
       const data = await res.json();
       handleChange(key, data.url);
     } catch (err) {
-      alert('Error uploading image: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      alert(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       setSaving(false);
     }

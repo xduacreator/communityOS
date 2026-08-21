@@ -14,10 +14,14 @@ import {
   QrCode,
   X,
   CheckCircle,
-  UserPlus
+  UserPlus,
+  AlertTriangle,
+  Image as ImageIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { getAuthHeaders } from '../../../../lib/auth';
+import ConfirmModal from '../../../../components/ui/ConfirmModal';
+import imageCompression from 'browser-image-compression';
 import { Community, SessionPackage, Activity as CommunityActivity, SessionWallet, CommunityMember } from '../../../../types';
 
 export default function SessionsManagementPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -129,8 +133,10 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
   };
 
   const uploadFile = async (file: File) => {
+    const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+    const compressedFile = await imageCompression(file, options);
     const fd = new FormData();
-    fd.append('file', file);
+    fd.append('file', compressedFile);
     const res = await fetch(getApiUrl() + '/upload', { method: 'POST', body: fd });
     if (!res.ok) throw new Error('Failed to upload image');
     const data = await res.json();

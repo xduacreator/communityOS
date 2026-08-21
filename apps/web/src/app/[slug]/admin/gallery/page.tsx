@@ -4,6 +4,7 @@ import { getApiUrl } from '../../../../lib/api';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuthHeaders } from '../../../../lib/auth';
+import imageCompression from 'browser-image-compression';
 import { Image as ImageIcon, Plus, Trash2, Link as LinkIcon, Type, X } from 'lucide-react';
 import ConfirmModal from '../../../../components/ui/ConfirmModal';
 
@@ -49,8 +50,10 @@ export default function AdminGallery({ params }: { params: Promise<{ slug: strin
   }, [resolvedParams.slug]);
 
   const uploadFile = async (file: File) => {
+    const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+    const compressedFile = await imageCompression(file, options);
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', compressedFile);
     const res = await fetch(getApiUrl() + '/upload', {
       method: 'POST',
       body: formData,

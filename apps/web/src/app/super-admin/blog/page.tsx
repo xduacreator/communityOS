@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { LayoutDashboard, FileText, Plus, Edit2, Trash2, Globe } from 'lucide-react';
 import { getApiUrl } from '@/lib/api';
 import { getAuthHeaders } from '@/lib/auth';
+import imageCompression from 'browser-image-compression';
 
 interface BlogPost {
   id: string;
@@ -138,10 +139,13 @@ export default function BlogAdmin() {
     if (!file) return;
 
     setIsUploading(true);
-    const formDataUpload = new FormData();
-    formDataUpload.append('file', file);
-
     try {
+      const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+      const compressedFile = await imageCompression(file, options);
+      
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', compressedFile);
+
       const res = await fetch(`${getApiUrl()}/upload`, {
         method: 'POST',
         body: formDataUpload,
