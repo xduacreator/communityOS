@@ -399,6 +399,11 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       }
     }
 
+    if (!status && pkg.accessRule !== 'PUBLIC') {
+      alert("Silakan daftar/gabung komunitas terlebih dahulu sebelum membeli paket khusus member.");
+      return;
+    }
+
     // Check membership remaining duration (require renewal bundle if <= 2 days or empty)
     const days = getMembershipRemainingDays();
     const requiresPaidMembership = community.registrationMode === 'PAID' || pkg.accessRule === 'MEMBER_ONLY' || pkg.accessRule === 'PAID_MEMBERSHIP_ONLY';
