@@ -23,7 +23,10 @@ export default function SeoLandingPage({ data }: SeoLandingPageProps) {
   // Schema Markup for FAQPage (Great for SEO/SGE)
   interface FAQ {
     question: string;
-    answer: string;
+    answer?: string;
+    intro?: string;
+    list?: string[];
+    outro?: string;
   }
 
   const faqSchema = faqs.length > 0 ? {
@@ -34,7 +37,7 @@ export default function SeoLandingPage({ data }: SeoLandingPageProps) {
       "name": faq.question,
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": faq.answer
+        "text": faq.answer || [faq.intro, faq.list ? faq.list.map(l => `- ${l}`).join('\n') : '', faq.outro].filter(Boolean).join('\n\n')
       }
     }))
   } : null;
@@ -99,8 +102,15 @@ export default function SeoLandingPage({ data }: SeoLandingPageProps) {
                   </div>
                   <ChevronDown className="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform ml-4 shrink-0" />
                 </summary>
-                <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-0">
-                  <p className="text-slate-600 leading-relaxed ml-9">{faq.answer}</p>
+                <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-0 ml-9 text-slate-600 leading-relaxed">
+                  {faq.answer && <p className="mb-2 whitespace-pre-wrap">{faq.answer}</p>}
+                  {faq.intro && <p className="mb-3 whitespace-pre-wrap">{faq.intro}</p>}
+                  {faq.list && faq.list.length > 0 && (
+                    <ul className="list-disc list-outside ml-5 mb-3 space-y-1">
+                      {faq.list.map((item, i) => <li key={i}>{item}</li>)}
+                    </ul>
+                  )}
+                  {faq.outro && <p className="whitespace-pre-wrap">{faq.outro}</p>}
                 </div>
               </details>
             ))}
