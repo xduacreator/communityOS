@@ -49,7 +49,8 @@ import { CustomPageModule } from './custom-page/custom-page.module';
     GuestRegistrationModule,
     PromoVoucherModule,
     LandingPageModule,
-    BlogPostModule
+    BlogPostModule,
+    CustomPageModule
   ],
   controllers: [AppController],
   providers: [
