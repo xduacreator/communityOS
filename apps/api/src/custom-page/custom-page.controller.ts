@@ -3,10 +3,9 @@ import { CustomPageService } from './custom-page.service';
 import { CreateCustomPageDto } from './dto/create-custom-page.dto';
 import { UpdateCustomPageDto } from './dto/update-custom-page.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '@prisma/client';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
+import { RequireSuperAdmin } from '../auth/decorators/roles.decorator';
 
 @ApiTags('Custom Pages')
 @Controller('custom-page')
@@ -14,8 +13,8 @@ export class CustomPageController {
   constructor(private readonly customPageService: CustomPageService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
   @ApiOperation({ summary: 'Create a new custom page' })
   create(@Body() createCustomPageDto: CreateCustomPageDto) {
     return this.customPageService.create(createCustomPageDto);
@@ -34,16 +33,16 @@ export class CustomPageController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
   @ApiOperation({ summary: 'Update a custom page' })
   update(@Param('id') id: string, @Body() updateCustomPageDto: UpdateCustomPageDto) {
     return this.customPageService.update(id, updateCustomPageDto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
   @ApiOperation({ summary: 'Delete a custom page' })
   remove(@Param('id') id: string) {
     return this.customPageService.remove(id);
