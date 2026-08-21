@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LayoutDashboard, FileText, Plus, Edit2, Trash2, Globe, Sparkles } from 'lucide-react';
 import { getApiUrl } from '@/lib/api';
+import { getAuthHeaders } from '@/lib/auth';
 
 interface LandingPage {
   id: string;
@@ -37,11 +38,9 @@ export default function SeoPagesAdmin() {
 
   const fetchPages = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const headers = getAuthHeaders();
       const res = await fetch(`${getApiUrl()}/landing-page`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers
       });
       if (res.ok) {
         const data = await res.json();
@@ -74,9 +73,9 @@ export default function SeoPagesAdmin() {
   };
 
   const handleOpenEdit = async (id: string) => {
-    const token = localStorage.getItem('token');
+    const headers = getAuthHeaders();
     const res = await fetch(`${getApiUrl()}/landing-page/${id}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers
     });
     if (res.ok) {
       const data = await res.json();
@@ -98,17 +97,17 @@ export default function SeoPagesAdmin() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Hapus halaman SEO ini?')) return;
-    const token = localStorage.getItem('token');
+    const headers = getAuthHeaders();
     await fetch(`${getApiUrl()}/landing-page/${id}`, {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers
     });
     fetchPages();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
+    const headers = getAuthHeaders();
     const url = isEdit ? `${getApiUrl()}/landing-page/${currentId}` : `${getApiUrl()}/landing-page`;
     const method = isEdit ? 'PATCH' : 'POST';
 
@@ -117,7 +116,7 @@ export default function SeoPagesAdmin() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...headers
         },
         body: JSON.stringify(formData)
       });

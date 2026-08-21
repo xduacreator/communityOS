@@ -2185,7 +2185,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                       packageId: bundlePackage.id,
                       isPrivate: isPrivateSession,
                       membershipId: selectedBundleTierId,
-                      paymentProofUrl: bundleProofUrl
+                      paymentProofUrl: bundleProofUrl,
+                      promoVoucherId: appliedVoucher?.voucherId
                     })
                   });
                   if (!res.ok) {
@@ -2266,9 +2267,97 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   </div>
                 </div>
 
+                {/* Voucher Input Field for Bundle */}
+                <div className="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl mt-4">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-indigo-600" />
+                    Punya Kode Promo / Voucher?
+                  </label>
+                  {appliedVoucher ? (
+                    <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <div>
+                          <div className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                            Kode: <span className="font-mono">{appliedVoucher.code}</span>
+                          </div>
+                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                            Hemat Rp {appliedVoucher.discountAmount.toLocaleString('id-ID')}
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAppliedVoucher(null);
+                          setVoucherCodeInput('');
+                        }}
+                        className="text-[11px] font-bold text-red-500 hover:underline px-2 py-1"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={voucherCodeInput}
+                          onChange={(e) => {
+                            setVoucherCodeInput(e.target.value.toUpperCase());
+                            setVoucherError('');
+                          }}
+                          placeholder="Contoh: PROMO123"
+                          className="flex-1 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono uppercase font-bold text-indigo-600 outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <button
+                          type="button"
+                          disabled={validatingVoucher || !voucherCodeInput.trim()}
+                          onClick={async () => {
+                            const packagePrice = (isPrivateSession && bundlePackage.vipPrice) ? (bundlePackage.vipPrice || 0) : (bundlePackage.memberPrice || 0);
+                            const membershipPrice = (community.memberships || []).find((m: Membership) => m.id === selectedBundleTierId)?.price || 0;
+                            const subtotal = packagePrice + membershipPrice;
+                            
+                            setValidatingVoucher(true);
+                            setVoucherError('');
+                            try {
+                              const res = await fetch(`${getApiUrl()}/promo-vouchers/validate`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  communityId: community.id,
+                                  code: voucherCodeInput.trim(),
+                                  purchaseAmount: subtotal,
+                                }),
+                              });
+                              const data = await res.json();
+                              if (!res.ok) throw new Error(data.message || 'Voucher tidak valid');
+                              setAppliedVoucher({
+                                code: data.code,
+                                voucherId: data.voucherId,
+                                discountAmount: data.discountAmount,
+                                message: data.message,
+                              });
+                            } catch (err) {
+                              setAppliedVoucher(null);
+                              setVoucherError(err instanceof Error ? err.message : 'Voucher tidak valid');
+                            } finally {
+                              setValidatingVoucher(false);
+                            }
+                          }}
+                          className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1 shrink-0"
+                        >
+                          {validatingVoucher ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Pasang'}
+                        </button>
+                      </div>
+                      {voucherError && <p className="text-[10px] font-bold text-red-500 ml-1 flex items-center gap-1"><X className="w-3 h-3" /> {voucherError}</p>}
+                    </div>
+                  )}
+                </div>
+
                 {/* Rincian Total Pembayaran */}
                 {selectedBundleTierId && (
-                  <div className="p-4 bg-primary/5 border border-indigo-150 rounded-2xl space-y-2 text-xs">
+                  <div className="p-4 bg-primary/5 border border-indigo-150 rounded-2xl space-y-2 text-xs mt-4">
                     <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 font-bold">
                       <span>Harga Paket Sesi:</span>
                       <span>Rp {(isPrivateSession && bundlePackage.vipPrice ? bundlePackage.vipPrice : bundlePackage.memberPrice)?.toLocaleString('id-ID')}</span>
@@ -2279,13 +2368,21 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                         Rp {(community.memberships || []).find((m: Membership) => m.id === selectedBundleTierId)?.price?.toLocaleString('id-ID')}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-primary font-extrabold pt-2 border-t border-indigo-150">
+                    
+                    {appliedVoucher && (
+                      <div className="flex justify-between items-center text-emerald-600 font-semibold pt-2 pb-2 border-t border-b border-indigo-150">
+                        <span>Diskon (Voucher):</span>
+                        <span>- Rp {appliedVoucher.discountAmount.toLocaleString('id-ID')}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between items-center text-primary font-extrabold pt-2">
                       <span>Total Transfer:</span>
                       <span className="text-sm">
-                        Rp {(
+                        Rp {Math.max(0, (
                           ((isPrivateSession && bundlePackage.vipPrice) ? (bundlePackage.vipPrice || 0) : (bundlePackage.memberPrice || 0)) + 
                           ((community.memberships || []).find((m: Membership) => m.id === selectedBundleTierId)?.price || 0)
-                        ).toLocaleString('id-ID')}
+                        ) - (appliedVoucher?.discountAmount || 0)).toLocaleString('id-ID')}
                       </span>
                     </div>
                   </div>

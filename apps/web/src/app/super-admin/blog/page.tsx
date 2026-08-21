@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LayoutDashboard, FileText, Plus, Edit2, Trash2, Globe } from 'lucide-react';
 import { getApiUrl } from '@/lib/api';
+import { getAuthHeaders } from '@/lib/auth';
 
 interface BlogPost {
   id: string;
@@ -38,10 +39,8 @@ export default function BlogAdmin() {
 
   const fetchPosts = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${getApiUrl()}/blog-post`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const headers = getAuthHeaders();
+      const res = await fetch(`${getApiUrl()}/blog-post`, { headers });
       if (res.ok) {
         const data = await res.json();
         setPosts(data);
@@ -74,10 +73,8 @@ export default function BlogAdmin() {
   };
 
   const handleOpenEdit = async (id: string) => {
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${getApiUrl()}/blog-post/${id}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const headers = getAuthHeaders();
+    const res = await fetch(`${getApiUrl()}/blog-post/${id}`, { headers });
     if (res.ok) {
       const data = await res.json();
       setFormData({
@@ -99,17 +96,17 @@ export default function BlogAdmin() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Hapus artikel blog ini?')) return;
-    const token = localStorage.getItem('token');
+    const headers = getAuthHeaders();
     await fetch(`${getApiUrl()}/blog-post/${id}`, {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers
     });
     fetchPosts();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
+    const headers = getAuthHeaders();
     const url = isEdit ? `${getApiUrl()}/blog-post/${currentId}` : `${getApiUrl()}/blog-post`;
     const method = isEdit ? 'PATCH' : 'POST';
 
@@ -118,7 +115,7 @@ export default function BlogAdmin() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...headers
         },
         body: JSON.stringify(formData)
       });
