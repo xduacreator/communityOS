@@ -4,8 +4,14 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 
+import * as express from 'express';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Increase payload limit for CMS content like Privacy Policy
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
   // Secure HTTP headers with helmet
   app.use(
