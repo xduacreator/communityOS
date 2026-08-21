@@ -42,6 +42,12 @@ export default function middleware(req: NextRequest) {
   // Check if current hostname is an IP address
   const isIP = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
 
+  // Global Platform Routes that should NOT be rewritten (always served from root)
+  const globalRoutes = ['/privacy-policy', '/terms-conditions'];
+  if (globalRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`))) {
+    return NextResponse.next();
+  }
+
   // If visiting directly via main domain, localhost, or IP:
   // Use standard routing without rewriting! (e.g. /jakartarunners -> app/[slug])
   if (rootDomains.includes(hostname) || isIP || hostname.includes('localhost')) {

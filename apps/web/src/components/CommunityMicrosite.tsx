@@ -2923,7 +2923,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" checked={guestForm.acceptedTnC} onChange={e => setGuestForm({...guestForm, acceptedTnC: e.target.checked})} className="mt-1 w-4 h-4 text-primary rounded" />
                     <span className="text-xs text-slate-500 leading-tight">
-                      Saya telah membaca dan menyetujui seluruh <a href="#" className="text-primary font-bold hover:underline">Syarat & Ketentuan</a> serta Kebijakan Privasi dari {community.name}.
+                      Saya telah membaca dan menyetujui seluruh <a href="/terms-conditions" target="_blank" className="text-primary font-bold hover:underline">Syarat & Ketentuan</a> serta <a href="/privacy-policy" target="_blank" className="text-primary font-bold hover:underline">Kebijakan Privasi</a> dari {community.name}.
                     </span>
                   </label>
                 </div>
