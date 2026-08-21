@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ChevronDown } from 'lucide-react';
 
 interface SeoLandingPageProps {
   data: {
@@ -91,13 +91,18 @@ export default function SeoLandingPage({ data }: SeoLandingPageProps) {
           </div>
           <div className="space-y-6">
             {faqs.map((faq: FAQ, idx: number) => (
-              <div key={idx} className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                <h3 className="text-xl font-bold text-slate-900 mb-3 flex items-start gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
-                  {faq.question}
-                </h3>
-                <p className="text-slate-600 leading-relaxed ml-9">{faq.answer}</p>
-              </div>
+              <details key={idx} className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                <summary className="p-6 sm:p-8 cursor-pointer list-none flex items-center justify-between outline-none [&::-webkit-details-marker]:hidden">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" />
+                    <h3 className="text-xl font-bold text-slate-900 m-0">{faq.question}</h3>
+                  </div>
+                  <ChevronDown className="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform ml-4 shrink-0" />
+                </summary>
+                <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-0">
+                  <p className="text-slate-600 leading-relaxed ml-9">{faq.answer}</p>
+                </div>
+              </details>
             ))}
           </div>
         </section>
