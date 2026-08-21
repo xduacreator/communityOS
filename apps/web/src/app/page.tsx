@@ -540,8 +540,8 @@ export default async function Home() {
 
           <div className="flex items-center space-x-8 text-xs font-bold text-slate-500">
             <Link href="/blog" className="hover:text-indigo-600 transition-colors">Blog</Link>
-            <a href="#" className="hover:text-indigo-600 transition-colors">Kebijakan Privasi</a>
-            <a href="#" className="hover:text-indigo-600 transition-colors">Syarat & Ketentuan</a>
+            <Link href="/privacy-policy" className="hover:text-indigo-600 transition-colors">Kebijakan Privasi</Link>
+            <Link href="/terms-conditions" className="hover:text-indigo-600 transition-colors">Syarat & Ketentuan</Link>
           </div>
 
           <p className="text-xs text-slate-400 font-medium">
