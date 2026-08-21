@@ -192,12 +192,10 @@ export class PromoVoucherService {
         discountAmount = voucher.maxDiscount;
       }
     } else {
+      if (voucher.discountValue > purchaseAmount) {
+        throw new BadRequestException(`Nilai voucher (Rp ${voucher.discountValue.toLocaleString('id-ID')}) lebih besar dari total pembelian (Rp ${purchaseAmount.toLocaleString('id-ID')}). Voucher tidak dapat digunakan.`);
+      }
       discountAmount = voucher.discountValue;
-    }
-
-    // Discount cannot exceed purchase amount
-    if (discountAmount > purchaseAmount) {
-      discountAmount = purchaseAmount;
     }
 
     const finalPrice = Math.max(0, purchaseAmount - discountAmount);
