@@ -497,12 +497,12 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
 
   const getTabIcon = (tab: string) => {
     switch (tab) {
-      case 'home': return <Home className="w-4 h-4 mr-2" />;
-      case 'sessions': return <Calendar className="w-4 h-4 mr-2" />;
-      case 'gallery': return <ImageIcon className="w-4 h-4 mr-2" />;
-      case 'about': return <Info className="w-4 h-4 mr-2" />;
-      case 'contact': return <Phone className="w-4 h-4 mr-2" />;
-      case 'dashboard': return <LayoutGrid className="w-4 h-4 mr-2" />;
+      case 'home': return <Home className="w-4 h-4" />;
+      case 'sessions': return <Calendar className="w-4 h-4" />;
+      case 'gallery': return <ImageIcon className="w-4 h-4" />;
+      case 'about': return <Info className="w-4 h-4" />;
+      case 'contact': return <Phone className="w-4 h-4" />;
+      case 'dashboard': return <LayoutGrid className="w-4 h-4" />;
       default: return null;
     }
   };
@@ -591,7 +591,7 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                 type="button"
                 onClick={() => handleTabChange(tab)}
                 className={`
-                  cursor-pointer flex items-center px-3 py-2 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-semibold capitalize transition-all duration-300 whitespace-nowrap
+                  cursor-pointer flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-semibold capitalize transition-all duration-300 whitespace-nowrap
                   ${activeTab === tab 
                     ? 'bg-primary/5 text-primary' 
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50 dark:text-slate-50 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-900'}
@@ -2958,12 +2958,12 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
             <button 
               key={tab}
               onClick={() => handleTabChange(tab)}
-              className="flex flex-col items-center justify-center relative w-14 shrink-0"
+              className="flex flex-col items-center justify-start relative w-16 shrink-0 h-10"
             >
-              <div className={`mb-1 transition-colors flex items-center justify-center ${activeTab === tab ? 'text-primary' : 'text-slate-400'}`}>
+              <div className={`transition-colors flex items-center justify-center h-5 mb-0.5 ${activeTab === tab ? 'text-primary' : 'text-slate-400'}`}>
                 {getTabIcon(tab)}
               </div>
-              <span className={`text-[9px] font-bold transition-colors capitalize text-center ${activeTab === tab ? 'text-primary' : 'text-slate-400'}`}>
+              <span className={`text-[9px] font-bold transition-colors capitalize text-center leading-tight px-1 ${activeTab === tab ? 'text-primary' : 'text-slate-400'}`}>
                 {label}
               </span>
               {activeTab === tab && (
