@@ -16,7 +16,11 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new ConflictException('Email already in use');
+      const isPasswordValid = await bcrypt.compare(data.password, existingUser.password);
+      if (isPasswordValid) {
+        return this.generateToken(existingUser);
+      }
+      throw new ConflictException('Email ini sudah terdaftar di ekosistem kami. Silakan masuk (Login) menggunakan kata sandi Anda.');
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
