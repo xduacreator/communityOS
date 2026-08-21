@@ -10,8 +10,8 @@ export class SessionWalletController {
   constructor(private readonly sessionWalletService: SessionWalletService) {}
 
   @Post('purchase')
-  purchasePackage(@Body() body: { userId: string; communityId: string; packageId: string; isPrivate?: boolean; userMembershipId?: string; paymentProofUrl?: string }) {
-    return this.sessionWalletService.purchasePackage(body.userId, body.communityId, body.packageId, body.isPrivate, body.userMembershipId, body.paymentProofUrl);
+  purchasePackage(@Body() body: { userId: string; communityId: string; packageId: string; isPrivate?: boolean; userMembershipId?: string; paymentProofUrl?: string; promoVoucherId?: string }) {
+    return this.sessionWalletService.purchasePackage(body.userId, body.communityId, body.packageId, body.isPrivate, body.userMembershipId, body.paymentProofUrl, body.promoVoucherId);
   }
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
