@@ -32,12 +32,7 @@ async function getSettings(): Promise<Record<string, string>> {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        const obj: Record<string, string> = {};
-        data.forEach((s: any) => {
-          obj[s.key] = s.value;
-        });
-        return obj;
+        return await res.json();
       }
     } catch {
       // Try next
