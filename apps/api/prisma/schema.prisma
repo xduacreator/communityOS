@@ -37,6 +37,7 @@ model Community {
   contactInfo           String?
   whatsappNumber        String?
   isActive              Boolean  @default(true)
+  isShowcase            Boolean  @default(false)
   statMembersValue      String?
   statEventsValue       String?
   statCitiesValue       String?

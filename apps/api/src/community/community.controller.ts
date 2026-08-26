@@ -50,7 +50,10 @@ export class CommunityController {
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
   @RequireTenantRole('COMMUNITY_ADMIN')
   @Patch(':communityId')
-  update(@Param('communityId') id: string, @Body() data: any) {
+  update(@Param('communityId') id: string, @Body() data: any, @Request() req: any) {
+    if (!req.user?.isSuperAdmin) {
+      delete data.isShowcase;
+    }
     return this.communityService.update(id, data);
   }
   @UseGuards(JwtAuthGuard, SuperAdminGuard)

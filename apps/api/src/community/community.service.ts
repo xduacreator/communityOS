@@ -22,6 +22,7 @@ export class CommunityService {
     return this.prisma.community.findMany({
       where: {
         isActive: true,
+        isShowcase: true,
       },
       select: {
         id: true,
@@ -37,7 +38,7 @@ export class CommunityService {
       orderBy: {
         createdAt: 'desc',
       },
-      take: 6,
+      take: 3,
     });
   }
 
@@ -98,6 +99,7 @@ export class CommunityService {
           registrationMode: data.registrationMode,
           paymentInstructions: data.paymentInstructions,
           qrisImageUrl: data.qrisImageUrl,
+          ...(data.isShowcase !== undefined ? { isShowcase: data.isShowcase } : {}),
         },
       });
 

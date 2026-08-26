@@ -23,7 +23,7 @@ export default function SuperAdminDashboard() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newComm, setNewComm] = useState({ name: '', slug: '', domain: '', adminEmail: '', adminName: '', adminPassword: '' });
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editComm, setEditComm] = useState({ id: '', name: '', slug: '', domain: '', adminEmail: '', adminName: '', adminPassword: '' });
+  const [editComm, setEditComm] = useState({ id: '', name: '', slug: '', domain: '', adminEmail: '', adminName: '', adminPassword: '', isShowcase: false });
 
   // Reset Data State
   const [resetModalOpen, setResetModalOpen] = useState(false);
@@ -126,7 +126,8 @@ export default function SuperAdminDashboard() {
       domain: comm.domain || '',
       adminEmail: adminMember?.user?.email || '',
       adminName: adminMember?.user?.name || '',
-      adminPassword: ''
+      adminPassword: '',
+      isShowcase: (comm as any).isShowcase || false
     });
     setEditModalOpen(true);
   };
@@ -139,6 +140,7 @@ export default function SuperAdminDashboard() {
         name: editComm.name,
         slug: editComm.slug,
         domain: editComm.domain ? editComm.domain.replace(/^https?:\/\//, '').replace(/\/$/, '') : null,
+        isShowcase: editComm.isShowcase,
         ...(editComm.adminEmail && { adminEmail: editComm.adminEmail, adminName: editComm.adminName, adminPassword: editComm.adminPassword })
       };
       
@@ -459,6 +461,17 @@ export default function SuperAdminDashboard() {
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow" 
                       />
                     </div>
+                  </div>
+                  <div className="mt-4">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={editComm.isShowcase}
+                        onChange={(e) => setEditComm({ ...editComm, isShowcase: e.target.checked })}
+                        className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="text-sm font-bold text-slate-700">Tampilkan di Landing Page (Showcase)</span>
+                    </label>
                   </div>
                   
                   <div className="mt-6">
