@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-import { getApiUrl } from '../../../lib/api';
+import { getApiUrl } from '../../lib/api';
 
 interface CustomPageData {
   title: string;
