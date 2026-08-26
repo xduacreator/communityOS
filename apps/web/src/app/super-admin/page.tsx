@@ -478,28 +478,26 @@ export default function SuperAdminDashboard() {
                     </label>
                   </div>
 
-                  {editComm.isShowcase && (
-                    <div className="mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-xl space-y-4">
-                      <div>
-                        <label className="block text-sm font-bold text-indigo-900 mb-2">Teks Kapsul (Tagline)</label>
-                        <input 
-                          type="text" 
-                          value={editComm.tagline} onChange={e => setEditComm({...editComm, tagline: e.target.value})}
-                          className="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow" 
-                          placeholder="Contoh: Akademi Basket Anak"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-indigo-900 mb-2">Deskripsi Singkat</label>
-                        <textarea 
-                          value={editComm.shortDescription} onChange={e => setEditComm({...editComm, shortDescription: e.target.value})}
-                          className="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow" 
-                          placeholder="Deskripsi singkat yang tampil di Landing Page..."
-                          rows={3}
-                        />
-                      </div>
+                  <div className="mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-xl space-y-4">
+                    <div>
+                      <label className="block text-sm font-bold text-indigo-900 mb-2">Teks Kapsul (Tagline)</label>
+                      <input 
+                        type="text" 
+                        value={editComm.tagline} onChange={e => setEditComm({...editComm, tagline: e.target.value})}
+                        className="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow" 
+                        placeholder="Contoh: Akademi Basket Anak"
+                      />
                     </div>
-                  )}
+                    <div>
+                      <label className="block text-sm font-bold text-indigo-900 mb-2">Deskripsi Singkat</label>
+                      <textarea 
+                        value={editComm.shortDescription} onChange={e => setEditComm({...editComm, shortDescription: e.target.value})}
+                        className="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow" 
+                        placeholder="Deskripsi singkat yang tampil di Landing Page..."
+                        rows={3}
+                      />
+                    </div>
+                  </div>
                   
                   <div className="mt-6">
                     <label className="block text-sm font-bold text-slate-700 mb-2">Custom Domain (Opsional)</label>
