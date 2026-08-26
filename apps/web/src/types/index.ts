@@ -42,6 +42,7 @@ export interface Community {
   contactInfo?: string | null;
   whatsappNumber?: string;
   isActive: boolean;
+  isShowcase?: boolean;
   statMembersValue?: string | null;
   statEventsValue?: string | null;
   statCitiesValue?: string | null;

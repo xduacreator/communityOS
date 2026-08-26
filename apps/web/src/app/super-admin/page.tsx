@@ -127,7 +127,7 @@ export default function SuperAdminDashboard() {
       adminEmail: adminMember?.user?.email || '',
       adminName: adminMember?.user?.name || '',
       adminPassword: '',
-      isShowcase: (comm as any).isShowcase || false,
+      isShowcase: comm.isShowcase || false,
       tagline: comm.tagline || '',
       shortDescription: comm.shortDescription || ''
     });
@@ -186,7 +186,7 @@ export default function SuperAdminDashboard() {
     if (!resetDataId) return;
 
     const selectedOptions = Object.entries(resetOptions)
-      .filter(([_, isSelected]) => isSelected)
+      .filter(([, isSelected]) => isSelected)
       .map(([key]) => key);
 
     if (selectedOptions.length === 0) {
