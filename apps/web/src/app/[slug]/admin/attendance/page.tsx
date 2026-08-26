@@ -51,6 +51,7 @@ export default function AdminAttendance({ params }: { params: Promise<{ slug: st
 
   const filteredAttendance = attendance.filter(t => 
     t.wallet?.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    t.wallet?.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     t.wallet?.package?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -102,7 +103,7 @@ export default function AdminAttendance({ params }: { params: Promise<{ slug: st
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by member name or package..."
+              placeholder="Search by name, email or package..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium text-sm shadow-sm"

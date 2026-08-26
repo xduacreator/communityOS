@@ -55,9 +55,50 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
+async function getSettings(): Promise<Record<string, string>> {
+  const candidateUrls = [
+    process.env.INTERNAL_API_URL,
+    'http://api:3001/api',
+    getApiUrl(),
+    'http://localhost:3001/api',
+    'http://127.0.0.1:3001/api',
+  ].filter(Boolean) as string[];
+
+  const uniqueUrls = Array.from(new Set(candidateUrls));
+
+  for (const baseUrl of uniqueUrls) {
+    try {
+      const cleanBase = baseUrl.replace(/\/$/, '');
+      const url = cleanBase.endsWith('/api')
+        ? `${cleanBase}/system-settings`
+        : `${cleanBase}/api/system-settings`;
+
+      const res = await fetch(url, {
+        next: { revalidate: 5 },
+        signal: AbortSignal.timeout(3000),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const obj: Record<string, string> = {};
+        data.forEach((s: any) => {
+          obj[s.key] = s.value;
+        });
+        return obj;
+      }
+    } catch {
+      // Try next
+    }
+  }
+  return {};
+}
+
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
-  const post = await getBlogPost(resolvedParams.slug);
+  const [post, settings] = await Promise.all([
+    getBlogPost(resolvedParams.slug),
+    getSettings()
+  ]);
 
   if (!post || !post.isPublished) {
     notFound();
@@ -65,6 +106,23 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <div className="min-h-screen bg-white text-slate-900 pt-24 pb-24">
+      {/* Navbar */}
+      <header className="fixed top-0 inset-x-0 bg-white/80 backdrop-blur-2xl z-50 border-b border-slate-200/60 shadow-sm shadow-slate-900/5 transition-all duration-300">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 h-16 sm:h-20 flex justify-between items-center gap-2">
+          <Link href="/" className="flex items-center group shrink-0">
+            <img 
+              src={settings['platform.logo'] || '/images/logo.svg'} 
+              alt={settings['platform.name'] || 'Latih.Club'} 
+              className="h-8 transition-transform group-hover:scale-105"
+            />
+          </Link>
+          <nav className="flex items-center gap-6">
+            <Link href="/" className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">
+              Kembali ke Beranda
+            </Link>
+          </nav>
+        </div>
+      </header>
       <div className="max-w-3xl mx-auto px-6">
         <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" />

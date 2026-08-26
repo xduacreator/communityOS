@@ -517,7 +517,10 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
                  className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-900 transition-all outline-none"
                >
                  <option value="">-- Auto-select Active Wallet --</option>
-                 {packages.map(p => (
+                 {(checkinForm.userId 
+                   ? packages.filter(p => wallets.some(w => w.userId === checkinForm.userId && w.walletStatus === 'ACTIVE' && w.packageId === p.id))
+                   : packages
+                 ).map(p => (
                    <option key={p.id} value={p.id}>{p.name}</option>
                  ))}
                </select>

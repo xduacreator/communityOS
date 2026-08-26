@@ -593,30 +593,50 @@ export class SessionWalletService {
       }
     });
 
-    let newStatus = activeWallets.length > 0 ? 'WAITING' : 'ACTIVE';
+    let updatedWallet;
     
-    // Force active jika disetujui manual (bisa disesuaikan tergantung business logic)
-    if (pendingWallet.walletStatus === 'WAITING' || pendingWallet.walletStatus === 'WAITLIST') {
-      newStatus = 'ACTIVE';
-    }
+    if (activeWallets.length > 0) {
+      // Accumulate into existing wallet
+      const existingActive = activeWallets[0];
+      let newExpiredDate = new Date(existingActive.expiredDate || new Date());
+      if (pendingWallet.package) {
+        newExpiredDate.setDate(newExpiredDate.getDate() + pendingWallet.package.validDays);
+      }
 
-    let startDate = null;
-    let expiredDate = null;
-    if (newStatus === 'ACTIVE') {
-      startDate = new Date();
-      expiredDate = new Date();
+      await this.prisma.sessionWallet.update({
+        where: { id: existingActive.id },
+        data: {
+          totalSession: existingActive.totalSession + pendingWallet.totalSession,
+          remainingSession: existingActive.remainingSession + pendingWallet.totalSession,
+          expiredDate: newExpiredDate,
+        }
+      });
+
+      // Mark current pending wallet as MERGED so it doesn't double count sessions but keeps purchase history
+      updatedWallet = await this.prisma.sessionWallet.update({
+        where: { id },
+        data: {
+          walletStatus: 'MERGED',
+          startDate: new Date(),
+          expiredDate: newExpiredDate
+        }
+      });
+    } else {
+      let startDate = new Date();
+      let expiredDate = new Date();
       if (pendingWallet.package) {
         expiredDate.setDate(expiredDate.getDate() + pendingWallet.package.validDays);
       }
-    }
 
-    const updatedWallet = await this.prisma.sessionWallet.update({
-      where: { id },
-      data: {
-        walletStatus: newStatus,
-        ...(newStatus === 'ACTIVE' ? { startDate, expiredDate } : {})
-      }
-    });
+      updatedWallet = await this.prisma.sessionWallet.update({
+        where: { id },
+        data: {
+          walletStatus: 'ACTIVE',
+          startDate,
+          expiredDate
+        }
+      });
+    }
 
     // Automatically approve bundled membership if it exists
     if (pendingWallet.userMembershipId) {
