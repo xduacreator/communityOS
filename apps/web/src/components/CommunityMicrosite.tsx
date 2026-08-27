@@ -449,9 +449,10 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
       return;
     }
     
-    // Check if the latest history for THIS package is a check-in.
+    // Check if the latest history for THIS package TODAY is a check-in.
     const packageHistory = history.filter(h => h.packageId === packageId);
-    const isCheckedIn = packageHistory.length > 0 && packageHistory[0].remarks === 'Check-in';
+    const todayStr = new Date().toDateString();
+    const isCheckedIn = packageHistory.length > 0 && packageHistory[0].date.toDateString() === todayStr && (packageHistory[0].remarks?.startsWith('Check-in') || false);
     
     setCheckInActionData({ packageId, isCheckedIn });
     setIsCheckInConfirmOpen(true);
@@ -1260,7 +1261,13 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                             {/* Active Session Wallet Card (Main Stage!) */}
                             {activeWallets.length > 0 ? (
                               <div className="space-y-6">
-                                {activeWallets.map((wallet) => (
+                                {activeWallets.map((wallet) => {
+                                  const packageHistory = history.filter(h => h.packageId === wallet.packageId);
+                                  const todayStr = new Date().toDateString();
+                                  const latestTx = packageHistory.length > 0 ? packageHistory[0] : null;
+                                  const isCheckedInToday = Boolean(latestTx && latestTx.date.toDateString() === todayStr && latestTx.remarks?.startsWith('Check-in'));
+
+                                  return (
                                   <div key={wallet.packageId} className="bg-white dark:bg-slate-950 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800 p-8 relative overflow-hidden text-left">
                                     <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-50 rounded-full blur-3xl opacity-40 -mr-10 -mt-10"></div>
                                     
@@ -1287,11 +1294,11 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                         <div className="w-px h-10 bg-slate-150"></div>
                                         <button
                                           onClick={() => handleCheckInOut(wallet.packageId)}
-                                          disabled={checkingInOut || (wallet.status !== 'ACTIVE' && !(wallet.status === 'COMPLETED' && history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in'))}
+                                          disabled={checkingInOut || (wallet.status !== 'ACTIVE' && !(wallet.status === 'COMPLETED' && isCheckedInToday))}
                                           className={`px-8 py-4 font-bold rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2.5 active:scale-[0.97] ${
-                                            (wallet.status !== 'ACTIVE' && !(wallet.status === 'COMPLETED' && history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in')) 
+                                            (wallet.status !== 'ACTIVE' && !(wallet.status === 'COMPLETED' && isCheckedInToday)) 
                                               ? 'bg-slate-300 text-slate-500 shadow-none cursor-not-allowed opacity-70'
-                                              : history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in'
+                                              : isCheckedInToday
                                                 ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20'
                                                 : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
                                           }`}
@@ -1299,11 +1306,11 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                           <Zap className="w-4 h-4 fill-current" />
                                           <span>{checkingInOut
                                             ? 'Processing...'
-                                            : wallet.status === 'COMPLETED' && history.find(h => h.packageId === wallet.packageId)?.remarks !== 'Check-in'
+                                            : wallet.status === 'COMPLETED' && !isCheckedInToday
                                               ? 'Selesai'
                                               : wallet.status !== 'ACTIVE' && wallet.status !== 'COMPLETED'
                                                 ? 'Belum Aktif'
-                                                : (history.find(h => h.packageId === wallet.packageId)?.remarks === 'Check-in')
+                                                : isCheckedInToday
                                                   ? 'Check Out Sesi'
                                                   : 'Check In Sesi'}</span>
                                         </button>
@@ -1318,7 +1325,8 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
                                       ></div>
                                     </div>
                                   </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             ) : (
                               <div className="bg-white dark:bg-slate-950 rounded-[2.5rem] shadow-sm border border-slate-150 p-8 text-center space-y-4 text-left flex flex-col md:flex-row md:items-center md:justify-between gap-6">

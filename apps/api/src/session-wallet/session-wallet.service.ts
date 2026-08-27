@@ -69,6 +69,13 @@ export class SessionWalletService {
   }
 
   async checkIn(userId: string, communityId: string, adminId: string, packageId?: string, remarks?: string) {
+    const activeMembership = await this.prisma.userMembership.findFirst({
+      where: { userId, communityId, status: 'ACTIVE', endDate: { gt: new Date() } }
+    });
+    if (!activeMembership) {
+      throw new BadRequestException('Membership kedaluwarsa atau tidak aktif.');
+    }
+
     const activeWallet = await this.prisma.sessionWallet.findFirst({
       where: {
         userId,
@@ -83,6 +90,18 @@ export class SessionWalletService {
 
     if (!activeWallet) {
       throw new BadRequestException('No active session wallet found or wallet expired/empty');
+    }
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const latestTx = await this.prisma.sessionTransaction.findFirst({
+      where: { walletId: activeWallet.id, transactionType: 'ATTENDANCE', createdAt: { gte: startOfToday } },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (latestTx && latestTx.remarks?.startsWith('Check-in')) {
+      throw new BadRequestException('Member sudah check-in hari ini.');
     }
 
     return this.prisma.$transaction(async (tx: any) => {
@@ -130,6 +149,13 @@ export class SessionWalletService {
   }
 
   async memberCheckIn(userId: string, communityId: string, packageId?: string, remarks?: string) {
+    const activeMembership = await this.prisma.userMembership.findFirst({
+      where: { userId, communityId, status: 'ACTIVE', endDate: { gt: new Date() } }
+    });
+    if (!activeMembership) {
+      throw new BadRequestException('Membership Anda kedaluwarsa atau tidak aktif. Perpanjang membership terlebih dahulu.');
+    }
+
     const activeWallet = await this.prisma.sessionWallet.findFirst({
       where: {
         userId,
@@ -146,13 +172,16 @@ export class SessionWalletService {
       throw new BadRequestException('No active session wallet found or wallet expired/empty');
     }
 
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     const latestTx = await this.prisma.sessionTransaction.findFirst({
-      where: { walletId: activeWallet.id, transactionType: 'ATTENDANCE' },
+      where: { walletId: activeWallet.id, transactionType: 'ATTENDANCE', createdAt: { gte: startOfToday } },
       orderBy: { createdAt: 'desc' }
     });
 
     if (latestTx && latestTx.remarks?.startsWith('Check-in')) {
-      throw new BadRequestException('You are already checked in. Please check out first.');
+      throw new BadRequestException('Anda sudah check-in hari ini. Lakukan check-out dulu.');
     }
 
     return this.prisma.$transaction(async (tx: any) => {
@@ -214,13 +243,16 @@ export class SessionWalletService {
       throw new BadRequestException('No session wallet found');
     }
 
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     const latestTx = await this.prisma.sessionTransaction.findFirst({
-      where: { walletId: wallet.id, transactionType: 'ATTENDANCE' },
+      where: { walletId: wallet.id, transactionType: 'ATTENDANCE', createdAt: { gte: startOfToday } },
       orderBy: { createdAt: 'desc' }
     });
 
     if (!latestTx || !latestTx.remarks?.startsWith('Check-in')) {
-      throw new BadRequestException('You are not currently checked in.');
+      throw new BadRequestException('Tidak ada check-in hari ini yang bisa di-checkout.');
     }
 
     const transaction = await this.prisma.sessionTransaction.create({
