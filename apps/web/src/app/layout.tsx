@@ -25,7 +25,7 @@ async function getSystemSettings() {
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSystemSettings();
   const faviconUrl = settings['platform.favicon'] || '/favicon.ico';
-  const googleSiteVerification = settings['seo.google_site_verification'] || undefined;
+  const googleSiteVerification = settings['seo.google_site_verification'] || "BTciuJEeFWfq_earQpLZBlNeKP-Rb8JUfbFpJcaP8OU";
 
   return {
     title: "Latih.Club - Platform Manajemen Kelas & Komunitas",
@@ -49,9 +49,27 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <meta name="google-site-verification" content="BTciuJEeFWfq_earQpLZBlNeKP-Rb8JUfbFpJcaP8OU" />
+      </head>
       <body
         className="font-sans antialiased text-slate-800 bg-slate-50"
       >
+        {/* Google tag (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-LNG53CE1BQ"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-LNG53CE1BQ');
+          `}
+        </Script>
+
         {gtmId && (
           <noscript>
             <iframe src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
