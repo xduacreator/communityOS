@@ -699,6 +699,41 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* SEO & Analytics Section */}
+        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm mt-12">
+          <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-100">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <Zap className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-extrabold text-slate-900">SEO & Analytics</h2>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Google Site Verification Code</label>
+              <input
+                type="text"
+                value={settings['seo.google_site_verification'] || ''}
+                onChange={(e) => handleChange('seo.google_site_verification', e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-700 font-mono text-sm"
+                placeholder="Misal: xyz123..."
+              />
+              <p className="text-xs text-slate-500 mt-2">Kode verifikasi meta tag dari Google Search Console.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Google Tag Manager ID</label>
+              <input
+                type="text"
+                value={settings['seo.google_tag_manager'] || ''}
+                onChange={(e) => handleChange('seo.google_tag_manager', e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-slate-700 font-mono text-sm"
+                placeholder="Misal: GTM-XXXXXXX"
+              />
+              <p className="text-xs text-slate-500 mt-2">ID Container Google Tag Manager Anda. Memungkinkan tracking Google Analytics, Pixel, dll.</p>
+            </div>
+          </div>
+        </div>
+
 
         {/* Danger Zone Section */}
         <div className="bg-white rounded-3xl p-8 border border-rose-200 shadow-sm mt-12 relative overflow-hidden">
