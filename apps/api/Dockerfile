@@ -49,4 +49,4 @@ WORKDIR /app/apps/api
 EXPOSE 3001
 
 # Push the schema and run the production build
-CMD ["sh", "-c", "echo 'Connecting to database...' && until npx prisma db push --accept-data-loss; do echo 'Database is not ready yet, retrying in 2 seconds...'; sleep 2; done && npx prisma generate && npm run start:prod"]
+CMD ["sh", "-c", "npx prisma db push && npx prisma generate && npm run start:prod"]
