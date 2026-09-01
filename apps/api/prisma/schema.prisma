@@ -170,6 +170,9 @@ model UserMembership {
   endDate      DateTime
   status       String   @default("ACTIVE")
   paymentProofUrl String?
+  paidPrice       Float?
+  discountAmount  Float?   @default(0)
+  promoVoucherId  String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -241,6 +244,9 @@ model SessionWallet {
   startDate        DateTime?
   expiredDate      DateTime?
   paymentProofUrl  String?
+  paidPrice        Float?
+  discountAmount   Float?    @default(0)
+  promoVoucherId   String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 

@@ -5,6 +5,53 @@ import { PrismaService } from '../prisma/prisma.service';
 export class SessionWalletService {
   constructor(private prisma: PrismaService) {}
 
+  private async calculateVoucherDiscount(
+    promoVoucherId: string | undefined,
+    communityId: string,
+    purchaseAmount: number,
+  ) {
+    if (!promoVoucherId) {
+      return { discountAmount: 0, promoVoucherId: null as string | null };
+    }
+
+    const voucher = await this.prisma.promoVoucher.findUnique({
+      where: { id: promoVoucherId },
+    });
+    const now = new Date();
+
+    if (!voucher || voucher.communityId !== communityId) {
+      throw new BadRequestException('Voucher tidak valid untuk komunitas ini.');
+    }
+    if (voucher.status !== 'ACTIVE') {
+      throw new BadRequestException('Voucher ini sudah tidak aktif.');
+    }
+    if (voucher.validFrom && voucher.validFrom > now) {
+      throw new BadRequestException('Voucher ini belum dapat digunakan.');
+    }
+    if (voucher.validUntil && voucher.validUntil < now) {
+      throw new BadRequestException('Voucher ini sudah kedaluwarsa.');
+    }
+    if (voucher.maxUses !== null && voucher.usedCount >= voucher.maxUses) {
+      throw new BadRequestException('Kuota penggunaan voucher ini sudah habis.');
+    }
+    if (voucher.minPurchase !== null && purchaseAmount < voucher.minPurchase) {
+      throw new BadRequestException('Total pembelian belum memenuhi minimum voucher.');
+    }
+
+    let discountAmount = voucher.discountType === 'PERCENTAGE'
+      ? (purchaseAmount * voucher.discountValue) / 100
+      : voucher.discountValue;
+
+    if (voucher.discountType === 'PERCENTAGE' && voucher.maxDiscount !== null) {
+      discountAmount = Math.min(discountAmount, voucher.maxDiscount);
+    }
+
+    return {
+      discountAmount: Math.min(Math.max(discountAmount, 0), purchaseAmount),
+      promoVoucherId: voucher.id,
+    };
+  }
+
   async purchasePackage(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, userMembershipId?: string, paymentProofUrl?: string, promoVoucherId?: string) {
     const pkg = await this.prisma.sessionPackage.findUnique({ where: { id: packageId } });
     if (!pkg) throw new NotFoundException('Package not found');
@@ -45,12 +92,21 @@ export class SessionWalletService {
       }
     }
     
-    if (promoVoucherId) {
+    const basePrice = isPrivate ? (pkg.vipPrice || 0) : pkg.memberPrice;
+    const voucherResult = await this.calculateVoucherDiscount(
+      promoVoucherId,
+      communityId,
+      basePrice,
+    );
+
+    if (voucherResult.promoVoucherId) {
       await this.prisma.promoVoucher.update({
-        where: { id: promoVoucherId },
+        where: { id: voucherResult.promoVoucherId },
         data: { usedCount: { increment: 1 } }
       });
     }
+
+    const paidPrice = Math.max(0, basePrice - voucherResult.discountAmount);
     
     return this.prisma.sessionWallet.create({
       data: {
@@ -64,6 +120,9 @@ export class SessionWalletService {
         purchaseDate: new Date(),
         paymentProofUrl,
         isPrivate,
+        paidPrice,
+        discountAmount: voucherResult.discountAmount,
+        promoVoucherId: voucherResult.promoVoucherId,
       }
     });
   }
@@ -381,13 +440,19 @@ export class SessionWalletService {
       where: { communityId, status: { in: ['ACTIVE', 'EXPIRED'] } },
       include: { membership: true }
     });
-    const membershipRevenue = approvedMemberships.reduce((sum: number, m: any) => sum + (m.membership?.price || 0), 0);
+    const membershipRevenue = approvedMemberships.reduce(
+      (sum: number, m: any) => sum + (m.paidPrice ?? m.membership?.price ?? 0),
+      0,
+    );
 
     const approvedWallets = await this.prisma.sessionWallet.findMany({
-      where: { communityId, walletStatus: { in: ['ACTIVE', 'EXPIRED'] } },
+      where: { communityId, walletStatus: { in: ['ACTIVE', 'EXPIRED', 'COMPLETED', 'MERGED'] } },
       include: { package: true }
     });
-    const sessionRevenue = approvedWallets.reduce((sum: number, w: any) => sum + (w.isPrivate ? (w.package?.vipPrice || 0) : (w.package?.memberPrice || 0)), 0);
+    const sessionRevenue = approvedWallets.reduce(
+      (sum: number, w: any) => sum + (w.paidPrice ?? (w.isPrivate ? (w.package?.vipPrice || 0) : (w.package?.memberPrice || 0))),
+      0,
+    );
     const totalRevenue = membershipRevenue + sessionRevenue;
 
     // Daily check-ins last 7 days
@@ -475,11 +540,17 @@ export class SessionWalletService {
 
     // We can estimate revenue by summing package prices (assuming memberPrice)
     const mtdWallets = await this.prisma.sessionWallet.findMany({
-      where: { purchaseDate: { gte: firstDayOfMonth } },
+      where: {
+        purchaseDate: { gte: firstDayOfMonth },
+        walletStatus: { in: ['ACTIVE', 'EXPIRED', 'COMPLETED', 'MERGED'] },
+      },
       include: { package: true }
     });
     
-    const revenueMtd = mtdWallets.reduce((sum: number, w: any) => sum + (w.isPrivate ? (w.package?.vipPrice || 0) : (w.package?.memberPrice || 0)), 0);
+    const revenueMtd = mtdWallets.reduce(
+      (sum: number, w: any) => sum + (w.paidPrice ?? (w.isPrivate ? (w.package?.vipPrice || 0) : (w.package?.memberPrice || 0))),
+      0,
+    );
 
     const expiredFrozenCount = await this.prisma.sessionWallet.count({
       where: { walletStatus: { in: ['EXPIRED', 'FROZEN'] } }
@@ -494,7 +565,7 @@ export class SessionWalletService {
     };
   }
 
-  async purchaseBundle(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, membershipId: string, paymentProofUrl: string) {
+  async purchaseBundle(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, membershipId: string, paymentProofUrl: string, promoVoucherId?: string) {
     const pkg = await this.prisma.sessionPackage.findUnique({ where: { id: packageId } });
     if (!pkg) throw new NotFoundException('Package not found');
 
@@ -549,6 +620,24 @@ export class SessionWalletService {
       }
     }
 
+    const packagePrice = isPrivate ? (pkg.vipPrice || 0) : pkg.memberPrice;
+    const membershipPrice = membership.price || 0;
+    const voucherResult = await this.calculateVoucherDiscount(
+      promoVoucherId,
+      communityId,
+      packagePrice + membershipPrice,
+    );
+
+    if (voucherResult.promoVoucherId) {
+      await this.prisma.promoVoucher.update({
+        where: { id: voucherResult.promoVoucherId },
+        data: { usedCount: { increment: 1 } },
+      });
+    }
+
+    const packageDiscount = Math.min(voucherResult.discountAmount, packagePrice);
+    const membershipDiscount = voucherResult.discountAmount - packageDiscount;
+
     const userMembership = await this.prisma.userMembership.create({
       data: {
         userId,
@@ -557,7 +646,10 @@ export class SessionWalletService {
         startDate: start,
         endDate: end,
         status: 'PENDING',
-        paymentProofUrl
+        paymentProofUrl,
+        paidPrice: Math.max(0, membershipPrice - membershipDiscount),
+        discountAmount: membershipDiscount,
+        promoVoucherId: voucherResult.promoVoucherId,
       }
     });
 
@@ -573,6 +665,10 @@ export class SessionWalletService {
         remainingSession: pkg.totalSession,
         purchaseDate: new Date(),
         isPrivate,
+        paymentProofUrl,
+        paidPrice: Math.max(0, packagePrice - packageDiscount),
+        discountAmount: packageDiscount,
+        promoVoucherId: voucherResult.promoVoucherId,
       }
     });
 
