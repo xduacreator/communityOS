@@ -63,7 +63,21 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
         console.error('Auto-join failed', err);
       }
 
-      // Redirect to the member dashboard
+      const statusRes = await fetch(`${getApiUrl()}/memberships/my-status/${resolvedParams.slug}`, {
+        headers: { 'Authorization': `Bearer ${data.access_token}` },
+      });
+      if (statusRes.ok) {
+        const membership = await statusRes.json();
+        if (membership?.status === 'APPROVED' && membership?.role === 'COACH') {
+          router.push(`/${resolvedParams.slug}/admin/participants`);
+          return;
+        }
+        if (membership?.status === 'APPROVED' && membership?.role === 'COMMUNITY_ADMIN') {
+          router.push(`/${resolvedParams.slug}/admin/dashboard`);
+          return;
+        }
+      }
+
       router.push(`/${resolvedParams.slug}?tab=dashboard`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

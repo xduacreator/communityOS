@@ -126,6 +126,7 @@ enum RegistrationStatus {
 enum Role {
   SUPER_ADMIN
   COMMUNITY_ADMIN
+  COACH
   MEMBER
 }
 

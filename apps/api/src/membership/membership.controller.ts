@@ -32,7 +32,7 @@ export class MembershipController {
   @RequireTenantRole('COMMUNITY_ADMIN')
   @Patch(':id/status')
   updateStatus(@Param('id') id: string, @Body() data: { status: any, communityId: string }) {
-    return this.membershipService.updateStatus(id, data.status);
+    return this.membershipService.updateStatus(id, data.status, data.communityId);
   }
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
@@ -40,14 +40,14 @@ export class MembershipController {
   @Patch(':id')
   updateMember(@Param('id') id: string, @Body() data: { role?: any, name?: string, email?: string, customFieldsData?: string, communityId: string }) {
     const { communityId, ...updateData } = data;
-    return this.membershipService.updateMember(id, updateData);
+    return this.membershipService.updateMember(id, updateData, communityId);
   }
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
   @RequireTenantRole('COMMUNITY_ADMIN')
   @Delete(':id')
   deleteMember(@Param('id') id: string, @Body() data: { communityId: string }) {
-    return this.membershipService.deleteMember(id);
+    return this.membershipService.deleteMember(id, data.communityId);
   }
 
   @UseGuards(JwtAuthGuard)

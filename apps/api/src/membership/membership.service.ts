@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -42,32 +42,34 @@ export class MembershipService {
     return membership;
   }
 
-  async updateStatus(id: string, status: any) {
+  async updateStatus(id: string, status: any, communityId?: string) {
     // Generate membershipNumber on approval if it doesn't exist
     const updateData: any = { status };
+    const existing = await this.prisma.communityMember.findUnique({ where: { id } });
+    if (!existing || (communityId && existing.communityId !== communityId)) {
+      throw new NotFoundException('Member not found in this community');
+    }
     if (status === 'APPROVED') {
-      const existing = await this.prisma.communityMember.findUnique({ where: { id } });
-      if (existing) {
-        if (!existing.membershipNumber) {
-          updateData.membershipNumber = 'MEM-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-        }
-        
+      if (!existing.membershipNumber) {
+        updateData.membershipNumber = 'MEM-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+      }
+
         // Auto-approve pending UserMembership if exists (so admin doesn't need to approve twice)
         const pendingUserMembership = await this.prisma.userMembership.findFirst({
           where: { userId: existing.userId, communityId: existing.communityId, status: 'PENDING' },
           include: { membership: true }
         });
-        
+
         if (pendingUserMembership) {
            const start = new Date();
            const end = new Date(start);
            end.setDate(end.getDate() + pendingUserMembership.membership.durationDays);
-           
+
            await this.prisma.userMembership.update({
              where: { id: pendingUserMembership.id },
              data: { status: 'ACTIVE', startDate: start, endDate: end }
            });
-           
+
            // Also approve linked session wallets
            const linkedWallets = await this.prisma.sessionWallet.findMany({
              where: { userMembershipId: pendingUserMembership.id }
@@ -85,7 +87,6 @@ export class MembershipService {
              }
            }
         }
-      }
     }
     return this.prisma.communityMember.update({
       where: { id },
@@ -93,17 +94,24 @@ export class MembershipService {
     });
   }
 
-  async updateMember(id: string, data: any) {
+  async updateMember(id: string, data: any, communityId?: string) {
     const { name, email, customFieldsData, ...restData } = data;
-    
+    const allowedRoles = ['MEMBER', 'COACH', 'COMMUNITY_ADMIN'];
+    if (restData.role !== undefined && !allowedRoles.includes(restData.role)) {
+      throw new BadRequestException('Invalid community role');
+    }
+
     return this.prisma.$transaction(async (tx: any) => {
       const member = await tx.communityMember.findUnique({
         where: { id },
         include: { user: true }
       });
-      
+
       if (!member) {
         throw new NotFoundException('Member not found');
+      }
+      if (communityId && member.communityId !== communityId) {
+        throw new NotFoundException('Member not found in this community');
       }
 
       if (name !== undefined || email !== undefined) {
@@ -126,7 +134,11 @@ export class MembershipService {
     });
   }
 
-  async deleteMember(id: string) {
+  async deleteMember(id: string, communityId?: string) {
+    const member = await this.prisma.communityMember.findUnique({ where: { id } });
+    if (!member || (communityId && member.communityId !== communityId)) {
+      throw new NotFoundException('Member not found in this community');
+    }
     return this.prisma.communityMember.delete({
       where: { id }
     });

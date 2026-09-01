@@ -8,14 +8,15 @@ export class TenantRoleGuard implements CanActivate {
   constructor(private reflector: Reflector, private prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredRole = this.reflector.getAllAndOverride<string>(TENANT_ROLE_KEY, [
+    const roleMetadata = this.reflector.getAllAndOverride<string | string[]>(TENANT_ROLE_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
-    if (!requiredRole) {
+    if (!roleMetadata) {
       return true;
     }
+    const requiredRoles = Array.isArray(roleMetadata) ? roleMetadata : [roleMetadata];
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
@@ -38,8 +39,8 @@ export class TenantRoleGuard implements CanActivate {
       },
     });
 
-    if (!membership || membership.role !== requiredRole) {
-      throw new ForbiddenException(`Requires tenant role: ${requiredRole}`);
+    if (!membership || membership.status !== 'APPROVED' || !requiredRoles.includes(membership.role)) {
+      throw new ForbiddenException(`Requires tenant role: ${requiredRoles.join(' or ')}`);
     }
 
     return true;

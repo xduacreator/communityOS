@@ -72,7 +72,7 @@ export interface CommunityMember {
   membershipNumber?: string | null;
   userId: string;
   communityId: string;
-  role: 'SUPER_ADMIN' | 'COMMUNITY_ADMIN' | 'MEMBER';
+  role: 'SUPER_ADMIN' | 'COMMUNITY_ADMIN' | 'COACH' | 'MEMBER';
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   customFieldsData?: string | null;
   paymentProofUrl?: string | null;
