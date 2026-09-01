@@ -33,7 +33,7 @@ export default function AdminAttendance({ params }: { params: Promise<{ slug: st
       if (!communityId) return;
       try {
         const headers = getAuthHeaders();
-        const res = await fetch(`${getApiUrl()}/session-wallet/admin/community/${communityId}/attendance`, {
+        const res = await fetch(`${getApiUrl()}/session-wallet/operations/community/${communityId}/attendance`, {
           headers
         });
         if (res.ok) {
@@ -51,21 +51,19 @@ export default function AdminAttendance({ params }: { params: Promise<{ slug: st
 
   const filteredAttendance = attendance.filter(t => 
     t.wallet?.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    t.wallet?.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     t.wallet?.package?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleExportCSV = () => {
     if (filteredAttendance.length === 0) return;
 
-    const headers = ['Member Name', 'Email', 'Date & Time', 'Package', 'Session Change', 'Remaining', 'Remarks'];
+    const headers = ['Member Name', 'Date & Time', 'Package', 'Session Change', 'Remaining', 'Remarks'];
     const csvRows = [headers.join(',')];
 
     filteredAttendance.forEach(t => {
       const date = new Date(t.createdAt).toLocaleString('id-ID');
       const row = [
         `"${t.wallet?.user?.name || '-'}"`,
-        `"${t.wallet?.user?.email || '-'}"`,
         `"${date}"`,
         `"${t.wallet?.package?.name || '-'}"`,
         t.changeSession,
@@ -103,7 +101,7 @@ export default function AdminAttendance({ params }: { params: Promise<{ slug: st
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by name, email or package..."
+              placeholder="Search by name or package..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium text-sm shadow-sm"
@@ -149,7 +147,6 @@ export default function AdminAttendance({ params }: { params: Promise<{ slug: st
                     <tr key={record.id} className="hover:bg-slate-50 transition-colors bg-white">
                       <td className="px-6 py-4">
                         <div className="font-extrabold text-slate-900">{record.wallet?.user?.name || 'Unknown'}</div>
-                        <div className="text-xs font-semibold text-slate-500 mt-1">{record.wallet?.user?.email || ''}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-bold text-slate-800">{checkInDate.toLocaleDateString()}</div>

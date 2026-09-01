@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards, Patch, Request } from '@nestjs/common';
 import { SessionWalletService } from './session-wallet.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
 import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
-import { RequireTenantRole, RequireSuperAdmin } from '../auth/decorators/roles.decorator';
+import { RequireTenantRole, RequireTenantRoles, RequireSuperAdmin } from '../auth/decorators/roles.decorator';
 
 @Controller('session-wallet')
 export class SessionWalletController {
@@ -45,9 +45,11 @@ export class SessionWalletController {
     return this.sessionWalletService.memberCheckOut(body.userId, body.communityId, body.packageId, body.remarks);
   }
 
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRoles('COMMUNITY_ADMIN', 'COACH')
   @Post('check-in')
-  checkIn(@Body() body: { userId: string; communityId: string; adminId: string; packageId?: string; remarks?: string }) {
-    return this.sessionWalletService.checkIn(body.userId, body.communityId, body.adminId, body.packageId, body.remarks);
+  checkIn(@Request() req: any, @Body() body: { userId: string; communityId: string; packageId?: string; remarks?: string }) {
+    return this.sessionWalletService.checkIn(body.userId, body.communityId, req.user.userId, body.packageId, body.remarks);
   }
 
   @Post('freeze')
@@ -73,6 +75,20 @@ export class SessionWalletController {
   @Get('admin/community/:communityId/attendance')
   getAdminAttendance(@Param('communityId') communityId: string) {
     return this.sessionWalletService.getAdminAttendance(communityId);
+  }
+
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRoles('COMMUNITY_ADMIN', 'COACH')
+  @Get('operations/community/:communityId/participants')
+  getOperationalParticipants(@Param('communityId') communityId: string) {
+    return this.sessionWalletService.getOperationalParticipants(communityId);
+  }
+
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRoles('COMMUNITY_ADMIN', 'COACH')
+  @Get('operations/community/:communityId/attendance')
+  getOperationalAttendance(@Param('communityId') communityId: string) {
+    return this.sessionWalletService.getOperationalAttendance(communityId);
   }
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)

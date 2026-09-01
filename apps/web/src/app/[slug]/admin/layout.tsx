@@ -19,6 +19,7 @@ export default function AdminLayout({
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [panelRole, setPanelRole] = useState<'COMMUNITY_ADMIN' | 'COACH'>('COMMUNITY_ADMIN');
 
   useEffect(() => {
     let isMounted = true;
@@ -35,7 +36,10 @@ export default function AdminLayout({
         const userData = await userRes.json();
         
         if (userData.isSuperAdmin) {
-          if (isMounted) setIsAuthorized(true);
+          if (isMounted) {
+            setPanelRole('COMMUNITY_ADMIN');
+            setIsAuthorized(true);
+          }
           return;
         }
 
@@ -46,18 +50,34 @@ export default function AdminLayout({
         }
         
         const memData = await memRes.json();
-        if (memData && memData.role === 'COMMUNITY_ADMIN') {
-          if (isMounted) setIsAuthorized(true);
+        if (memData && memData.status === 'APPROVED' && memData.role === 'COMMUNITY_ADMIN') {
+          if (isMounted) {
+            setPanelRole('COMMUNITY_ADMIN');
+            setIsAuthorized(true);
+          }
+        } else if (memData && memData.status === 'APPROVED' && memData.role === 'COACH') {
+          const coachPaths = [
+            `/${resolvedParams.slug}/admin/participants`,
+            `/${resolvedParams.slug}/admin/attendance`,
+          ];
+          if (!coachPaths.includes(pathname)) {
+            router.replace(`/${resolvedParams.slug}/admin/participants`);
+            return;
+          }
+          if (isMounted) {
+            setPanelRole('COACH');
+            setIsAuthorized(true);
+          }
         } else {
           router.push(`/${resolvedParams.slug}/dashboard`);
         }
-      } catch (err) {
+      } catch {
         router.push('/login');
       }
     };
     checkAuth();
     return () => { isMounted = false; };
-  }, [resolvedParams.slug, router]);
+  }, [resolvedParams.slug, pathname, router]);
 
   const handleLogout = () => {
     removeToken();
@@ -75,10 +95,11 @@ export default function AdminLayout({
     );
   }
 
-  const navItems = [
+  const adminNavItems = [
     { name: 'Dashboard', href: `/${resolvedParams.slug}/admin/dashboard`, icon: LayoutDashboard },
     { name: 'Members', href: `/${resolvedParams.slug}/admin`, icon: Users },
     { name: 'Pembelian', href: `/${resolvedParams.slug}/admin/wallets`, icon: Wallet },
+    { name: 'Peserta Sesi', href: `/${resolvedParams.slug}/admin/participants`, icon: Users },
     { name: 'Attendance', href: `/${resolvedParams.slug}/admin/attendance`, icon: CheckSquare },
     { name: 'Sessions', href: `/${resolvedParams.slug}/admin/sessions`, icon: Calendar },
     { name: 'Guests', href: `/${resolvedParams.slug}/admin/sessions/guests`, icon: UserPlus },
@@ -86,6 +107,11 @@ export default function AdminLayout({
     { name: 'Gallery', href: `/${resolvedParams.slug}/admin/gallery`, icon: Image },
     { name: 'Settings', href: `/${resolvedParams.slug}/admin/settings`, icon: Settings },
   ];
+  const coachNavItems = [
+    { name: 'Peserta Sesi', href: `/${resolvedParams.slug}/admin/participants`, icon: Users },
+    { name: 'Riwayat Absensi', href: `/${resolvedParams.slug}/admin/attendance`, icon: CheckSquare },
+  ];
+  const navItems = panelRole === 'COACH' ? coachNavItems : adminNavItems;
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -113,7 +139,9 @@ export default function AdminLayout({
           <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center mr-3">
             <Shield className="w-5 h-5 text-indigo-600" />
           </div>
-          <span className="text-xl font-extrabold tracking-tight text-slate-900">Admin Panel</span>
+          <span className="text-xl font-extrabold tracking-tight text-slate-900">
+            {panelRole === 'COACH' ? 'Coach Panel' : 'Admin Panel'}
+          </span>
         </div>
 
         
@@ -191,9 +219,11 @@ export default function AdminLayout({
           <div className="flex items-center ml-auto space-x-4">
             <div className="flex items-center bg-slate-50 pl-2 pr-4 py-2 rounded-[2rem] border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                A
+                {panelRole === 'COACH' ? 'C' : 'A'}
               </div>
-              <span className="ml-3 text-sm font-bold text-slate-700 hidden sm:block">Community Admin</span>
+              <span className="ml-3 text-sm font-bold text-slate-700 hidden sm:block">
+                {panelRole === 'COACH' ? 'Community Coach' : 'Community Admin'}
+              </span>
             </div>
           </div>
         </header>

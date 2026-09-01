@@ -400,6 +400,58 @@ export class SessionWalletService {
     });
   }
 
+  async getOperationalParticipants(communityId: string) {
+    return this.prisma.sessionWallet.findMany({
+      where: {
+        communityId,
+        walletStatus: 'ACTIVE',
+        remainingSession: { gt: 0 },
+        expiredDate: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        userId: true,
+        packageId: true,
+        walletStatus: true,
+        totalSession: true,
+        remainingSession: true,
+        expiredDate: true,
+        isPrivate: true,
+        user: { select: { name: true } },
+        package: { select: { name: true } },
+      },
+    });
+  }
+
+  async getOperationalAttendance(communityId: string) {
+    return this.prisma.sessionTransaction.findMany({
+      where: {
+        wallet: { communityId },
+        transactionType: 'ATTENDANCE',
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        walletId: true,
+        transactionType: true,
+        beforeSession: true,
+        changeSession: true,
+        afterSession: true,
+        remarks: true,
+        createdBy: true,
+        createdAt: true,
+        updatedAt: true,
+        wallet: {
+          select: {
+            user: { select: { name: true } },
+            package: { select: { name: true } },
+          },
+        },
+      },
+    });
+  }
+
   async getAdminDashboardStats(communityId: string) {
     const totalMembers = await this.prisma.communityMember.count({
       where: { communityId, status: 'APPROVED' }

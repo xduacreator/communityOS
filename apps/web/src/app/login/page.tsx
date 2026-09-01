@@ -42,19 +42,30 @@ export default function LoginPage() {
         const meData = await meRes.json();
 
         // Priority 1: Community Admin -> go to community CMS
-        const adminMembership = (meData.memberships as CommunityMember[] | undefined)?.find((m) => m.role === 'COMMUNITY_ADMIN');
+        const adminMembership = (meData.memberships as CommunityMember[] | undefined)?.find(
+          (m) => m.role === 'COMMUNITY_ADMIN' && m.status === 'APPROVED',
+        );
         if (adminMembership && adminMembership.community) {
           router.push(`/${adminMembership.community.slug}/admin`);
           return;
         }
 
-        // Priority 2: Super Admin -> go to super-admin dashboard
+        // Priority 2: Coach -> go to session operations
+        const coachMembership = (meData.memberships as CommunityMember[] | undefined)?.find(
+          (m) => m.role === 'COACH' && m.status === 'APPROVED',
+        );
+        if (coachMembership && coachMembership.community) {
+          router.push(`/${coachMembership.community.slug}/admin/participants`);
+          return;
+        }
+
+        // Priority 3: Super Admin -> go to super-admin dashboard
         if (meData.isSuperAdmin) {
           router.push('/super-admin');
           return;
         }
 
-        // Priority 3: Regular Member -> go to community public page
+        // Priority 4: Regular Member -> go to community public page
         const regularMembership = (meData.memberships as CommunityMember[] | undefined)?.find((m) => m.role === 'MEMBER');
         if (regularMembership && regularMembership.community) {
           router.push(`/${regularMembership.community.slug}`);

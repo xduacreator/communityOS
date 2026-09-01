@@ -630,6 +630,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium text-slate-700"
                 >
                   <option value="MEMBER">Member</option>
+                  <option value="COACH">Coach</option>
                   <option value="COMMUNITY_ADMIN">Community Admin</option>
                 </select>
               </div>
