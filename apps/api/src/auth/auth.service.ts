@@ -73,6 +73,7 @@ export class AuthService {
         memberships: {
           select: {
             role: true,
+            status: true,
             community: {
               select: {
                 slug: true
