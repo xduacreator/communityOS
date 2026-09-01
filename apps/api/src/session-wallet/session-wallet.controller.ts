@@ -29,8 +29,8 @@ export class SessionWalletController {
   }
 
   @Post('purchase-bundle')
-  purchaseBundle(@Body() body: { userId: string; communityId: string; packageId: string; isPrivate?: boolean; membershipId: string; paymentProofUrl: string }) {
-    return this.sessionWalletService.purchaseBundle(body.userId, body.communityId, body.packageId, body.isPrivate, body.membershipId, body.paymentProofUrl);
+  purchaseBundle(@Body() body: { userId: string; communityId: string; packageId: string; isPrivate?: boolean; membershipId: string; paymentProofUrl: string; promoVoucherId?: string }) {
+    return this.sessionWalletService.purchaseBundle(body.userId, body.communityId, body.packageId, body.isPrivate, body.membershipId, body.paymentProofUrl, body.promoVoucherId);
   }
 
   @UseGuards(JwtAuthGuard)

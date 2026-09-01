@@ -214,28 +214,35 @@ export default function CommunityMicrosite({ community, slug }: { community: Com
           const wallets = walletData as SessionWallet[];
           const groupedWallets = new Map<string, ActiveWalletView>();
 
+          // Never mix unapproved repeat purchases into an active wallet balance.
           wallets.forEach((w) => {
-            if (w.walletStatus === 'ACTIVE' || w.walletStatus === 'WAITING' || w.walletStatus === 'PENDING' || w.walletStatus === 'WAITLIST' || w.walletStatus === 'COMPLETED') {
-              const pid = w.packageId;
-              if (!groupedWallets.has(pid)) {
-                groupedWallets.set(pid, {
-                  packageId: pid,
-                  packageName: w.package?.name || 'Session Package',
-                  totalSession: 0,
-                  remainingSession: 0,
-                  expiredDate: w.expiredDate ? w.expiredDate.toString() : null,
-                  status: w.walletStatus
-                });
-              }
-              const group = groupedWallets.get(pid)!;
-              group.totalSession += w.totalSession;
-              group.remainingSession += w.remainingSession;
-              // If the current wallet has an earlier active expiration, we could use it, 
-              // but we'll stick to the ACTIVE one's expiration if available
-              if (w.walletStatus === 'ACTIVE' && w.expiredDate) {
-                group.expiredDate = w.expiredDate.toString();
-                group.status = 'ACTIVE';
-              }
+            if (w.walletStatus === 'ACTIVE') {
+              groupedWallets.set(w.packageId, {
+                packageId: w.packageId,
+                packageName: w.package?.name || 'Session Package',
+                totalSession: w.totalSession,
+                remainingSession: w.remainingSession,
+                expiredDate: w.expiredDate ? w.expiredDate.toString() : null,
+                status: 'ACTIVE'
+              });
+            }
+          });
+
+          // Show a pending/completed wallet only when there is no active wallet
+          // for the same package. walletData is newest-first, so the first match wins.
+          wallets.forEach((w) => {
+            if (
+              !groupedWallets.has(w.packageId) &&
+              ['PENDING', 'WAITING', 'WAITLIST', 'COMPLETED'].includes(w.walletStatus)
+            ) {
+              groupedWallets.set(w.packageId, {
+                packageId: w.packageId,
+                packageName: w.package?.name || 'Session Package',
+                totalSession: w.totalSession,
+                remainingSession: w.remainingSession,
+                expiredDate: w.expiredDate ? w.expiredDate.toString() : null,
+                status: w.walletStatus
+              });
             }
           });
 
