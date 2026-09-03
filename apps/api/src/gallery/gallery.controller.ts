@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/c
 import { GalleryService } from './gallery.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
-import { RequireTenantRole } from '../auth/decorators/roles.decorator';
+import { RequireTenantResource, RequireTenantRole } from '../auth/decorators/roles.decorator';
 
 @Controller('gallery')
 export class GalleryController {
@@ -20,7 +20,9 @@ export class GalleryController {
     return this.galleryService.create(communityId, data);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('galleryImage')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.galleryService.remove(id);

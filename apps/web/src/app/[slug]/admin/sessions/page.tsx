@@ -137,7 +137,11 @@ export default function SessionsManagementPage({ params }: { params: Promise<{ s
     const compressedFile = await imageCompression(file, options);
     const fd = new FormData();
     fd.append('file', compressedFile);
-    const res = await fetch(getApiUrl() + '/upload', { method: 'POST', body: fd });
+    const res = await fetch(getApiUrl() + '/upload', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: fd,
+    });
     if (!res.ok) throw new Error('Failed to upload image');
     const data = await res.json();
     return data.url;

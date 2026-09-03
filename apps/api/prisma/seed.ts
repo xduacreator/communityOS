@@ -6,7 +6,11 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const seedPassword = process.env.SEED_SUPERADMIN_PASSWORD;
+  if (!seedPassword || seedPassword.length < 8) {
+    throw new Error('SEED_SUPERADMIN_PASSWORD with at least 8 characters is required to run the seed.');
+  }
+  const hashedPassword = await bcrypt.hash(seedPassword, 10);
 
   // Create a Super Admin
   const admin = await prisma.user.upsert({

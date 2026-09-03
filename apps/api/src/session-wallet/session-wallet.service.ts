@@ -53,8 +53,21 @@ export class SessionWalletService {
   }
 
   async purchasePackage(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, userMembershipId?: string, paymentProofUrl?: string, promoVoucherId?: string) {
-    const pkg = await this.prisma.sessionPackage.findUnique({ where: { id: packageId } });
+    const pkg = await this.prisma.sessionPackage.findUnique({
+      where: { id: packageId },
+      include: { category: { include: { activity: true } } },
+    });
     if (!pkg) throw new NotFoundException('Package not found');
+    if (pkg.category.activity.communityId !== communityId) {
+      throw new BadRequestException('Package does not belong to this community');
+    }
+
+    if (userMembershipId) {
+      const linkedMembership = await this.prisma.userMembership.findUnique({ where: { id: userMembershipId } });
+      if (!linkedMembership || linkedMembership.userId !== userId || linkedMembership.communityId !== communityId) {
+        throw new BadRequestException('Membership does not belong to this user and community');
+      }
+    }
 
     if (pkg.accessRule === 'MEMBER_ONLY') {
       const activeMembership = await this.prisma.userMembership.findFirst({
@@ -330,6 +343,12 @@ export class SessionWalletService {
   }
 
   async freezeWallet(walletId: string, days: number, reason: string, adminId: string) {
+    if (!Number.isInteger(days) || days < 1 || days > 365) {
+      throw new BadRequestException('Freeze duration must be between 1 and 365 days');
+    }
+    if (!reason || typeof reason !== 'string' || reason.trim().length < 3) {
+      throw new BadRequestException('Freeze reason is required');
+    }
     const wallet = await this.prisma.sessionWallet.findUnique({ where: { id: walletId } });
     if (!wallet || wallet.walletStatus !== 'ACTIVE' || !wallet.expiredDate) {
       throw new BadRequestException('Wallet is not active, has no expiration, or does not exist');
@@ -618,11 +637,20 @@ export class SessionWalletService {
   }
 
   async purchaseBundle(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, membershipId: string, paymentProofUrl: string, promoVoucherId?: string) {
-    const pkg = await this.prisma.sessionPackage.findUnique({ where: { id: packageId } });
+    const pkg = await this.prisma.sessionPackage.findUnique({
+      where: { id: packageId },
+      include: { category: { include: { activity: true } } },
+    });
     if (!pkg) throw new NotFoundException('Package not found');
+    if (pkg.category.activity.communityId !== communityId) {
+      throw new BadRequestException('Package does not belong to this community');
+    }
 
     const membership = await this.prisma.membership.findUnique({ where: { id: membershipId } });
     if (!membership) throw new NotFoundException('Membership tier not found');
+    if (membership.communityId !== communityId) {
+      throw new BadRequestException('Membership tier does not belong to this community');
+    }
 
     // Create the pending user membership renewal
     const activeMemberships = await this.prisma.userMembership.findMany({

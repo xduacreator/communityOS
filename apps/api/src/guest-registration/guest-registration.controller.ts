@@ -2,7 +2,7 @@ import { Controller, Post, Body, Get, Param, Patch, UseGuards } from '@nestjs/co
 import { GuestRegistrationService } from './guest-registration.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
-import { RequireTenantRole } from '../auth/decorators/roles.decorator';
+import { RequireTenantResource, RequireTenantRole } from '../auth/decorators/roles.decorator';
 
 @Controller('guest-registrations')
 export class GuestRegistrationController {
@@ -29,6 +29,7 @@ export class GuestRegistrationController {
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
   @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('guestRegistration')
   @Patch(':id/status')
   updateStatus(@Param('id') id: string, @Body() data: { status: string, communityId: string }) {
     return this.service.updateStatus(id, data.status);

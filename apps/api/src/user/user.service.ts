@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -35,6 +35,9 @@ export class UserService {
   }
 
   async create(data: any) {
+    if (typeof data.password !== 'string' || data.password.length < 8) {
+      throw new BadRequestException('Password must contain at least 8 characters');
+    }
     const bcrypt = require('bcrypt');
     const hashedPassword = await bcrypt.hash(data.password, 10);
     return this.prisma.user.create({

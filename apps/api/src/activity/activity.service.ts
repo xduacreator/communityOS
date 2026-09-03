@@ -6,7 +6,10 @@ export class ActivityService {
   constructor(private prisma: PrismaService) {}
 
   async createActivity(data: any) {
-    return this.prisma.activity.create({ data });
+    const safeData = { ...data };
+    delete safeData.community;
+    delete safeData.categories;
+    return this.prisma.activity.create({ data: safeData });
   }
 
   async findAllActivities(communityId: string) {
@@ -17,6 +20,9 @@ export class ActivityService {
   }
 
   async createCategory(data: any) {
-    return this.prisma.category.create({ data });
+    const safeData = { ...data };
+    delete safeData.activity;
+    delete safeData.sessionPackages;
+    return this.prisma.category.create({ data: safeData });
   }
 }

@@ -3,15 +3,16 @@ import { SessionWalletService } from './session-wallet.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
 import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
-import { RequireTenantRole, RequireTenantRoles, RequireSuperAdmin } from '../auth/decorators/roles.decorator';
+import { RequireTenantResource, RequireTenantRole, RequireTenantRoles, RequireSuperAdmin } from '../auth/decorators/roles.decorator';
 
 @Controller('session-wallet')
 export class SessionWalletController {
   constructor(private readonly sessionWalletService: SessionWalletService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post('purchase')
-  purchasePackage(@Body() body: { userId: string; communityId: string; packageId: string; isPrivate?: boolean; userMembershipId?: string; paymentProofUrl?: string; promoVoucherId?: string }) {
-    return this.sessionWalletService.purchasePackage(body.userId, body.communityId, body.packageId, body.isPrivate, body.userMembershipId, body.paymentProofUrl, body.promoVoucherId);
+  purchasePackage(@Request() req: any, @Body() body: { communityId: string; packageId: string; isPrivate?: boolean; userMembershipId?: string; paymentProofUrl?: string; promoVoucherId?: string }) {
+    return this.sessionWalletService.purchasePackage(req.user.userId, body.communityId, body.packageId, body.isPrivate, body.userMembershipId, body.paymentProofUrl, body.promoVoucherId);
   }
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
@@ -23,26 +24,28 @@ export class SessionWalletController {
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
   @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('sessionWallet')
   @Patch('approve/:id')
   approvePackage(@Param('id') id: string) {
     return this.sessionWalletService.approvePackage(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('purchase-bundle')
-  purchaseBundle(@Body() body: { userId: string; communityId: string; packageId: string; isPrivate?: boolean; membershipId: string; paymentProofUrl: string; promoVoucherId?: string }) {
-    return this.sessionWalletService.purchaseBundle(body.userId, body.communityId, body.packageId, body.isPrivate, body.membershipId, body.paymentProofUrl, body.promoVoucherId);
+  purchaseBundle(@Request() req: any, @Body() body: { communityId: string; packageId: string; isPrivate?: boolean; membershipId: string; paymentProofUrl: string; promoVoucherId?: string }) {
+    return this.sessionWalletService.purchaseBundle(req.user.userId, body.communityId, body.packageId, body.isPrivate, body.membershipId, body.paymentProofUrl, body.promoVoucherId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('member/check-in')
-  memberCheckIn(@Body() body: { userId: string; communityId: string; packageId?: string; remarks?: string }) {
-    return this.sessionWalletService.memberCheckIn(body.userId, body.communityId, body.packageId, body.remarks);
+  memberCheckIn(@Request() req: any, @Body() body: { communityId: string; packageId?: string; remarks?: string }) {
+    return this.sessionWalletService.memberCheckIn(req.user.userId, body.communityId, body.packageId, body.remarks);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('member/check-out')
-  memberCheckOut(@Body() body: { userId: string; communityId: string; packageId?: string; remarks?: string }) {
-    return this.sessionWalletService.memberCheckOut(body.userId, body.communityId, body.packageId, body.remarks);
+  memberCheckOut(@Request() req: any, @Body() body: { communityId: string; packageId?: string; remarks?: string }) {
+    return this.sessionWalletService.memberCheckOut(req.user.userId, body.communityId, body.packageId, body.remarks);
   }
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
@@ -52,14 +55,18 @@ export class SessionWalletController {
     return this.sessionWalletService.checkIn(body.userId, body.communityId, req.user.userId, body.packageId, body.remarks);
   }
 
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('sessionWallet', 'body', 'walletId')
   @Post('freeze')
-  freezeWallet(@Body() body: { walletId: string; days: number; reason: string; adminId: string }) {
-    return this.sessionWalletService.freezeWallet(body.walletId, body.days, body.reason, body.adminId);
+  freezeWallet(@Request() req: any, @Body() body: { walletId: string; days: number; reason: string }) {
+    return this.sessionWalletService.freezeWallet(body.walletId, body.days, body.reason, req.user.userId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('user/:userId')
-  getUserWallets(@Param('userId') userId: string, @Query('communityId') communityId: string) {
-    return this.sessionWalletService.getUserWallets(userId, communityId);
+  getUserWallets(@Request() req: any, @Query('communityId') communityId: string) {
+    return this.sessionWalletService.getUserWallets(req.user.userId, communityId);
   }
 
   // Admin endpoints

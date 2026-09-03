@@ -14,7 +14,10 @@ export class MembershipTierService {
   }
 
   async update(id: string, data: any) {
-    return this.prisma.membership.update({ where: { id }, data });
+    const safeData = { ...data };
+    delete safeData.communityId;
+    delete safeData.community;
+    return this.prisma.membership.update({ where: { id }, data: safeData });
   }
 
   async remove(id: string) {

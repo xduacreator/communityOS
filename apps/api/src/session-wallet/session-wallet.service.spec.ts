@@ -33,6 +33,7 @@ describe('SessionWalletService voucher pricing', () => {
       validDays: 30,
       quota: null,
       privateQuota: null,
+      category: { activity: { communityId: 'community-1' } },
     });
     prisma.promoVoucher.findUnique.mockResolvedValue({
       id: 'voucher-1',
@@ -84,6 +85,7 @@ describe('SessionWalletService voucher pricing', () => {
       validDays: 30,
       quota: null,
       privateQuota: null,
+      category: { activity: { communityId: 'community-1' } },
     });
     prisma.promoVoucher.findUnique.mockResolvedValue({
       id: 'voucher-1',

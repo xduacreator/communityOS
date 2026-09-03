@@ -56,6 +56,7 @@ export default function AdminGallery({ params }: { params: Promise<{ slug: strin
     formData.append('file', compressedFile);
     const res = await fetch(getApiUrl() + '/upload', {
       method: 'POST',
+      headers: getAuthHeaders(),
       body: formData,
     });
     if (!res.ok) throw new Error('Failed to upload file');
