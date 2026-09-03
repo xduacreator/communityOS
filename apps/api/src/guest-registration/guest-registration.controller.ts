@@ -1,22 +1,32 @@
-import { Controller, Post, Body, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { GuestRegistrationService } from './guest-registration.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
-import { RequireTenantResource, RequireTenantRole } from '../auth/decorators/roles.decorator';
+import {
+  RequireTenantResource,
+  RequireTenantRole,
+} from '../auth/decorators/roles.decorator';
+import { Throttle } from '@nestjs/throttler';
+import {
+  SubmitGuestRegistrationDto,
+  UpdateGuestStatusDto,
+} from './dto/guest-registration.dto';
 
 @Controller('guest-registrations')
 export class GuestRegistrationController {
   constructor(private readonly service: GuestRegistrationService) {}
 
   @Post('submit')
-  submitRegistration(@Body() data: {
-    communityId: string;
-    packageId: string;
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-  }) {
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  submitRegistration(@Body() data: SubmitGuestRegistrationDto) {
     return this.service.submitRegistration(data);
   }
 
@@ -31,7 +41,7 @@ export class GuestRegistrationController {
   @RequireTenantRole('COMMUNITY_ADMIN')
   @RequireTenantResource('guestRegistration')
   @Patch(':id/status')
-  updateStatus(@Param('id') id: string, @Body() data: { status: string, communityId: string }) {
+  updateStatus(@Param('id') id: string, @Body() data: UpdateGuestStatusDto) {
     return this.service.updateStatus(id, data.status);
   }
 }

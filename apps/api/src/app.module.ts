@@ -22,7 +22,8 @@ import { PromoVoucherModule } from './promo-voucher/promo-voucher.module';
 
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { AuditLogInterceptor } from './security/audit-log.interceptor';
 import { LandingPageModule } from './landing-page/landing-page.module';
 import { BlogPostModule } from './blog-post/blog-post.module';
 import { CustomPageModule } from './custom-page/custom-page.module';
@@ -34,23 +35,31 @@ import { CustomPageModule } from './custom-page/custom-page.module';
       rootPath: join(process.cwd(), 'public'),
       serveRoot: '/api',
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100, // Maximum 100 requests per minute per IP
-    }]),
-    AuthModule, 
-    PrismaModule, 
-    CommunityModule, 
-    MembershipModule, 
-    UserModule, 
-    EventModule, 
-    GalleryModule, ActivityModule, SessionPackageModule, SessionWalletModule, UserMembershipModule, MembershipTierModule, CronModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100, // Maximum 100 requests per minute per IP
+      },
+    ]),
+    AuthModule,
+    PrismaModule,
+    CommunityModule,
+    MembershipModule,
+    UserModule,
+    EventModule,
+    GalleryModule,
+    ActivityModule,
+    SessionPackageModule,
+    SessionWalletModule,
+    UserMembershipModule,
+    MembershipTierModule,
+    CronModule,
     SystemSettingModule,
     GuestRegistrationModule,
     PromoVoucherModule,
     LandingPageModule,
     BlogPostModule,
-    CustomPageModule
+    CustomPageModule,
   ],
   controllers: [AppController],
   providers: [
@@ -58,6 +67,10 @@ import { CustomPageModule } from './custom-page/custom-page.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditLogInterceptor,
     },
   ],
 })

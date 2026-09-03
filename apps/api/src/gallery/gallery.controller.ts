@@ -1,8 +1,20 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { GalleryService } from './gallery.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
-import { RequireTenantResource, RequireTenantRole } from '../auth/decorators/roles.decorator';
+import {
+  RequireTenantResource,
+  RequireTenantRole,
+} from '../auth/decorators/roles.decorator';
+import { CreateGalleryImageDto } from './dto/gallery.dto';
 
 @Controller('gallery')
 export class GalleryController {
@@ -16,7 +28,10 @@ export class GalleryController {
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
   @RequireTenantRole('COMMUNITY_ADMIN')
   @Post('community/:communityId')
-  create(@Param('communityId') communityId: string, @Body() data: any) {
+  create(
+    @Param('communityId') communityId: string,
+    @Body() data: CreateGalleryImageDto,
+  ) {
     return this.galleryService.create(communityId, data);
   }
 

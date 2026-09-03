@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 # Set working directory
 WORKDIR /app
 # Install turbo globally
@@ -8,7 +8,7 @@ COPY . .
 RUN turbo prune @repo/api --docker
 
 # Installer phase
-FROM node:20-alpine AS installer
+FROM node:22-alpine AS installer
 WORKDIR /app
 
 # Enable turbo cache
@@ -33,7 +33,7 @@ WORKDIR /app
 RUN npx turbo run build --filter=@repo/api...
 
 # Production image
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 # We only need the api files in production

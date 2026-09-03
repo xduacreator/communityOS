@@ -40,10 +40,6 @@ export default function SuperAdminDashboard() {
 
   const fetchCommunities = async () => {
     const headers = getAuthHeaders();
-    if (!headers.Authorization) {
-      router.push('/login');
-      return;
-    }
 
     try {
       const res = await fetch(getApiUrl() + '/communities', {
@@ -51,6 +47,10 @@ export default function SuperAdminDashboard() {
       });
 
       if (!res.ok) {
+        if (res.status === 401) {
+          router.push('/login');
+          return;
+        }
         if (res.status === 403) throw new Error('Forbidden: Super Admin access required');
         throw new Error('Failed to fetch communities');
       }
@@ -145,7 +145,11 @@ export default function SuperAdminDashboard() {
         isShowcase: editComm.isShowcase,
         tagline: editComm.tagline,
         shortDescription: editComm.shortDescription,
-        ...(editComm.adminEmail && { adminEmail: editComm.adminEmail, adminName: editComm.adminName, adminPassword: editComm.adminPassword })
+        ...(editComm.adminEmail && {
+          adminEmail: editComm.adminEmail,
+          adminName: editComm.adminName,
+          ...(editComm.adminPassword && { adminPassword: editComm.adminPassword }),
+        })
       };
       
       const res = await fetch(`${getApiUrl()}/communities/${editComm.id}`, {

@@ -1,8 +1,26 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
-import { PromoVoucherService, CreateVoucherDto, UpdateVoucherDto } from './promo-voucher.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  PromoVoucherService,
+  CreateVoucherDto,
+  UpdateVoucherDto,
+  ValidateVoucherDto,
+} from './promo-voucher.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
-import { RequireTenantResource, RequireTenantRole } from '../auth/decorators/roles.decorator';
+import {
+  RequireTenantResource,
+  RequireTenantRole,
+} from '../auth/decorators/roles.decorator';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('promo-vouchers')
 export class PromoVoucherController {
@@ -23,8 +41,13 @@ export class PromoVoucherController {
   }
 
   @Post('validate')
-  validateVoucher(@Body() body: { communityId: string; code: string; purchaseAmount: number }) {
-    return this.promoVoucherService.validateVoucher(body.communityId, body.code, body.purchaseAmount);
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
+  validateVoucher(@Body() body: ValidateVoucherDto) {
+    return this.promoVoucherService.validateVoucher(
+      body.communityId,
+      body.code,
+      body.purchaseAmount,
+    );
   }
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)

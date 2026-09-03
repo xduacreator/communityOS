@@ -1,35 +1,59 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { IsString, IsOptional, IsNumber, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsDateString,
+  IsIn,
+  IsInt,
+  IsUUID,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class CreateVoucherDto {
-  @IsString()
+  @IsUUID()
   communityId: string;
 
   @IsString()
+  @MinLength(1)
+  @MaxLength(50)
   code: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   description?: string;
 
   @IsOptional()
-  @IsString()
+  @IsIn(['FIXED', 'PERCENTAGE'])
   discountType?: string; // 'FIXED' | 'PERCENTAGE'
 
   @IsNumber()
+  @Min(0)
   discountValue: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   minPurchase?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   maxDiscount?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Min(1)
+  @Max(1000000)
   maxUses?: number;
 
   @IsOptional()
@@ -41,33 +65,39 @@ export class CreateVoucherDto {
   validUntil?: string;
 
   @IsOptional()
-  @IsString()
+  @IsIn(['ACTIVE', 'INACTIVE'])
   status?: string;
 }
 
 export class UpdateVoucherDto {
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   description?: string;
 
   @IsOptional()
-  @IsString()
+  @IsIn(['FIXED', 'PERCENTAGE'])
   discountType?: string;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   discountValue?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   minPurchase?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   maxDiscount?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Min(1)
+  @Max(1000000)
   maxUses?: number;
 
   @IsOptional()
@@ -75,8 +105,22 @@ export class UpdateVoucherDto {
   validUntil?: string;
 
   @IsOptional()
-  @IsString()
+  @IsIn(['ACTIVE', 'INACTIVE'])
   status?: string;
+}
+
+export class ValidateVoucherDto {
+  @IsUUID()
+  communityId: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(50)
+  code: string;
+
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  purchaseAmount: number;
 }
 
 @Injectable()
@@ -85,7 +129,7 @@ export class PromoVoucherService {
 
   async create(dto: CreateVoucherDto) {
     const formattedCode = dto.code.trim().toUpperCase();
-    
+
     // Check if code already exists in this community
     const existing = await this.prisma.promoVoucher.findUnique({
       where: {
@@ -97,7 +141,9 @@ export class PromoVoucherService {
     });
 
     if (existing) {
-      throw new BadRequestException(`Kode voucher "${formattedCode}" sudah digunakan di komunitas ini.`);
+      throw new BadRequestException(
+        `Kode voucher "${formattedCode}" sudah digunakan di komunitas ini.`,
+      );
     }
 
     return this.prisma.promoVoucher.create({
@@ -125,7 +171,9 @@ export class PromoVoucherService {
   }
 
   async findOne(id: string) {
-    const voucher = await this.prisma.promoVoucher.findUnique({ where: { id } });
+    const voucher = await this.prisma.promoVoucher.findUnique({
+      where: { id },
+    });
     if (!voucher) throw new NotFoundException('Voucher tidak ditemukan');
     return voucher;
   }
@@ -136,12 +184,24 @@ export class PromoVoucherService {
       where: { id },
       data: {
         ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.discountType !== undefined && { discountType: dto.discountType }),
-        ...(dto.discountValue !== undefined && { discountValue: Number(dto.discountValue) }),
-        ...(dto.minPurchase !== undefined && { minPurchase: dto.minPurchase ? Number(dto.minPurchase) : null }),
-        ...(dto.maxDiscount !== undefined && { maxDiscount: dto.maxDiscount ? Number(dto.maxDiscount) : null }),
-        ...(dto.maxUses !== undefined && { maxUses: dto.maxUses ? Number(dto.maxUses) : null }),
-        ...(dto.validUntil !== undefined && { validUntil: dto.validUntil ? new Date(dto.validUntil) : null }),
+        ...(dto.discountType !== undefined && {
+          discountType: dto.discountType,
+        }),
+        ...(dto.discountValue !== undefined && {
+          discountValue: Number(dto.discountValue),
+        }),
+        ...(dto.minPurchase !== undefined && {
+          minPurchase: dto.minPurchase ? Number(dto.minPurchase) : null,
+        }),
+        ...(dto.maxDiscount !== undefined && {
+          maxDiscount: dto.maxDiscount ? Number(dto.maxDiscount) : null,
+        }),
+        ...(dto.maxUses !== undefined && {
+          maxUses: dto.maxUses ? Number(dto.maxUses) : null,
+        }),
+        ...(dto.validUntil !== undefined && {
+          validUntil: dto.validUntil ? new Date(dto.validUntil) : null,
+        }),
         ...(dto.status !== undefined && { status: dto.status }),
       },
     });
@@ -152,7 +212,11 @@ export class PromoVoucherService {
     return this.prisma.promoVoucher.delete({ where: { id } });
   }
 
-  async validateVoucher(communityId: string, code: string, purchaseAmount: number) {
+  async validateVoucher(
+    communityId: string,
+    code: string,
+    purchaseAmount: number,
+  ) {
     const formattedCode = code.trim().toUpperCase();
 
     const voucher = await this.prisma.promoVoucher.findUnique({
@@ -165,7 +229,9 @@ export class PromoVoucherService {
     });
 
     if (!voucher) {
-      throw new BadRequestException(`Kode voucher "${formattedCode}" tidak ditemukan.`);
+      throw new BadRequestException(
+        `Kode voucher "${formattedCode}" tidak ditemukan.`,
+      );
     }
 
     if (voucher.status !== 'ACTIVE') {
@@ -177,11 +243,15 @@ export class PromoVoucherService {
     }
 
     if (voucher.maxUses !== null && voucher.usedCount >= voucher.maxUses) {
-      throw new BadRequestException('Kuota penggunaan voucher ini sudah habis.');
+      throw new BadRequestException(
+        'Kuota penggunaan voucher ini sudah habis.',
+      );
     }
 
     if (voucher.minPurchase !== null && purchaseAmount < voucher.minPurchase) {
-      throw new BadRequestException(`Minimal pembelian untuk menggunakan voucher ini adalah Rp ${voucher.minPurchase.toLocaleString('id-ID')}.`);
+      throw new BadRequestException(
+        `Minimal pembelian untuk menggunakan voucher ini adalah Rp ${voucher.minPurchase.toLocaleString('id-ID')}.`,
+      );
     }
 
     // Calculate discount amount
@@ -193,7 +263,9 @@ export class PromoVoucherService {
       }
     } else {
       if (voucher.discountValue > purchaseAmount) {
-        throw new BadRequestException(`Nilai voucher (Rp ${voucher.discountValue.toLocaleString('id-ID')}) lebih besar dari total pembelian (Rp ${purchaseAmount.toLocaleString('id-ID')}). Voucher tidak dapat digunakan.`);
+        throw new BadRequestException(
+          `Nilai voucher (Rp ${voucher.discountValue.toLocaleString('id-ID')}) lebih besar dari total pembelian (Rp ${purchaseAmount.toLocaleString('id-ID')}). Voucher tidak dapat digunakan.`,
+        );
       }
       discountAmount = voucher.discountValue;
     }

@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
 import { RequireSuperAdmin } from '../auth/decorators/roles.decorator';
+import { CreateUserDto, SetUserRoleDto } from './dto/user.dto';
 
 @Controller('users')
 export class UserController {
@@ -18,14 +19,14 @@ export class UserController {
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @RequireSuperAdmin()
   @Patch(':id/role')
-  setRole(@Param('id') id: string, @Body('isSuperAdmin') isSuperAdmin: boolean) {
-    return this.userService.setRole(id, isSuperAdmin);
+  setRole(@Param('id') id: string, @Body() data: SetUserRoleDto) {
+    return this.userService.setRole(id, data.isSuperAdmin);
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @RequireSuperAdmin()
   @Post()
-  create(@Body() data: any) {
+  create(@Body() data: CreateUserDto) {
     return this.userService.create(data);
   }
 }

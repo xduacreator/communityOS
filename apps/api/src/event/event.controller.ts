@@ -1,8 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { EventService } from './event.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
-import { RequireTenantResource, RequireTenantRole } from '../auth/decorators/roles.decorator';
+import {
+  RequireTenantResource,
+  RequireTenantRole,
+} from '../auth/decorators/roles.decorator';
+import { CreateEventDto } from './dto/create-event.dto';
+import { UpdateEventDto } from './dto/update-event.dto';
 
 @Controller('events')
 export class EventController {
@@ -11,7 +26,10 @@ export class EventController {
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
   @RequireTenantRole('COMMUNITY_ADMIN')
   @Post('community/:communityId')
-  create(@Param('communityId') communityId: string, @Body() data: any) {
+  create(
+    @Param('communityId') communityId: string,
+    @Body() data: CreateEventDto,
+  ) {
     return this.eventService.create(communityId, data);
   }
 
@@ -29,7 +47,7 @@ export class EventController {
   @RequireTenantRole('COMMUNITY_ADMIN')
   @RequireTenantResource('event')
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEventDto: any) {
+  update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
     return this.eventService.update(id, updateEventDto);
   }
 

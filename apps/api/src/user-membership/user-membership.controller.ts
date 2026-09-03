@@ -1,9 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Query, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Query,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { UserMembershipService } from './user-membership.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
 import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
-import { RequireSuperAdmin, RequireTenantResource, RequireTenantRole } from '../auth/decorators/roles.decorator';
+import {
+  RequireSuperAdmin,
+  RequireTenantResource,
+  RequireTenantRole,
+} from '../auth/decorators/roles.decorator';
+import {
+  CreateUserMembershipDto,
+  UpdateUserMembershipDto,
+} from './dto/user-membership.dto';
 
 @Controller('user-membership')
 export class UserMembershipController {
@@ -11,7 +29,7 @@ export class UserMembershipController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Request() req: any, @Body() createData: any) {
+  create(@Request() req: any, @Body() createData: CreateUserMembershipDto) {
     return this.userMembershipService.create({
       userId: req.user.userId,
       communityId: createData.communityId,
@@ -22,8 +40,14 @@ export class UserMembershipController {
 
   @UseGuards(JwtAuthGuard)
   @Get('active/:userId')
-  findActiveByUser(@Request() req: any, @Query('communityId') communityId: string) {
-    return this.userMembershipService.findActiveByUser(req.user.userId, communityId);
+  findActiveByUser(
+    @Request() req: any,
+    @Query('communityId') communityId: string,
+  ) {
+    return this.userMembershipService.findActiveByUser(
+      req.user.userId,
+      communityId,
+    );
   }
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
@@ -45,7 +69,7 @@ export class UserMembershipController {
   @RequireTenantRole('COMMUNITY_ADMIN')
   @RequireTenantResource('userMembership')
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateData: any) {
+  update(@Param('id') id: string, @Body() updateData: UpdateUserMembershipDto) {
     return this.userMembershipService.update(id, updateData);
   }
 

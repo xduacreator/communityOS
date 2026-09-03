@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { IsArray, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { sanitizeHeadlineHtml } from '../security/html-sanitizer';
 
 export class SettingItemDto {
   @IsString()
@@ -23,7 +24,15 @@ export class SystemSettingService {
   constructor(private prisma: PrismaService) {}
 
   private isPublicKey(key: string) {
-    return ['landing.', 'platform.', 'seo.'].some((prefix) => key.startsWith(prefix));
+    return ['landing.', 'platform.', 'seo.'].some((prefix) =>
+      key.startsWith(prefix),
+    );
+  }
+
+  private sanitizeValue(key: string, value: string) {
+    return key === 'landing.hero.headline'
+      ? sanitizeHeadlineHtml(value)
+      : value;
   }
 
   async getPublicSettings() {
@@ -31,7 +40,10 @@ export class SystemSettingService {
     return Object.fromEntries(
       settings
         .filter((setting) => this.isPublicKey(setting.key))
-        .map((setting) => [setting.key, setting.value]),
+        .map((setting) => [
+          setting.key,
+          this.sanitizeValue(setting.key, setting.value),
+        ]),
     );
   }
 
@@ -39,7 +51,8 @@ export class SystemSettingService {
     if (!this.isPublicKey(key)) {
       throw new NotFoundException('Setting not found');
     }
-    return this.getSetting(key);
+    const value = await this.getSetting(key);
+    return value === null ? null : this.sanitizeValue(key, value);
   }
 
   async getAllSettings() {
@@ -61,17 +74,20 @@ export class SystemSettingService {
 
   async updateSettings(dto: UpdateSettingsDto) {
     const results = [];
-    
+
     // We use a transaction or sequential updates to upsert all settings
     for (const item of dto.settings) {
       const updated = await this.prisma.systemSetting.upsert({
         where: { key: item.key },
-        update: { value: item.value },
-        create: { key: item.key, value: item.value },
+        update: { value: this.sanitizeValue(item.key, item.value) },
+        create: {
+          key: item.key,
+          value: this.sanitizeValue(item.key, item.value),
+        },
       });
       results.push(updated);
     }
-    
+
     return results;
   }
 
@@ -80,21 +96,21 @@ export class SystemSettingService {
     return this.prisma.$transaction(async (tx) => {
       // 1. Delete all Guest Registrations
       const guestRes = await tx.guestRegistration.deleteMany({});
-      
+
       // 2. Delete all Session Transactions (history)
       const txRes = await tx.sessionTransaction.deleteMany({});
-      
+
       // 3. Delete all Session Wallets (member purchases/quotas)
       const walletRes = await tx.sessionWallet.deleteMany({});
-      
+
       return {
         success: true,
         message: 'All transactional data reset successfully',
         details: {
           guestsDeleted: guestRes.count,
           historyDeleted: txRes.count,
-          walletsDeleted: walletRes.count
-        }
+          walletsDeleted: walletRes.count,
+        },
       };
     });
   }

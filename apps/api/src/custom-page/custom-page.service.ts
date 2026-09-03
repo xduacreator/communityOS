@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCustomPageDto } from './dto/create-custom-page.dto';
 import { UpdateCustomPageDto } from './dto/update-custom-page.dto';
+import { sanitizeRichHtml } from '../security/html-sanitizer';
 
 @Injectable()
 export class CustomPageService {
@@ -11,37 +16,42 @@ export class CustomPageService {
     const existing = await this.prisma.customPage.findUnique({
       where: { slug: createDto.slug },
     });
-    
+
     if (existing) {
-      throw new ConflictException(`Custom page with slug '${createDto.slug}' already exists`);
+      throw new ConflictException(
+        `Custom page with slug '${createDto.slug}' already exists`,
+      );
     }
 
     return this.prisma.customPage.create({
-      data: createDto,
+      data: { ...createDto, content: sanitizeRichHtml(createDto.content) },
     });
   }
 
-  findAll() {
-    return this.prisma.customPage.findMany({
+  async findAll() {
+    const pages = await this.prisma.customPage.findMany({
       orderBy: { createdAt: 'desc' },
     });
+    return pages.map((page) => ({
+      ...page,
+      content: sanitizeRichHtml(page.content),
+    }));
   }
 
   async findOne(idOrSlug: string) {
     const page = await this.prisma.customPage.findFirst({
       where: {
-        OR: [
-          { id: idOrSlug },
-          { slug: idOrSlug }
-        ]
+        OR: [{ id: idOrSlug }, { slug: idOrSlug }],
       },
     });
 
     if (!page) {
-      throw new NotFoundException(`Custom page with ID or slug '${idOrSlug}' not found`);
+      throw new NotFoundException(
+        `Custom page with ID or slug '${idOrSlug}' not found`,
+      );
     }
 
-    return page;
+    return { ...page, content: sanitizeRichHtml(page.content) };
   }
 
   async update(id: string, updateDto: UpdateCustomPageDto) {
@@ -49,19 +59,26 @@ export class CustomPageService {
 
     if (updateDto.slug) {
       const existing = await this.prisma.customPage.findFirst({
-        where: { 
+        where: {
           slug: updateDto.slug,
-          NOT: { id }
+          NOT: { id },
         },
       });
       if (existing) {
-        throw new ConflictException(`Custom page with slug '${updateDto.slug}' already exists`);
+        throw new ConflictException(
+          `Custom page with slug '${updateDto.slug}' already exists`,
+        );
       }
     }
 
     return this.prisma.customPage.update({
       where: { id },
-      data: updateDto,
+      data: {
+        ...updateDto,
+        ...(updateDto.content !== undefined && {
+          content: sanitizeRichHtml(updateDto.content),
+        }),
+      },
     });
   }
 

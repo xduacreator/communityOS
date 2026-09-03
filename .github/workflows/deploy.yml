@@ -6,9 +6,41 @@ on:
       - main
 
 jobs:
-  deploy:
+  verify:
     runs-on: ubuntu-latest
-    
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm exec --workspace @repo/api prisma generate
+
+      - name: Build all applications
+        run: npm run build
+
+      - name: Run API tests
+        run: npm test --workspace @repo/api -- --runInBand
+
+      - name: Run runtime security smoke tests
+        run: npm run test:security --workspace @repo/api
+
+      - name: Block critical production vulnerabilities
+        run: npm audit --omit=dev --audit-level=critical
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+
     steps:
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -21,13 +53,13 @@ jobs:
           script: |
             # Sesuaikan direktori dengan lokasi folder aplikasi di VPS Anda
             cd /root/communityOS
-            
+
             # Tarik perubahan terbaru dari branch main
             git pull origin main
-            
+
             # Build ulang dari nol tanpa cache dan restart container
             docker compose build --no-cache
             docker compose up -d --force-recreate
-            
+
             # Bersihkan cache image lama yang tidak terpakai
             docker image prune -f
