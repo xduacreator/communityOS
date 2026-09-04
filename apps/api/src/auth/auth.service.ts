@@ -1,7 +1,13 @@
-import { BadRequestException, Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { LoginDto, RegisterDto, UpdateProfileDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -10,36 +16,43 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(data: any) {
+  async register(data: RegisterDto) {
     this.assertValidPassword(data.password);
+    const email = data.email.trim().toLowerCase();
     const existingUser = await this.prisma.user.findUnique({
-      where: { email: data.email },
+      where: { email },
     });
 
     if (existingUser) {
-      const isPasswordValid = await bcrypt.compare(data.password, existingUser.password);
+      const isPasswordValid = await bcrypt.compare(
+        data.password,
+        existingUser.password,
+      );
       if (isPasswordValid) {
         return this.generateToken(existingUser);
       }
-      throw new ConflictException('Email ini sudah terdaftar di ekosistem kami. Silakan masuk (Login) menggunakan kata sandi Anda.');
+      throw new ConflictException(
+        'Email ini sudah terdaftar di ekosistem kami. Silakan masuk (Login) menggunakan kata sandi Anda.',
+      );
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
-        email: data.email,
+        email,
         password: hashedPassword,
-        name: data.name,
+        name: data.name.trim(),
       },
     });
 
     return this.generateToken(user);
   }
 
-  async login(data: any) {
+  async login(data: LoginDto) {
+    const email = data.email.trim().toLowerCase();
     const user = await this.prisma.user.findUnique({
-      where: { email: data.email },
+      where: { email },
     });
 
     if (!user) {
@@ -56,7 +69,11 @@ export class AuthService {
   }
 
   private generateToken(user: any) {
-    const payload = { email: user.email, sub: user.id, isSuperAdmin: user.isSuperAdmin };
+    const payload = {
+      email: user.email,
+      sub: user.id,
+      isSuperAdmin: user.isSuperAdmin,
+    };
     return {
       access_token: this.jwtService.sign(payload),
     };
@@ -65,11 +82,11 @@ export class AuthService {
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { 
-        id: true, 
-        name: true, 
-        email: true, 
-        isSuperAdmin: true, 
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isSuperAdmin: true,
         createdAt: true,
         memberships: {
           select: {
@@ -77,35 +94,37 @@ export class AuthService {
             status: true,
             community: {
               select: {
-                slug: true
-              }
-            }
-          }
-        }
-      }
+                slug: true,
+              },
+            },
+          },
+        },
+      },
     });
     if (!user) throw new UnauthorizedException('User not found');
     return user;
   }
 
-  async updateProfile(userId: string, data: any) {
+  async updateProfile(userId: string, data: UpdateProfileDto) {
     const updateData: any = {};
     if (data.name) updateData.name = data.name;
     if (data.password) {
       this.assertValidPassword(data.password);
       updateData.password = await bcrypt.hash(data.password, 10);
     }
-    
+
     return this.prisma.user.update({
       where: { id: userId },
       data: updateData,
-      select: { id: true, name: true, email: true }
+      select: { id: true, name: true, email: true },
     });
   }
 
   private assertValidPassword(password: unknown) {
     if (typeof password !== 'string' || password.length < 8) {
-      throw new BadRequestException('Password must contain at least 8 characters');
+      throw new BadRequestException(
+        'Password must contain at least 8 characters',
+      );
     }
   }
 }

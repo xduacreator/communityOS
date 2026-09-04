@@ -1,59 +1,56 @@
-'use client';
-import { getApiUrl } from '../../lib/api';
+"use client";
+import { getApiUrl } from "../../lib/api";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { CommunityMember } from '../../types';
-import { setToken } from '../../lib/auth';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { CommunityMember } from "../../types";
+import { clearLegacyToken } from "../../lib/auth";
 
-import { ArrowRight, Mail, Lock } from 'lucide-react';
+import { ArrowRight, Mail, Lock } from "lucide-react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
     try {
-      const res = await fetch(getApiUrl() + '/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(getApiUrl() + "/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) {
-        throw new Error('Invalid credentials');
+        throw new Error("Invalid credentials");
       }
+      clearLegacyToken();
 
-      const data = await res.json();
-      setToken(data.access_token);
-      
       // Fetch user profile to determine redirect
-      const meRes = await fetch(getApiUrl() + '/auth/me', {
-        headers: { 'Authorization': `Bearer ${data.access_token}` },
-        cache: 'no-store'
+      const meRes = await fetch(getApiUrl() + "/auth/me", {
+        cache: "no-store",
       });
       if (meRes.ok) {
         const meData = await meRes.json();
 
         // Priority 1: Community Admin -> go to community CMS
-        const adminMembership = (meData.memberships as CommunityMember[] | undefined)?.find(
-          (m) => m.role === 'COMMUNITY_ADMIN' && m.status === 'APPROVED',
-        );
+        const adminMembership = (
+          meData.memberships as CommunityMember[] | undefined
+        )?.find((m) => m.role === "COMMUNITY_ADMIN" && m.status === "APPROVED");
         if (adminMembership && adminMembership.community) {
           router.push(`/${adminMembership.community.slug}/admin`);
           return;
         }
 
         // Priority 2: Coach -> go to session operations
-        const coachMembership = (meData.memberships as CommunityMember[] | undefined)?.find(
-          (m) => m.role === 'COACH' && m.status === 'APPROVED',
-        );
+        const coachMembership = (
+          meData.memberships as CommunityMember[] | undefined
+        )?.find((m) => m.role === "COACH" && m.status === "APPROVED");
         if (coachMembership && coachMembership.community) {
           router.push(`/${coachMembership.community.slug}/admin/participants`);
           return;
@@ -61,21 +58,23 @@ export default function LoginPage() {
 
         // Priority 3: Super Admin -> go to super-admin dashboard
         if (meData.isSuperAdmin) {
-          router.push('/super-admin');
+          router.push("/super-admin");
           return;
         }
 
         // Priority 4: Regular Member -> go to community public page
-        const regularMembership = (meData.memberships as CommunityMember[] | undefined)?.find((m) => m.role === 'MEMBER');
+        const regularMembership = (
+          meData.memberships as CommunityMember[] | undefined
+        )?.find((m) => m.role === "MEMBER");
         if (regularMembership && regularMembership.community) {
           router.push(`/${regularMembership.community.slug}`);
           return;
         }
       }
-      
-      router.push('/'); 
+
+      router.push("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -102,7 +101,9 @@ export default function LoginPage() {
             )}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Email address</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Email address
+                </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Mail className="h-5 w-5 text-gray-400" />
@@ -119,7 +120,9 @@ export default function LoginPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-5 w-5 text-gray-400" />
@@ -143,7 +146,7 @@ export default function LoginPage() {
                 disabled={loading}
                 className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50"
               >
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? "Signing in..." : "Sign in"}
                 {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
               </button>
             </div>
@@ -157,9 +160,12 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-30" />
         <div className="relative z-10 w-full flex items-center justify-center p-12">
           <div className="max-w-lg text-white">
-            <h1 className="text-5xl font-bold mb-6">Connect, collaborate, and grow together.</h1>
+            <h1 className="text-5xl font-bold mb-6">
+              Connect, collaborate, and grow together.
+            </h1>
             <p className="text-xl text-indigo-100 opacity-90">
-              Latih.Club is your modern platform for managing events, memberships, and engaging with your tribe.
+              Latih.Club is your modern platform for managing events,
+              memberships, and engaging with your tribe.
             </p>
           </div>
         </div>

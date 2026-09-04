@@ -73,10 +73,6 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
 
   const fetchData = async () => {
     const headers = getAuthHeaders();
-    if (!headers.Authorization) {
-      router.push('/login');
-      return;
-    }
 
     try {
       const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);

@@ -4,6 +4,9 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
 import { RequireSuperAdmin, RequireTenantRole } from '../auth/decorators/roles.decorator';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
+import { CreateCommunityDto } from './dto/create-community.dto';
+import { UpdateCommunityDto } from './dto/update-community.dto';
+import { ResetCommunityDataDto } from './dto/reset-community-data.dto';
 
 @Controller('communities')
 export class CommunityController {
@@ -22,7 +25,7 @@ export class CommunityController {
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @RequireSuperAdmin()
   @Post()
-  create(@Body() data: any, @Request() req: any) {
+  create(@Body() data: CreateCommunityDto, @Request() req: any) {
     return this.communityService.create(data, req.user.userId);
   }
 
@@ -50,7 +53,7 @@ export class CommunityController {
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
   @RequireTenantRole('COMMUNITY_ADMIN')
   @Patch(':communityId')
-  update(@Param('communityId') id: string, @Body() data: any, @Request() req: any) {
+  update(@Param('communityId') id: string, @Body() data: UpdateCommunityDto, @Request() req: any) {
     if (!req.user?.isSuperAdmin) {
       delete data.isShowcase;
     }
@@ -59,10 +62,7 @@ export class CommunityController {
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @RequireSuperAdmin()
   @Post(':id/reset-data')
-  resetData(@Param('id') id: string, @Body() body: { options: string[] }) {
-    if (!body.options || !Array.isArray(body.options)) {
-      return { success: false, message: 'Invalid options array' };
-    }
+  resetData(@Param('id') id: string, @Body() body: ResetCommunityDataDto) {
     return this.communityService.resetData(id, body.options);
   }
 }

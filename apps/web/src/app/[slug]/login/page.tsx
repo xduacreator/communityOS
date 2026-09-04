@@ -1,78 +1,86 @@
-'use client';
-import { getApiUrl } from '../../../lib/api';
+"use client";
+import { getApiUrl } from "../../../lib/api";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { setToken } from '../../../lib/auth';
-import { Community } from '../../../types';
-export default function MemberLogin({ params }: { params: Promise<{ slug: string }> }) {
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Community } from "../../../types";
+import { clearLegacyToken } from "../../../lib/auth";
+export default function MemberLogin({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const resolvedParams = React.use(params);
   const router = useRouter();
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [community, setCommunity] = useState<Community | null>(null);
 
   useEffect(() => {
     fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`)
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { if(data) setCommunity(data) })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setCommunity(data);
+      })
       .catch(console.error);
   }, [resolvedParams.slug]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const res = await fetch(getApiUrl() + '/auth/login', {
-        method: 'POST',
+      const res = await fetch(getApiUrl() + "/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || 'Login failed');
+        throw new Error(errorData.message || "Login failed");
       }
+      clearLegacyToken();
 
-      const data = await res.json();
-      setToken(data.access_token);
-      
       // Auto-join them to the community if they haven't already
       try {
-        const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
+        const commRes = await fetch(
+          `${getApiUrl()}/communities/${resolvedParams.slug}`,
+        );
         if (commRes.ok) {
           const commData = await commRes.json();
-          await fetch(getApiUrl() + '/memberships/join', {
-            method: 'POST',
+          await fetch(getApiUrl() + "/memberships/join", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${data.access_token}`
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({ communityId: commData.id }),
           });
         }
       } catch (err) {
-        console.error('Auto-join failed', err);
+        console.error("Auto-join failed", err);
       }
 
-      const statusRes = await fetch(`${getApiUrl()}/memberships/my-status/${resolvedParams.slug}`, {
-        headers: { 'Authorization': `Bearer ${data.access_token}` },
-      });
+      const statusRes = await fetch(
+        `${getApiUrl()}/memberships/my-status/${resolvedParams.slug}`,
+      );
       if (statusRes.ok) {
         const membership = await statusRes.json();
-        if (membership?.status === 'APPROVED' && membership?.role === 'COACH') {
+        if (membership?.status === "APPROVED" && membership?.role === "COACH") {
           router.push(`/${resolvedParams.slug}/admin/participants`);
           return;
         }
-        if (membership?.status === 'APPROVED' && membership?.role === 'COMMUNITY_ADMIN') {
+        if (
+          membership?.status === "APPROVED" &&
+          membership?.role === "COMMUNITY_ADMIN"
+        ) {
           router.push(`/${resolvedParams.slug}/admin/dashboard`);
           return;
         }
@@ -80,7 +88,7 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
 
       router.push(`/${resolvedParams.slug}?tab=dashboard`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -91,14 +99,25 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
       <div className="max-w-md w-full bg-white rounded-[2rem] shadow-2xl p-8 border border-slate-100">
         <div className="text-center mb-8">
           {community?.logo ? (
-            <img src={community.logo} alt={community.name} className="w-20 h-20 rounded-2xl object-cover mx-auto mb-4 border border-slate-200 shadow-sm" />
+            <img
+              src={community.logo}
+              alt={community.name}
+              className="w-20 h-20 rounded-2xl object-cover mx-auto mb-4 border border-slate-200 shadow-sm"
+            />
           ) : (
             <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl font-black text-indigo-600">{community?.name?.[0] || 'C'}</span>
+              <span className="text-2xl font-black text-indigo-600">
+                {community?.name?.[0] || "C"}
+              </span>
             </div>
           )}
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Selamat Datang</h2>
-          <p className="text-slate-500 mt-2 font-medium">Masuk untuk mengikuti event dan sesi di {community?.name || 'Komunitas'}.</p>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+            Selamat Datang
+          </h2>
+          <p className="text-slate-500 mt-2 font-medium">
+            Masuk untuk mengikuti event dan sesi di{" "}
+            {community?.name || "Komunitas"}.
+          </p>
         </div>
 
         {error && (
@@ -109,7 +128,9 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Alamat Email</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">
+              Alamat Email
+            </label>
             <input
               type="email"
               required
@@ -121,7 +142,9 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">Kata Sandi</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2">
+              Kata Sandi
+            </label>
             <input
               type="password"
               required
@@ -137,17 +160,25 @@ export default function MemberLogin({ params }: { params: Promise<{ slug: string
             disabled={loading}
             className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 hover:-translate-y-0.5 transition-all shadow-xl shadow-indigo-500/25 disabled:opacity-50 disabled:hover:translate-y-0 mt-2"
           >
-            {loading ? 'Masuk...' : 'Masuk'}
+            {loading ? "Masuk..." : "Masuk"}
           </button>
         </form>
 
         <p className="mt-8 text-center text-slate-500 font-medium">
-          Don&apos;t have an account?{' '}
-          <Link href={`/${resolvedParams.slug}/register`} className="text-indigo-600 font-bold hover:text-indigo-700">Daftar di sini</Link>
+          Don&apos;t have an account?{" "}
+          <Link
+            href={`/${resolvedParams.slug}/register`}
+            className="text-indigo-600 font-bold hover:text-indigo-700"
+          >
+            Daftar di sini
+          </Link>
         </p>
-        
+
         <div className="mt-4 text-center">
-           <Link href={`/${resolvedParams.slug}`} className="text-sm text-slate-400 font-bold hover:text-slate-600">
+          <Link
+            href={`/${resolvedParams.slug}`}
+            className="text-sm text-slate-400 font-bold hover:text-slate-600"
+          >
             &larr; Kembali ke Komunitas
           </Link>
         </div>

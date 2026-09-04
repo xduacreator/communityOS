@@ -42,8 +42,8 @@ export class UserService {
     const hashedPassword = await bcrypt.hash(data.password, 10);
     return this.prisma.user.create({
       data: {
-        email: data.email,
-        name: data.name,
+        email: data.email.trim().toLowerCase(),
+        name: data.name.trim(),
         password: hashedPassword,
         isSuperAdmin: data.isSuperAdmin || false,
       },

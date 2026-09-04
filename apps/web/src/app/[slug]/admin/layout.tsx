@@ -26,10 +26,6 @@ export default function AdminLayout({
     setIsAuthorized(false); // Reset authorized state when community slug changes
     const checkAuth = async () => {
       const headers = getAuthHeaders();
-      if (!headers.Authorization) {
-        router.push('/login');
-        return;
-      }
       try {
         const userRes = await fetch(`${getApiUrl()}/auth/me`, { headers: { ...headers } });
         if (!userRes.ok) throw new Error('Unauthorized');

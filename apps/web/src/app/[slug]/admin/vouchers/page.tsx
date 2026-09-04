@@ -1,32 +1,32 @@
-'use client';
-import { getApiUrl } from '../../../../lib/api';
+"use client";
+import { getApiUrl } from "../../../../lib/api";
 
-import React, { useEffect, useState } from 'react';
-import { getAuthHeaders } from '../../../../lib/auth';
-import { 
-  Ticket, 
-  Plus, 
-  Search, 
-  Trash2, 
-  Edit, 
-  CheckCircle2, 
-  XCircle, 
-  Loader2, 
-  Percent, 
-  DollarSign, 
-  Copy, 
-  Check, 
+import React, { useEffect, useState } from "react";
+import { getAuthHeaders } from "../../../../lib/auth";
+import {
+  Ticket,
+  Plus,
+  Search,
+  Trash2,
+  Edit,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  Percent,
+  DollarSign,
+  Copy,
+  Check,
   Sparkles,
-  AlertCircle
-} from 'lucide-react';
-import ConfirmModal from '../../../../components/ui/ConfirmModal';
+  AlertCircle,
+} from "lucide-react";
+import ConfirmModal from "../../../../components/ui/ConfirmModal";
 
 interface PromoVoucher {
   id: string;
   communityId: string;
   code: string;
   description?: string;
-  discountType: 'FIXED' | 'PERCENTAGE';
+  discountType: "FIXED" | "PERCENTAGE";
   discountValue: number;
   minPurchase?: number;
   maxDiscount?: number;
@@ -34,49 +34,62 @@ interface PromoVoucher {
   usedCount: number;
   validFrom: string;
   validUntil?: string;
-  status: 'ACTIVE' | 'INACTIVE';
+  status: "ACTIVE" | "INACTIVE";
   createdAt: string;
 }
 
-export default function AdminVouchersPage({ params }: { params: Promise<{ slug: string }> }) {
+export default function AdminVouchersPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const resolvedParams = React.use(params);
   const [vouchers, setVouchers] = useState<PromoVoucher[]>([]);
   const [loading, setLoading] = useState(true);
-  const [communityId, setCommunityId] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [communityId, setCommunityId] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingVoucher, setEditingVoucher] = useState<PromoVoucher | null>(null);
+  const [editingVoucher, setEditingVoucher] = useState<PromoVoucher | null>(
+    null,
+  );
   const [submitting, setSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
 
   // Delete Confirm Modal State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [voucherToDelete, setVoucherToDelete] = useState<string | null>(null);
 
   // Form Fields
-  const [code, setCode] = useState('');
-  const [description, setDescription] = useState('');
-  const [discountType, setDiscountType] = useState<'FIXED' | 'PERCENTAGE'>('FIXED');
-  const [discountValue, setDiscountValue] = useState<number | ''>('');
-  const [minPurchase, setMinPurchase] = useState<number | ''>('');
-  const [maxDiscount, setMaxDiscount] = useState<number | ''>('');
-  const [maxUses, setMaxUses] = useState<number | ''>('');
-  const [validUntil, setValidUntil] = useState('');
-  const [status, setStatus] = useState<'ACTIVE' | 'INACTIVE'>('ACTIVE');
+  const [code, setCode] = useState("");
+  const [description, setDescription] = useState("");
+  const [discountType, setDiscountType] = useState<"FIXED" | "PERCENTAGE">(
+    "FIXED",
+  );
+  const [discountValue, setDiscountValue] = useState<number | "">("");
+  const [minPurchase, setMinPurchase] = useState<number | "">("");
+  const [maxDiscount, setMaxDiscount] = useState<number | "">("");
+  const [maxUses, setMaxUses] = useState<number | "">("");
+  const [validUntil, setValidUntil] = useState("");
+  const [status, setStatus] = useState<"ACTIVE" | "INACTIVE">("ACTIVE");
 
   const fetchVouchers = async () => {
     try {
       const headers = getAuthHeaders();
       // First get community details to get communityId
-      const comRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
-      if (!comRes.ok) throw new Error('Komunitas tidak ditemukan');
+      const comRes = await fetch(
+        `${getApiUrl()}/communities/${resolvedParams.slug}`,
+      );
+      if (!comRes.ok) throw new Error("Komunitas tidak ditemukan");
       const comData = await comRes.json();
       setCommunityId(comData.id);
 
-      const res = await fetch(`${getApiUrl()}/promo-vouchers/community/${comData.id}`, { headers });
+      const res = await fetch(
+        `${getApiUrl()}/promo-vouchers/community/${comData.id}`,
+        { headers },
+      );
       if (res.ok) {
         const data = await res.json();
         setVouchers(data);
@@ -94,16 +107,16 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
 
   const resetForm = () => {
     setEditingVoucher(null);
-    setCode('');
-    setDescription('');
-    setDiscountType('FIXED');
-    setDiscountValue('');
-    setMinPurchase('');
-    setMaxDiscount('');
-    setMaxUses('');
-    setValidUntil('');
-    setStatus('ACTIVE');
-    setErrorMsg('');
+    setCode("");
+    setDescription("");
+    setDiscountType("FIXED");
+    setDiscountValue("");
+    setMinPurchase("");
+    setMaxDiscount("");
+    setMaxUses("");
+    setValidUntil("");
+    setStatus("ACTIVE");
+    setErrorMsg("");
   };
 
   const openCreateModal = () => {
@@ -114,43 +127,49 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
   const openEditModal = (voucher: PromoVoucher) => {
     setEditingVoucher(voucher);
     setCode(voucher.code);
-    setDescription(voucher.description || '');
+    setDescription(voucher.description || "");
     setDiscountType(voucher.discountType);
     setDiscountValue(voucher.discountValue);
-    setMinPurchase(voucher.minPurchase ?? '');
-    setMaxDiscount(voucher.maxDiscount ?? '');
-    setMaxUses(voucher.maxUses ?? '');
-    setValidUntil(voucher.validUntil ? new Date(voucher.validUntil).toISOString().split('T')[0] : '');
+    setMinPurchase(voucher.minPurchase ?? "");
+    setMaxDiscount(voucher.maxDiscount ?? "");
+    setMaxUses(voucher.maxUses ?? "");
+    setValidUntil(
+      voucher.validUntil
+        ? new Date(voucher.validUntil).toISOString().split("T")[0]
+        : "",
+    );
     setStatus(voucher.status);
-    setErrorMsg('');
+    setErrorMsg("");
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) {
-      setErrorMsg('Kode voucher wajib diisi');
+      setErrorMsg("Kode voucher wajib diisi");
       return;
     }
     if (!discountValue || Number(discountValue) <= 0) {
-      setErrorMsg('Nilai diskon harus lebih besar dari 0');
+      setErrorMsg("Nilai diskon harus lebih besar dari 0");
       return;
     }
 
     setSubmitting(true);
-    setErrorMsg('');
+    setErrorMsg("");
 
     try {
       const headers = getAuthHeaders();
       const payload = {
-        communityId,
-        code: code.trim().toUpperCase(),
+        ...(!editingVoucher && {
+          communityId,
+          code: code.trim().toUpperCase(),
+        }),
         description: description.trim() || undefined,
         discountType,
         discountValue: Number(discountValue),
-        minPurchase: minPurchase !== '' ? Number(minPurchase) : undefined,
-        maxDiscount: maxDiscount !== '' ? Number(maxDiscount) : undefined,
-        maxUses: maxUses !== '' ? Number(maxUses) : undefined,
+        minPurchase: minPurchase !== "" ? Number(minPurchase) : undefined,
+        maxDiscount: maxDiscount !== "" ? Number(maxDiscount) : undefined,
+        maxUses: maxUses !== "" ? Number(maxUses) : undefined,
         validUntil: validUntil ? new Date(validUntil).toISOString() : undefined,
         status,
       };
@@ -160,9 +179,9 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
         : `${getApiUrl()}/promo-vouchers`;
 
       const res = await fetch(url, {
-        method: editingVoucher ? 'PUT' : 'POST',
+        method: editingVoucher ? "PUT" : "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...headers,
         },
         body: JSON.stringify(payload),
@@ -170,14 +189,16 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || 'Gagal menyimpan voucher');
+        throw new Error(errorData.message || "Gagal menyimpan voucher");
       }
 
       setIsModalOpen(false);
       resetForm();
       fetchVouchers();
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'Terjadi kesalahan saat menyimpan');
+      setErrorMsg(
+        err instanceof Error ? err.message : "Terjadi kesalahan saat menyimpan",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -186,11 +207,11 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
   const handleToggleStatus = async (voucher: PromoVoucher) => {
     try {
       const headers = getAuthHeaders();
-      const newStatus = voucher.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+      const newStatus = voucher.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
       const res = await fetch(`${getApiUrl()}/promo-vouchers/${voucher.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...headers,
         },
         body: JSON.stringify({ status: newStatus }),
@@ -212,10 +233,13 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
     if (!voucherToDelete) return;
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`${getApiUrl()}/promo-vouchers/${voucherToDelete}`, {
-        method: 'DELETE',
-        headers,
-      });
+      const res = await fetch(
+        `${getApiUrl()}/promo-vouchers/${voucherToDelete}`,
+        {
+          method: "DELETE",
+          headers,
+        },
+      );
       if (res.ok) {
         fetchVouchers();
       }
@@ -233,12 +257,14 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const filteredVouchers = vouchers.filter((v) =>
-    v.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (v.description && v.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredVouchers = vouchers.filter(
+    (v) =>
+      v.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (v.description &&
+        v.description.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
-  const activeCount = vouchers.filter((v) => v.status === 'ACTIVE').length;
+  const activeCount = vouchers.filter((v) => v.status === "ACTIVE").length;
   const totalUses = vouchers.reduce((acc, v) => acc + (v.usedCount || 0), 0);
 
   if (loading) {
@@ -261,7 +287,11 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
             Kode Promo & Voucher Diskon
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1.5 text-sm">
-            Buat kode diskon spesial (misal <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono text-indigo-600">LATIHNEWBER</code>) untuk menarik member baru & perpanjangan.
+            Buat kode diskon spesial (misal{" "}
+            <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono text-indigo-600">
+              LATIHNEWBER
+            </code>
+            ) untuk menarik member baru & perpanjangan.
           </p>
         </div>
 
@@ -278,8 +308,12 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Voucher</p>
-            <h3 className="text-3xl font-black text-slate-900 dark:text-slate-100 mt-1">{vouchers.length}</h3>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Total Voucher
+            </p>
+            <h3 className="text-3xl font-black text-slate-900 dark:text-slate-100 mt-1">
+              {vouchers.length}
+            </h3>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 flex items-center justify-center font-bold">
             <Ticket className="w-6 h-6" />
@@ -288,8 +322,12 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
 
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Voucher Aktif</p>
-            <h3 className="text-3xl font-black text-emerald-600 mt-1">{activeCount}</h3>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Voucher Aktif
+            </p>
+            <h3 className="text-3xl font-black text-emerald-600 mt-1">
+              {activeCount}
+            </h3>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center font-bold">
             <CheckCircle2 className="w-6 h-6" />
@@ -298,8 +336,12 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
 
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Penggunaan</p>
-            <h3 className="text-3xl font-black text-purple-600 mt-1">{totalUses}x</h3>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Total Penggunaan
+            </p>
+            <h3 className="text-3xl font-black text-purple-600 mt-1">
+              {totalUses}x
+            </h3>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 flex items-center justify-center font-bold">
             <Sparkles className="w-6 h-6" />
@@ -327,9 +369,12 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
           <div className="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-500 flex items-center justify-center mx-auto mb-4">
             <Ticket className="w-8 h-8" />
           </div>
-          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">Belum Ada Voucher</h3>
+          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">
+            Belum Ada Voucher
+          </h3>
           <p className="text-sm text-slate-400 mt-1 max-w-md mx-auto">
-            Buat kode diskon promo pertama Anda untuk menarik lebih banyak member baru dan meningkatkan perpanjangan.
+            Buat kode diskon promo pertama Anda untuk menarik lebih banyak
+            member baru dan meningkatkan perpanjangan.
           </p>
           <button
             onClick={openCreateModal}
@@ -356,11 +401,19 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                 {filteredVouchers.map((voucher) => {
-                  const isExpired = Boolean(voucher.validUntil && new Date(voucher.validUntil) < new Date());
-                  const isLimitReached = typeof voucher.maxUses === 'number' && voucher.usedCount >= voucher.maxUses;
+                  const isExpired = Boolean(
+                    voucher.validUntil &&
+                    new Date(voucher.validUntil) < new Date(),
+                  );
+                  const isLimitReached =
+                    typeof voucher.maxUses === "number" &&
+                    voucher.usedCount >= voucher.maxUses;
 
                   return (
-                    <tr key={voucher.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                    <tr
+                      key={voucher.id}
+                      className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                    >
                       {/* Code */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-2">
@@ -372,19 +425,26 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
                             title="Salin Kode"
                             className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                           >
-                            {copiedCode === voucher.code ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                            {copiedCode === voucher.code ? (
+                              <Check className="w-4 h-4 text-emerald-500" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
                         {voucher.description && (
-                          <p className="text-xs text-slate-500 mt-1 max-w-xs truncate">{voucher.description}</p>
+                          <p className="text-xs text-slate-500 mt-1 max-w-xs truncate">
+                            {voucher.description}
+                          </p>
                         )}
                       </td>
 
                       {/* Discount Value */}
                       <td className="py-4 px-6 font-bold text-slate-800 dark:text-slate-200">
-                        {voucher.discountType === 'FIXED' ? (
+                        {voucher.discountType === "FIXED" ? (
                           <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                            Potongan Rp {voucher.discountValue.toLocaleString('id-ID')}
+                            Potongan Rp{" "}
+                            {voucher.discountValue.toLocaleString("id-ID")}
                           </span>
                         ) : (
                           <div>
@@ -392,7 +452,10 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
                               Diskon {voucher.discountValue}%
                             </span>
                             {voucher.maxDiscount && (
-                              <p className="text-[11px] text-slate-400 font-normal">Maks. Rp {voucher.maxDiscount.toLocaleString('id-ID')}</p>
+                              <p className="text-[11px] text-slate-400 font-normal">
+                                Maks. Rp{" "}
+                                {voucher.maxDiscount.toLocaleString("id-ID")}
+                              </p>
                             )}
                           </div>
                         )}
@@ -401,7 +464,10 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
                       {/* Min Purchase */}
                       <td className="py-4 px-6 text-xs text-slate-600 dark:text-slate-300 font-medium">
                         {voucher.minPurchase ? (
-                          <span>Min. Rp {voucher.minPurchase.toLocaleString('id-ID')}</span>
+                          <span>
+                            Min. Rp{" "}
+                            {voucher.minPurchase.toLocaleString("id-ID")}
+                          </span>
                         ) : (
                           <span className="text-slate-400">Tanpa Minimal</span>
                         )}
@@ -411,13 +477,16 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                            {voucher.usedCount} {voucher.maxUses ? `/ ${voucher.maxUses}` : 'kali'}
+                            {voucher.usedCount}{" "}
+                            {voucher.maxUses ? `/ ${voucher.maxUses}` : "kali"}
                           </span>
                           {voucher.maxUses && (
                             <div className="w-16 bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                               <div
                                 className="bg-indigo-600 h-full rounded-full"
-                                style={{ width: `${Math.min(100, (voucher.usedCount / voucher.maxUses) * 100)}%` }}
+                                style={{
+                                  width: `${Math.min(100, (voucher.usedCount / voucher.maxUses) * 100)}%`,
+                                }}
                               />
                             </div>
                           )}
@@ -427,9 +496,17 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
                       {/* Expiration */}
                       <td className="py-4 px-6 text-xs font-medium">
                         {voucher.validUntil ? (
-                          <span className={isExpired ? 'text-rose-500 font-bold' : 'text-slate-600 dark:text-slate-300'}>
-                            {new Date(voucher.validUntil).toLocaleDateString('id-ID')}
-                            {isExpired && ' (Expired)'}
+                          <span
+                            className={
+                              isExpired
+                                ? "text-rose-500 font-bold"
+                                : "text-slate-600 dark:text-slate-300"
+                            }
+                          >
+                            {new Date(voucher.validUntil).toLocaleDateString(
+                              "id-ID",
+                            )}
+                            {isExpired && " (Expired)"}
                           </span>
                         ) : (
                           <span className="text-slate-400">Tanpa Batas</span>
@@ -441,15 +518,27 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
                         <button
                           onClick={() => handleToggleStatus(voucher)}
                           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold transition-colors ${
-                            voucher.status === 'ACTIVE' && !isExpired && !isLimitReached
-                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
-                              : 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
+                            voucher.status === "ACTIVE" &&
+                            !isExpired &&
+                            !isLimitReached
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
+                              : "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400"
                           }`}
                         >
-                          <span className={`w-2 h-2 rounded-full ${
-                            voucher.status === 'ACTIVE' && !isExpired && !isLimitReached ? 'bg-emerald-500' : 'bg-rose-500'
-                          }`} />
-                          {voucher.status === 'ACTIVE' && !isExpired && !isLimitReached ? 'Aktif' : 'Nonaktif'}
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              voucher.status === "ACTIVE" &&
+                              !isExpired &&
+                              !isLimitReached
+                                ? "bg-emerald-500"
+                                : "bg-rose-500"
+                            }`}
+                          />
+                          {voucher.status === "ACTIVE" &&
+                          !isExpired &&
+                          !isLimitReached
+                            ? "Aktif"
+                            : "Nonaktif"}
                         </button>
                       </td>
 
@@ -486,7 +575,9 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
             <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
               <h2 className="text-xl font-black text-slate-900 dark:text-slate-50 flex items-center gap-2">
                 <Ticket className="w-5 h-5 text-indigo-600" />
-                {editingVoucher ? 'Edit Kode Promo' : 'Buat Voucher Diskon Baru'}
+                {editingVoucher
+                  ? "Edit Kode Promo"
+                  : "Buat Voucher Diskon Baru"}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -537,11 +628,11 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => setDiscountType('FIXED')}
+                  onClick={() => setDiscountType("FIXED")}
                   className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
-                    discountType === 'FIXED'
-                      ? 'bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
-                      : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600'
+                    discountType === "FIXED"
+                      ? "bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                      : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600"
                   }`}
                 >
                   <DollarSign className="w-4 h-4" />
@@ -549,11 +640,11 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
                 </button>
                 <button
                   type="button"
-                  onClick={() => setDiscountType('PERCENTAGE')}
+                  onClick={() => setDiscountType("PERCENTAGE")}
                   className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
-                    discountType === 'PERCENTAGE'
-                      ? 'bg-purple-50 border-purple-500 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
-                      : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600'
+                    discountType === "PERCENTAGE"
+                      ? "bg-purple-50 border-purple-500 text-purple-700 dark:bg-purple-950 dark:text-purple-300"
+                      : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600"
                   }`}
                 >
                   <Percent className="w-4 h-4" />
@@ -564,21 +655,27 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
               {/* Nilai Diskon */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                  {discountType === 'FIXED' ? 'Nilai Potongan (Rp) *' : 'Persentase Diskon (%) *'}
+                  {discountType === "FIXED"
+                    ? "Nilai Potongan (Rp) *"
+                    : "Persentase Diskon (%) *"}
                 </label>
                 <input
                   type="number"
                   required
                   min="1"
                   value={discountValue}
-                  onChange={(e) => setDiscountValue(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder={discountType === 'FIXED' ? '50000' : '10'}
+                  onChange={(e) =>
+                    setDiscountValue(
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
+                  }
+                  placeholder={discountType === "FIXED" ? "50000" : "10"}
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold outline-none"
                 />
               </div>
 
               {/* Max Discount (If percentage) */}
-              {discountType === 'PERCENTAGE' && (
+              {discountType === "PERCENTAGE" && (
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                     Maksimal Potongan (Rp) (Opsional)
@@ -586,7 +683,11 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
                   <input
                     type="number"
                     value={maxDiscount}
-                    onChange={(e) => setMaxDiscount(e.target.value === '' ? '' : Number(e.target.value))}
+                    onChange={(e) =>
+                      setMaxDiscount(
+                        e.target.value === "" ? "" : Number(e.target.value),
+                      )
+                    }
                     placeholder="100000"
                     className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium outline-none"
                   />
@@ -601,7 +702,11 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
                 <input
                   type="number"
                   value={minPurchase}
-                  onChange={(e) => setMinPurchase(e.target.value === '' ? '' : Number(e.target.value))}
+                  onChange={(e) =>
+                    setMinPurchase(
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
+                  }
                   placeholder="100000"
                   className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium outline-none"
                 />
@@ -616,7 +721,11 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
                   <input
                     type="number"
                     value={maxUses}
-                    onChange={(e) => setMaxUses(e.target.value === '' ? '' : Number(e.target.value))}
+                    onChange={(e) =>
+                      setMaxUses(
+                        e.target.value === "" ? "" : Number(e.target.value),
+                      )
+                    }
                     placeholder="Contoh: 100"
                     className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium outline-none"
                   />
@@ -650,7 +759,9 @@ export default function AdminVouchersPage({ params }: { params: Promise<{ slug: 
                   className="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-lg shadow-indigo-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>{editingVoucher ? 'Simpan Perubahan' : 'Buat Voucher'}</span>
+                  <span>
+                    {editingVoucher ? "Simpan Perubahan" : "Buat Voucher"}
+                  </span>
                 </button>
               </div>
             </form>

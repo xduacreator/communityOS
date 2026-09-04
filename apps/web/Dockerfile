@@ -1,10 +1,10 @@
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 RUN npm install -g turbo
 COPY . .
 RUN turbo prune @repo/web --docker
 
-FROM node:20-alpine AS installer
+FROM node:22-alpine AS installer
 WORKDIR /app
 
 # Enable turbo cache
@@ -25,7 +25,7 @@ ENV NEXT_PUBLIC_ROOT_DOMAIN=$NEXT_PUBLIC_ROOT_DOMAIN
 COPY --from=builder /app/out/full/ .
 RUN npx turbo run build --filter=@repo/web...
 
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

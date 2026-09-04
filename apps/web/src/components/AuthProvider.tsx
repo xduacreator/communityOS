@@ -1,10 +1,10 @@
-'use client';
-import { getApiUrl } from '../lib/api';
+"use client";
+import { getApiUrl } from "../lib/api";
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { getAuthHeaders, getToken, removeToken } from '../lib/auth';
-import { useRouter } from 'next/navigation';
-import { User } from '../types';
+import { createContext, useContext, useEffect, useState } from "react";
+import { getAuthHeaders, removeToken } from "../lib/auth";
+import { useRouter } from "next/navigation";
+import { User } from "../types";
 
 interface AuthContextType {
   user: User | null;
@@ -28,15 +28,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const fetchUser = async () => {
-    const token = getToken();
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
     try {
-      const res = await fetch(getApiUrl() + '/auth/me', {
+      const res = await fetch(getApiUrl() + "/auth/me", {
         headers: getAuthHeaders(),
       });
       if (res.ok) {
@@ -46,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
       }
     } catch (err) {
-      console.error('Auth fetch failed', err);
+      console.error("Auth fetch failed", err);
     } finally {
       setLoading(false);
     }
@@ -59,11 +52,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     removeToken();
     setUser(null);
-    router.push('/login');
+    router.push("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, refreshUser: fetchUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, logout, refreshUser: fetchUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

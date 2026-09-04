@@ -2,7 +2,6 @@
 import { getApiUrl } from '../../../../../lib/api';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { getAuthHeaders } from '../../../../../lib/auth';
 import { Users, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -25,14 +24,9 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
   const [guests, setGuests] = useState<GuestRegistration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const router = useRouter();
 
   const fetchData = async () => {
     const headers = getAuthHeaders();
-    if (!headers.Authorization) {
-      router.push('/login');
-      return;
-    }
 
     try {
       const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);

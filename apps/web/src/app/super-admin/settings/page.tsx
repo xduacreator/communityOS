@@ -22,10 +22,6 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       const headers = getAuthHeaders();
-      if (!headers.Authorization) {
-        router.push('/login');
-        return;
-      }
 
       try {
         const res = await fetch(getApiUrl() + '/system-settings/admin/all', {
