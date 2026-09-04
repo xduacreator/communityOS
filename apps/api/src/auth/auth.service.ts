@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -11,6 +11,7 @@ export class AuthService {
   ) {}
 
   async register(data: any) {
+    this.assertValidPassword(data.password);
     const existingUser = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -91,6 +92,7 @@ export class AuthService {
     const updateData: any = {};
     if (data.name) updateData.name = data.name;
     if (data.password) {
+      this.assertValidPassword(data.password);
       updateData.password = await bcrypt.hash(data.password, 10);
     }
     
@@ -99,5 +101,11 @@ export class AuthService {
       data: updateData,
       select: { id: true, name: true, email: true }
     });
+  }
+
+  private assertValidPassword(password: unknown) {
+    if (typeof password !== 'string' || password.length < 8) {
+      throw new BadRequestException('Password must contain at least 8 characters');
+    }
   }
 }

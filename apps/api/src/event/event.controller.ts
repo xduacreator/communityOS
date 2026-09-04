@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request }
 import { EventService } from './event.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
-import { RequireTenantRole } from '../auth/decorators/roles.decorator';
+import { RequireTenantResource, RequireTenantRole } from '../auth/decorators/roles.decorator';
 
 @Controller('events')
 export class EventController {
@@ -25,13 +25,17 @@ export class EventController {
     return this.eventService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard) // Need custom guard if we want to ensure only admin of THIS community can edit
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('event')
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateEventDto: any) {
     return this.eventService.update(id, updateEventDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('event')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.eventService.remove(id);
@@ -43,7 +47,9 @@ export class EventController {
     return this.eventService.register(id, req.user.userId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('event')
   @Get(':id/attendees')
   getAttendees(@Param('id') id: string) {
     return this.eventService.getAttendees(id);

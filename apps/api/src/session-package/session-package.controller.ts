@@ -1,10 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
 import { SessionPackageService } from './session-package.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
+import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
+import { RequireSuperAdmin, RequireTenantResource, RequireTenantRole } from '../auth/decorators/roles.decorator';
 
 @Controller('session-package')
 export class SessionPackageController {
   constructor(private readonly sessionPackageService: SessionPackageService) {}
 
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('category', 'body', 'categoryId')
   @Post()
   create(@Body() createData: any) {
     return this.sessionPackageService.create(createData);
@@ -20,11 +27,16 @@ export class SessionPackageController {
     return this.sessionPackageService.findAllByCommunity(communityId);
   }
 
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('sessionPackage')
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateData: any) {
     return this.sessionPackageService.update(id, updateData);
   }
 
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
   @Get('superadmin/all')
   findAllSuperAdmin() {
     return this.sessionPackageService.findAllSuperAdmin();

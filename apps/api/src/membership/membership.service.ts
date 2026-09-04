@@ -43,6 +43,9 @@ export class MembershipService {
   }
 
   async updateStatus(id: string, status: any, communityId?: string) {
+    if (!['PENDING', 'APPROVED', 'REJECTED'].includes(status)) {
+      throw new BadRequestException('Invalid membership status');
+    }
     // Generate membershipNumber on approval if it doesn't exist
     const updateData: any = { status };
     const existing = await this.prisma.communityMember.findUnique({ where: { id } });
@@ -95,9 +98,9 @@ export class MembershipService {
   }
 
   async updateMember(id: string, data: any, communityId?: string) {
-    const { name, email, customFieldsData, ...restData } = data;
+    const { name, email, customFieldsData, role } = data;
     const allowedRoles = ['MEMBER', 'COACH', 'COMMUNITY_ADMIN'];
-    if (restData.role !== undefined && !allowedRoles.includes(restData.role)) {
+    if (role !== undefined && !allowedRoles.includes(role)) {
       throw new BadRequestException('Invalid community role');
     }
 
@@ -127,7 +130,7 @@ export class MembershipService {
       return tx.communityMember.update({
         where: { id },
         data: {
-          ...restData,
+          ...(role !== undefined && { role }),
           ...(customFieldsData !== undefined && { customFieldsData })
         }
       });
@@ -141,6 +144,20 @@ export class MembershipService {
     }
     return this.prisma.communityMember.delete({
       where: { id }
+    });
+  }
+
+  async updateOwnPaymentProof(userId: string, membershipId: string, paymentProofUrl: string) {
+    if (!paymentProofUrl || typeof paymentProofUrl !== 'string') {
+      throw new BadRequestException('Payment proof URL is required');
+    }
+    const membership = await this.prisma.communityMember.findUnique({ where: { id: membershipId } });
+    if (!membership || membership.userId !== userId) {
+      throw new NotFoundException('Membership not found');
+    }
+    return this.prisma.communityMember.update({
+      where: { id: membershipId },
+      data: { paymentProofUrl },
     });
   }
 

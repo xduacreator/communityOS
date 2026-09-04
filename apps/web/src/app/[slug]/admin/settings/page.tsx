@@ -153,6 +153,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
     formData.append('file', file);
     const res = await fetch(getApiUrl() + '/upload', {
       method: 'POST',
+      headers: getAuthHeaders(),
       body: formData,
     });
     if (!res.ok) throw new Error('Failed to upload file');

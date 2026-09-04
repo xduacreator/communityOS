@@ -3,7 +3,7 @@ import { MembershipService } from './membership.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
 import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
-import { RequireTenantRole, RequireSuperAdmin } from '../auth/decorators/roles.decorator';
+import { RequireTenantResource, RequireTenantRole, RequireSuperAdmin } from '../auth/decorators/roles.decorator';
 
 @Controller('memberships')
 export class MembershipController {
@@ -30,6 +30,7 @@ export class MembershipController {
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
   @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('communityMember')
   @Patch(':id/status')
   updateStatus(@Param('id') id: string, @Body() data: { status: any, communityId: string }) {
     return this.membershipService.updateStatus(id, data.status, data.communityId);
@@ -37,6 +38,7 @@ export class MembershipController {
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
   @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('communityMember')
   @Patch(':id')
   updateMember(@Param('id') id: string, @Body() data: { role?: any, name?: string, email?: string, customFieldsData?: string, communityId: string }) {
     const { communityId, ...updateData } = data;
@@ -45,6 +47,7 @@ export class MembershipController {
 
   @UseGuards(JwtAuthGuard, TenantRoleGuard)
   @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('communityMember')
   @Delete(':id')
   deleteMember(@Param('id') id: string, @Body() data: { communityId: string }) {
     return this.membershipService.deleteMember(id, data.communityId);
@@ -52,8 +55,8 @@ export class MembershipController {
 
   @UseGuards(JwtAuthGuard)
   @Patch('confirm-payment/:id')
-  confirmPayment(@Param('id') id: string, @Body() data: { paymentProofUrl: string }) {
-    return this.membershipService.updateMember(id, { paymentProofUrl: data.paymentProofUrl });
+  confirmPayment(@Request() req: any, @Param('id') id: string, @Body() data: { paymentProofUrl: string }) {
+    return this.membershipService.updateOwnPaymentProof(req.user.userId, id, data.paymentProofUrl);
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)

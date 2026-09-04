@@ -14,11 +14,15 @@ export class GuestRegistrationService {
     address: string;
   }) {
     const pkg = await this.prisma.sessionPackage.findUnique({
-      where: { id: data.packageId }
+      where: { id: data.packageId },
+      include: { category: { include: { activity: true } } },
     });
 
     if (!pkg) {
       throw new NotFoundException('Package not found');
+    }
+    if (pkg.category.activity.communityId !== data.communityId) {
+      throw new BadRequestException('Package does not belong to this community');
     }
     
     if (pkg.accessRule !== 'PUBLIC') {
@@ -62,6 +66,9 @@ export class GuestRegistrationService {
   }
 
   async updateStatus(id: string, status: string) {
+    if (!['PENDING', 'APPROVED', 'REJECTED', 'WAITLIST'].includes(status)) {
+      throw new BadRequestException('Invalid guest registration status');
+    }
     return this.prisma.guestRegistration.update({
       where: { id },
       data: { status }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { IsArray, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -21,6 +21,26 @@ export class UpdateSettingsDto {
 @Injectable()
 export class SystemSettingService {
   constructor(private prisma: PrismaService) {}
+
+  private isPublicKey(key: string) {
+    return ['landing.', 'platform.', 'seo.'].some((prefix) => key.startsWith(prefix));
+  }
+
+  async getPublicSettings() {
+    const settings = await this.prisma.systemSetting.findMany();
+    return Object.fromEntries(
+      settings
+        .filter((setting) => this.isPublicKey(setting.key))
+        .map((setting) => [setting.key, setting.value]),
+    );
+  }
+
+  async getPublicSetting(key: string) {
+    if (!this.isPublicKey(key)) {
+      throw new NotFoundException('Setting not found');
+    }
+    return this.getSetting(key);
+  }
 
   async getAllSettings() {
     const settings = await this.prisma.systemSetting.findMany();

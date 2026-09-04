@@ -29,20 +29,14 @@ export class EventService {
   async findOne(id: string) {
     const event = await this.prisma.event.findUnique({
       where: { id },
-      include: {
-        registrations: {
-          include: {
-            user: { select: { id: true, name: true, email: true } },
-          },
-        },
-      },
     });
     if (!event) throw new NotFoundException('Event not found');
     return event;
   }
 
   async update(id: string, data: UpdateEventDto) {
-    const updateData: any = { ...data };
+    const updateData: any = { ...(data as any) };
+    delete updateData.communityId;
     if (data.date) updateData.date = new Date(data.date);
     
     return this.prisma.event.update({

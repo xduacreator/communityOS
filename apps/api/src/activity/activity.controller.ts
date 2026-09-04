@@ -1,10 +1,15 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
 import { ActivityService } from './activity.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { TenantRoleGuard } from '../auth/guards/tenant-role.guard';
+import { RequireTenantResource, RequireTenantRole } from '../auth/decorators/roles.decorator';
 
 @Controller('activity')
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
   @Post()
   createActivity(@Body() createData: any) {
     return this.activityService.createActivity(createData);
@@ -15,6 +20,9 @@ export class ActivityController {
     return this.activityService.findAllActivities(communityId);
   }
 
+  @UseGuards(JwtAuthGuard, TenantRoleGuard)
+  @RequireTenantRole('COMMUNITY_ADMIN')
+  @RequireTenantResource('activity', 'body', 'activityId')
   @Post('category')
   createCategory(@Body() createData: any) {
     return this.activityService.createCategory(createData);

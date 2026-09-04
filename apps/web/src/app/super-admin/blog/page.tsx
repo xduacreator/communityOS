@@ -148,6 +148,7 @@ export default function BlogAdmin() {
 
       const res = await fetch(`${getApiUrl()}/upload`, {
         method: 'POST',
+        headers: getAuthHeaders(),
         body: formDataUpload,
       });
 

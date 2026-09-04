@@ -3,12 +3,15 @@ import { LandingPageService } from './landing-page.service';
 import { CreateLandingPageDto } from './dto/create-landing-page.dto';
 import { UpdateLandingPageDto } from './dto/update-landing-page.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { SuperAdminGuard } from '../auth/guards/super-admin.guard';
+import { RequireSuperAdmin } from '../auth/decorators/roles.decorator';
 
 @Controller('landing-page')
 export class LandingPageController {
   constructor(private readonly landingPageService: LandingPageService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
   @Post()
   create(@Body() createLandingPageDto: CreateLandingPageDto) {
     return this.landingPageService.create(createLandingPageDto);
@@ -26,13 +29,15 @@ export class LandingPageController {
     return this.landingPageService.findOne(idOrSlug);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateLandingPageDto: UpdateLandingPageDto) {
     return this.landingPageService.update(id, updateLandingPageDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.landingPageService.remove(id);

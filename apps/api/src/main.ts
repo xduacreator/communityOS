@@ -8,10 +8,10 @@ import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
 
-  // Increase payload limit for CMS content like Privacy Policy
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ limit: '50mb', extended: true }));
+  app.use(express.json({ limit: '2mb' }));
+  app.use(express.urlencoded({ limit: '2mb', extended: true }));
 
   // Secure HTTP headers with helmet
   app.use(
@@ -23,14 +23,16 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  const config = new DocumentBuilder()
-    .setTitle('Latih.Club API')
-    .setDescription('The Latih.Club backend API description')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory);
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Latih.Club API')
+      .setDescription('The Latih.Club backend API description')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const documentFactory = () => SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, documentFactory);
+  }
 
   // Enable global input validation schema validation
   app.useGlobalPipes(
@@ -40,14 +42,22 @@ async function bootstrap() {
     }),
   );
 
-  // Enable CORS with full support for credentials and dynamic origins
-  const corsOrigin = process.env.CORS_ORIGIN;
-  let originConfig: any = true;
-  if (corsOrigin && corsOrigin !== '*') {
-    originConfig = corsOrigin.includes(',')
-      ? corsOrigin.split(',').map((o) => o.trim())
-      : corsOrigin;
+  const configuredOrigins = (process.env.CORS_ORIGIN || 'https://latih.club,https://www.latih.club')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (process.env.NODE_ENV === 'production' && configuredOrigins.includes('*')) {
+    throw new Error('FATAL: CORS_ORIGIN cannot contain * in production.');
   }
+
+  const originConfig = (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
+    if (!origin || configuredOrigins.includes('*') || configuredOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Origin is not allowed by CORS'));
+  };
 
   app.enableCors({
     origin: originConfig,

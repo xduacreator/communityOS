@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -6,6 +6,11 @@ export class UserMembershipService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: { userId: string; communityId: string; membershipId: string; startDate?: Date; endDate?: Date; status?: string; paymentProofUrl?: string }) {
+    const tier = await this.prisma.membership.findUnique({ where: { id: data.membershipId } });
+    if (!tier || tier.communityId !== data.communityId) {
+      throw new BadRequestException('Membership tier does not belong to this community');
+    }
+
     // Validate H-7 renewal
     const activeMemberships = await this.prisma.userMembership.findMany({
       where: {
@@ -29,8 +34,6 @@ export class UserMembershipService {
     let end = data.endDate;
     
     if (!end) {
-      const tier = await this.prisma.membership.findUnique({ where: { id: data.membershipId } });
-      if (!tier) throw new Error('Membership tier not found');
       end = new Date(start);
       end.setDate(end.getDate() + tier.durationDays);
     }
@@ -42,7 +45,7 @@ export class UserMembershipService {
         membershipId: data.membershipId,
         startDate: start,
         endDate: end,
-        status: data.status || 'ACTIVE',
+        status: 'PENDING',
         paymentProofUrl: data.paymentProofUrl
       },
       include: { membership: true }
@@ -174,7 +177,16 @@ export class UserMembershipService {
   }
 
   async update(id: string, data: any) {
-    return this.prisma.userMembership.update({ where: { id }, data });
+    if (data.status !== undefined && !['PENDING', 'ACTIVE', 'EXPIRED', 'REJECTED'].includes(data.status)) {
+      throw new BadRequestException('Invalid user membership status');
+    }
+    const allowedData = {
+      ...(data.status !== undefined && { status: data.status }),
+      ...(data.startDate !== undefined && { startDate: new Date(data.startDate) }),
+      ...(data.endDate !== undefined && { endDate: new Date(data.endDate) }),
+      ...(data.paymentProofUrl !== undefined && { paymentProofUrl: data.paymentProofUrl }),
+    };
+    return this.prisma.userMembership.update({ where: { id }, data: allowedData });
   }
 
   async debugDbStatus() {

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -117,6 +117,9 @@ export class CommunityService {
             const updateData: any = {};
             if (data.adminName) updateData.name = data.adminName;
             if (data.adminPassword) {
+              if (data.adminPassword.length < 8) {
+                throw new BadRequestException('Password must contain at least 8 characters');
+              }
               updateData.password = await bcrypt.hash(data.adminPassword, 10);
             }
             await prisma.user.update({
@@ -125,7 +128,10 @@ export class CommunityService {
             });
           }
         } else {
-          const hashedPassword = await bcrypt.hash(data.adminPassword || 'password123', 10);
+          if (!data.adminPassword || data.adminPassword.length < 8) {
+            throw new BadRequestException('A new community admin requires a password of at least 8 characters');
+          }
+          const hashedPassword = await bcrypt.hash(data.adminPassword, 10);
           
           const newUser = await prisma.user.create({
             data: {
@@ -208,7 +214,10 @@ export class CommunityService {
         if (existingUser) {
           adminUserId = existingUser.id;
         } else {
-          const hashedPassword = await bcrypt.hash(data.adminPassword || 'password123', 10);
+          if (!data.adminPassword || data.adminPassword.length < 8) {
+            throw new BadRequestException('A new community admin requires a password of at least 8 characters');
+          }
+          const hashedPassword = await bcrypt.hash(data.adminPassword, 10);
           
           const newUser = await prisma.user.create({
             data: {

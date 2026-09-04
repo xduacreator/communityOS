@@ -409,10 +409,10 @@ export default function SuperAdminDashboard() {
                       <div>
                         <label className="block text-sm font-bold text-slate-700 mb-2">Temporary Password</label>
                         <input 
-                          type="password" 
+                          required type="password" minLength={8}
                           value={newComm.adminPassword} onChange={e => setNewComm({...newComm, adminPassword: e.target.value})}
                           className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow" 
-                          placeholder="Leave blank for 'password123'"
+                          placeholder="Minimum 8 characters"
                         />
                       </div>
                     </div>
@@ -548,7 +548,7 @@ export default function SuperAdminDashboard() {
                           type="password" 
                           value={editComm.adminPassword} onChange={e => setEditComm({...editComm, adminPassword: e.target.value})}
                           className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow" 
-                          placeholder="Leave blank for 'password123'"
+                          placeholder="Required only for a new admin account"
                         />
                       </div>
                     </div>
