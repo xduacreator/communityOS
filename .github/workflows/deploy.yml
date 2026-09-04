@@ -40,17 +40,26 @@ jobs:
 
       - name: Block critical production vulnerabilities
         run: |
-          for attempt in 1 2 3; do
-            npm audit --omit=dev --audit-level=critical \
-              --fetch-retries=2 \
-              --fetch-timeout=60000 && exit 0
-            if [ "$attempt" -lt 3 ]; then
-              echo "npm audit attempt $attempt failed; retrying in 15 seconds..."
-              sleep 15
+          for workspace in @repo/api @repo/web; do
+            audit_passed=false
+            for attempt in 1 2 3; do
+              if npm audit --workspace "$workspace" --omit=dev \
+                --audit-level=critical \
+                --fetch-retries=0 \
+                --fetch-timeout=120000; then
+                audit_passed=true
+                break
+              fi
+              if [ "$attempt" -lt 3 ]; then
+                echo "npm audit for $workspace attempt $attempt failed; retrying in 15 seconds..."
+                sleep 15
+              fi
+            done
+            if [ "$audit_passed" != true ]; then
+              echo "npm audit for $workspace did not return a successful security result."
+              exit 1
             fi
           done
-          echo "npm audit did not return a successful security result after 3 attempts."
-          exit 1
 
   deploy:
     needs: verify
