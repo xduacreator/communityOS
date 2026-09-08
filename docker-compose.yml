@@ -9,8 +9,14 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-community_os}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   api:
+    image: ${API_IMAGE:-community-os-api:local}
     build:
       context: .
       dockerfile: apps/api/Dockerfile
@@ -25,10 +31,18 @@ services:
       - CORS_ORIGIN=${CORS_ORIGIN:-https://latih.club,https://www.latih.club}
     volumes:
       - api_uploads:/app/apps/api/public/uploads
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/api/health', {signal: AbortSignal.timeout(4000)}).then(r => {if (!r.ok) process.exit(1)}).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 6
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   web:
+    image: ${WEB_IMAGE:-community-os-web:local}
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -43,8 +57,15 @@ services:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://latih.club/api}
       - INTERNAL_API_URL=http://api:3001/api
       - NEXT_PUBLIC_ROOT_DOMAIN=${NEXT_PUBLIC_ROOT_DOMAIN:-latih.club}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login', {signal: AbortSignal.timeout(4000)}).then(r => {if (!r.ok) process.exit(1)}).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 6
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
   nginx:
     image: nginx:alpine
@@ -55,8 +76,26 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - web
-      - api
+      web:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+  backup:
+    image: postgres:16-alpine
+    profiles: ["operations"]
+    restart: "no"
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-postgres}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      PGDATABASE: ${POSTGRES_DB:-community_os}
+      PGCONNECT_TIMEOUT: 10
+    volumes:
+      - /var/backups/community-os:/backups
+      - api_uploads:/uploads:ro
+      - ./scripts/operations:/operations:ro
+    entrypoint: ["sh", "/operations/backup-container.sh"]
 
 volumes:
   postgres_data:

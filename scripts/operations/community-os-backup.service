@@ -1,0 +1,14 @@
+[Unit]
+Description=Latih Club database/upload backup and isolated restore verification
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/root/communityOS
+ExecStart=/usr/bin/bash /root/communityOS/scripts/operations/backup.sh
+TimeoutStartSec=1h
+UMask=0077
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
