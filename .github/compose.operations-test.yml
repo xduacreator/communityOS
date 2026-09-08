@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: integration-test-only
+    volumes:
+      - test-uploads:/uploads
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  backup:
+    image: postgres:16-alpine
+    environment:
+      PGHOST: db
+      PGUSER: postgres
+      PGPASSWORD: integration-test-only
+      PGDATABASE: postgres
+      PGCONNECT_TIMEOUT: 5
+    volumes:
+      - test-backups:/backups
+      - test-uploads:/uploads:ro
+      - ../scripts/operations:/operations:ro
+    entrypoint: ["sh", "/operations/backup-container.sh"]
+volumes:
+  test-backups:
+  test-uploads:

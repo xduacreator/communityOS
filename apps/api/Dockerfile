@@ -48,5 +48,5 @@ WORKDIR /app/apps/api
 
 EXPOSE 3001
 
-# Push the schema and run the production build
-CMD ["sh", "-c", "npx prisma db push && npx prisma generate && npm run start:prod"]
+# Schema changes must be reviewed and applied separately from container startup.
+CMD ["node", "dist/main.js"]

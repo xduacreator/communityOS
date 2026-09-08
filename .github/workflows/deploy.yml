@@ -40,10 +40,25 @@ jobs:
       - name: Run runtime security smoke tests
         run: npm run test:security --workspace @repo/api
 
+  operations-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate operations scripts
+        run: |
+          bash -n scripts/operations/deploy.sh scripts/operations/backup.sh
+          sh -n scripts/operations/backup-container.sh scripts/operations/restore-check.sh
+          node --test scripts/operations/deploy.test.mjs
+      - name: Verify backup and isolated restore with PostgreSQL
+        run: bash scripts/operations/test-backup.sh
+
   deploy:
-    needs: verify
+    needs: [verify, operations-test]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    concurrency:
+      group: community-os-production
+      cancel-in-progress: false
 
     steps:
       - name: Deploy to VPS via SSH
@@ -55,15 +70,11 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           command_timeout: 30m
           script: |
-            # Sesuaikan direktori dengan lokasi folder aplikasi di VPS Anda
+            set -eu
             cd /root/communityOS
-
-            # Tarik perubahan terbaru dari branch main
-            git pull origin main
-
-            # Build ulang dari nol tanpa cache dan restart container
-            docker compose build --no-cache
-            docker compose up -d --force-recreate
-
-            # Bersihkan cache image lama yang tidak terpakai
-            docker image prune -f
+            exec 9>/var/lock/community-os-operations.lock
+            flock -w 1800 9
+            test -z "$(git status --porcelain --untracked-files=no)"
+            git fetch origin main
+            git merge --ff-only '${{ github.sha }}'
+            bash scripts/operations/deploy.sh '${{ github.sha }}'

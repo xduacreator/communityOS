@@ -1,0 +1,14 @@
+.git
+.codex
+graphify-out
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/coverage
+**/.env
+**/.env.*
+**/*.log
+**/*.db
+**/public/uploads
+backups
