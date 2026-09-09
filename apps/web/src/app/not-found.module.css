@@ -1,0 +1,12 @@
+.ball {
+  animation: bounce 2.4s ease-in-out 2;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-24px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ball { animation: none; }
+}
