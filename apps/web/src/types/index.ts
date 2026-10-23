@@ -158,6 +158,9 @@ export interface SessionWallet {
   purchaseDate?: string | null;
   startDate?: string | null;
   expiredDate?: string | null;
+  // Set on wallets of extra pax booked by the user; null for the buyer
+  participantName?: string | null;
+  orderGroupId?: string | null;
   createdAt: string;
   updatedAt: string;
   user?: User;

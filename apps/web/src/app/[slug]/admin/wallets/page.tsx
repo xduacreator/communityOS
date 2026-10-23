@@ -80,6 +80,7 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
   const filteredWallets = wallets.filter(w => {
     const matchesSearch = 
       w.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      w.participantName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
       w.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       w.package?.name?.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -157,8 +158,10 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
                 filteredWallets.map((wallet) => (
                   <tr key={wallet.id} className="hover:bg-slate-50 transition-colors bg-white">
                     <td className="px-6 py-4">
-                      <div className="font-extrabold text-slate-900">{wallet.user?.name || 'Unknown'}</div>
-                      <div className="text-xs font-semibold text-slate-500 mt-1">{wallet.user?.email || ''}</div>
+                      <div className="font-extrabold text-slate-900">{wallet.participantName || wallet.user?.name || 'Unknown'}</div>
+                      <div className="text-xs font-semibold text-slate-500 mt-1">
+                        {wallet.participantName ? `Pax dari ${wallet.user?.name || '-'} · ` : ''}{wallet.user?.email || ''}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="font-bold text-slate-700 bg-slate-100 border border-slate-200 px-3 py-1 rounded-xl text-xs inline-block">

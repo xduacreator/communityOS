@@ -47,7 +47,16 @@ import {
   Event,
 } from "../types";
 
+const MAX_EXTRA_PAX = 5;
+
+// Wallets are shown per package and participant (extra pax have their own wallet)
+const walletKey = (w: { packageId: string; participantName?: string | null }) =>
+  `${w.packageId}::${w.participantName ?? ""}`;
+
 interface ActiveWalletView {
+  walletId: string;
+  walletKey: string;
+  participantName: string | null;
   packageId: string;
   packageName: string;
   totalSession: number;
@@ -62,6 +71,7 @@ interface HistoryItem {
   date: Date;
   remarks: string;
   packageId?: string;
+  walletKey?: string;
 }
 
 export default function CommunityMicrosite({
@@ -89,6 +99,7 @@ export default function CommunityMicrosite({
   const [isCheckInConfirmOpen, setIsCheckInConfirmOpen] = useState(false);
   const [checkInActionData, setCheckInActionData] = useState<{
     packageId: string;
+    walletId: string;
     isCheckedIn: boolean;
   } | null>(null);
 
@@ -137,6 +148,8 @@ export default function CommunityMicrosite({
     null,
   );
   const [purchaseProofUrl, setPurchaseProofUrl] = useState("");
+  // Names of extra participants; the logged-in buyer is always pax 1
+  const [extraPaxNames, setExtraPaxNames] = useState<string[]>([]);
 
   // Guest RSVP Modal
   const [showGuestRsvpModal, setShowGuestRsvpModal] = useState(false);
@@ -290,7 +303,10 @@ export default function CommunityMicrosite({
           // Never mix unapproved repeat purchases into an active wallet balance.
           wallets.forEach((w) => {
             if (w.walletStatus === "ACTIVE") {
-              groupedWallets.set(w.packageId, {
+              groupedWallets.set(walletKey(w), {
+                walletId: w.id,
+                walletKey: walletKey(w),
+                participantName: w.participantName ?? null,
                 packageId: w.packageId,
                 packageName: w.package?.name || "Session Package",
                 totalSession: w.totalSession,
@@ -305,12 +321,15 @@ export default function CommunityMicrosite({
           // for the same package. walletData is newest-first, so the first match wins.
           wallets.forEach((w) => {
             if (
-              !groupedWallets.has(w.packageId) &&
+              !groupedWallets.has(walletKey(w)) &&
               ["PENDING", "WAITING", "WAITLIST", "COMPLETED"].includes(
                 w.walletStatus,
               )
             ) {
-              groupedWallets.set(w.packageId, {
+              groupedWallets.set(walletKey(w), {
+                walletId: w.id,
+                walletKey: walletKey(w),
+                participantName: w.participantName ?? null,
                 packageId: w.packageId,
                 packageName: w.package?.name || "Session Package",
                 totalSession: w.totalSession,
@@ -329,8 +348,9 @@ export default function CommunityMicrosite({
               type: "PURCHASE",
               change: w.totalSession,
               date: w.purchaseDate ? new Date(w.purchaseDate) : new Date(),
-              remarks: `Purchased ${w.package?.name || "Package"}`,
+              remarks: `Purchased ${w.package?.name || "Package"}${w.participantName ? ` (${w.participantName})` : ""}`,
               packageId: w.packageId,
+              walletKey: walletKey(w),
             });
             if (w.transactions && Array.isArray(w.transactions)) {
               w.transactions.forEach((tx) => {
@@ -339,11 +359,13 @@ export default function CommunityMicrosite({
                   change: tx.changeSession,
                   date: new Date(tx.createdAt),
                   remarks:
-                    tx.remarks ||
-                    (tx.transactionType === "ATTENDANCE"
-                      ? "Check-in"
-                      : tx.transactionType),
+                    (tx.remarks ||
+                      (tx.transactionType === "ATTENDANCE"
+                        ? "Check-in"
+                        : tx.transactionType)) +
+                    (w.participantName ? ` (${w.participantName})` : ""),
                   packageId: w.packageId,
+                  walletKey: walletKey(w),
                 });
               });
             }
@@ -543,6 +565,7 @@ export default function CommunityMicrosite({
       setAppliedVoucher(null);
       setVoucherCodeInput("");
       setVoucherError("");
+      setExtraPaxNames([]);
       setShowPurchaseModal(true);
       // No need to continue purchase here; submission will happen in modal
       return;
@@ -553,7 +576,7 @@ export default function CommunityMicrosite({
     }
   };
 
-  const handleCheckInOut = async (packageId: string) => {
+  const handleCheckInOut = async (wallet: ActiveWalletView) => {
     if (
       !isLoggedIn ||
       !status ||
@@ -564,8 +587,10 @@ export default function CommunityMicrosite({
       return;
     }
 
-    // Check if the latest history for THIS package TODAY is a check-in.
-    const packageHistory = history.filter((h) => h.packageId === packageId);
+    // Check if the latest history for THIS wallet TODAY is a check-in.
+    const packageHistory = history.filter(
+      (h) => h.walletKey === wallet.walletKey,
+    );
     const todayStr = new Date().toDateString();
     const isCheckedIn =
       packageHistory.length > 0 &&
@@ -573,13 +598,17 @@ export default function CommunityMicrosite({
       packageHistory[0].type === "ATTENDANCE" &&
       packageHistory[0].change < 0;
 
-    setCheckInActionData({ packageId, isCheckedIn });
+    setCheckInActionData({
+      packageId: wallet.packageId,
+      walletId: wallet.walletId,
+      isCheckedIn,
+    });
     setIsCheckInConfirmOpen(true);
   };
 
   const executeCheckInOut = async () => {
     if (!checkInActionData || !status) return;
-    const { packageId, isCheckedIn } = checkInActionData;
+    const { packageId, walletId, isCheckedIn } = checkInActionData;
     const headers = getAuthHeaders();
     const endpoint = isCheckedIn ? "member/check-out" : "member/check-in";
 
@@ -594,6 +623,7 @@ export default function CommunityMicrosite({
         body: JSON.stringify({
           communityId: status.communityId,
           packageId,
+          walletId,
           remarks: isCheckedIn ? "Check-out" : "Check-in",
         }),
       });
@@ -613,6 +643,17 @@ export default function CommunityMicrosite({
       setCheckInActionData(null);
     }
   };
+
+  // Packages that don't require a membership can be booked for up to 5 extra people
+  const purchaseAllowsPax =
+    (purchasePackage?.accessRule || "PUBLIC") === "PUBLIC";
+  const purchasePaxCount = purchaseAllowsPax ? 1 + extraPaxNames.length : 1;
+  const purchaseUnitPrice = purchasePackage
+    ? isPrivateSession && purchasePackage.vipPrice
+      ? purchasePackage.vipPrice || 0
+      : purchasePackage.memberPrice || 0
+    : 0;
+  const purchaseSubtotal = purchaseUnitPrice * purchasePaxCount;
 
   const getTabIcon = (tab: string) => {
     switch (tab) {
@@ -1559,7 +1600,7 @@ export default function CommunityMicrosite({
                                 <div className="space-y-6">
                                   {activeWallets.map((wallet) => {
                                     const packageHistory = history.filter(
-                                      (h) => h.packageId === wallet.packageId,
+                                      (h) => h.walletKey === wallet.walletKey,
                                     );
                                     const todayStr = new Date().toDateString();
                                     const latestTx =
@@ -1576,7 +1617,7 @@ export default function CommunityMicrosite({
 
                                     return (
                                       <div
-                                        key={wallet.packageId}
+                                        key={wallet.walletKey}
                                         className="bg-white dark:bg-slate-950 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800 p-8 relative overflow-hidden text-left"
                                       >
                                         <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-50 rounded-full blur-3xl opacity-40 -mr-10 -mt-10"></div>
@@ -1600,6 +1641,15 @@ export default function CommunityMicrosite({
                                             <h3 className="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight mt-2">
                                               {wallet.packageName}
                                             </h3>
+                                            {wallet.participantName && (
+                                              <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                                                <Users className="w-3.5 h-3.5" />
+                                                <span>
+                                                  Atas nama:{" "}
+                                                  {wallet.participantName}
+                                                </span>
+                                              </p>
+                                            )}
                                             <p className="text-xs text-slate-400 font-semibold flex items-center gap-1">
                                               <Clock className="w-3.5 h-3.5 text-slate-350" />
                                               <span>
@@ -1631,9 +1681,7 @@ export default function CommunityMicrosite({
                                             <div className="w-px h-10 bg-slate-150"></div>
                                             <button
                                               onClick={() =>
-                                                handleCheckInOut(
-                                                  wallet.packageId,
-                                                )
+                                                handleCheckInOut(wallet)
                                               }
                                               disabled={
                                                 checkingInOut ||
@@ -2023,9 +2071,9 @@ export default function CommunityMicrosite({
                                               : "text-rose-500"
                                         }`}
                                         >
-                                          {item.type === "PURCHASE"
+                                          {item.change > 0
                                             ? `+${item.change}`
-                                            : `-${item.change}`}
+                                            : item.change}
                                         </span>
                                       </div>
                                     </div>
@@ -3463,12 +3511,22 @@ export default function CommunityMicrosite({
                     (isPrivateSession
                       ? purchasePackage.privateQuota !== null &&
                         purchasePackage.privateQuota !== undefined &&
-                        (purchasePackage.currentPrivateParticipants || 0) >=
+                        (purchasePackage.currentPrivateParticipants || 0) +
+                          purchasePaxCount >
                           purchasePackage.privateQuota
                       : purchasePackage.quota !== null &&
                         purchasePackage.quota !== undefined &&
-                        (purchasePackage.currentParticipants || 0) >=
+                        (purchasePackage.currentParticipants || 0) +
+                          purchasePaxCount >
                           purchasePackage.quota);
+
+                  if (
+                    purchaseAllowsPax &&
+                    extraPaxNames.some((name) => !name.trim())
+                  ) {
+                    alert("Nama setiap peserta tambahan wajib diisi");
+                    return;
+                  }
 
                   if (!purchaseProofUrl) {
                     alert("Silakan unggah bukti transfer pembayaran Anda");
@@ -3495,6 +3553,9 @@ export default function CommunityMicrosite({
                           isPrivate: isPrivateSession,
                           paymentProofUrl: purchaseProofUrl,
                           promoVoucherId: appliedVoucher?.voucherId,
+                          participantNames: purchaseAllowsPax
+                            ? extraPaxNames.map((name) => name.trim())
+                            : undefined,
                         }),
                       },
                     );
@@ -3540,12 +3601,13 @@ export default function CommunityMicrosite({
                         Sesi)
                       </div>
                     </div>
-                    <div className="font-black text-slate-900 dark:text-slate-50">
-                      Rp{" "}
-                      {(isPrivateSession && purchasePackage.vipPrice
-                        ? purchasePackage.vipPrice
-                        : purchasePackage.memberPrice
-                      )?.toLocaleString("id-ID") || 0}
+                    <div className="font-black text-slate-900 dark:text-slate-50 text-right">
+                      Rp {purchaseUnitPrice.toLocaleString("id-ID")}
+                      {purchaseAllowsPax && (
+                        <div className="text-[10px] font-semibold text-slate-500">
+                          per orang
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -3556,9 +3618,10 @@ export default function CommunityMicrosite({
                           <input
                             type="checkbox"
                             checked={isPrivateSession}
-                            onChange={(e) =>
-                              setIsPrivateSession(e.target.checked)
-                            }
+                            onChange={(e) => {
+                              setIsPrivateSession(e.target.checked);
+                              setAppliedVoucher(null);
+                            }}
                             className="w-5 h-5 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
                           />
                           <div>
@@ -3572,6 +3635,79 @@ export default function CommunityMicrosite({
                         </label>
                       </div>
                     )}
+
+                  {/* Peserta / Pax */}
+                  {purchaseAllowsPax && (
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl mt-2 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-indigo-600" />
+                          Peserta ({purchasePaxCount} pax)
+                        </label>
+                        <button
+                          type="button"
+                          aria-label="Tambah peserta"
+                          disabled={extraPaxNames.length >= MAX_EXTRA_PAX}
+                          onClick={() => {
+                            setExtraPaxNames((prev) => [...prev, ""]);
+                            setAppliedVoucher(null);
+                          }}
+                          className="w-8 h-8 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs">
+                        <span className="font-bold text-slate-400 w-4">1.</span>
+                        <span className="flex-1 font-semibold text-slate-800 dark:text-slate-200">
+                          {status?.user?.name || "Anda"}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">
+                          Pemesan
+                        </span>
+                      </div>
+                      {extraPaxNames.map((name, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <span className="font-bold text-slate-400 text-xs w-4 ml-3">
+                            {index + 2}.
+                          </span>
+                          <input
+                            type="text"
+                            required
+                            maxLength={100}
+                            value={name}
+                            onChange={(e) =>
+                              setExtraPaxNames((prev) =>
+                                prev.map((n, i) =>
+                                  i === index ? e.target.value : n,
+                                ),
+                              )
+                            }
+                            placeholder={`Nama peserta ${index + 2}`}
+                            className="flex-1 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                          <button
+                            type="button"
+                            aria-label={`Hapus peserta ${index + 2}`}
+                            onClick={() => {
+                              setExtraPaxNames((prev) =>
+                                prev.filter((_, i) => i !== index),
+                              );
+                              setAppliedVoucher(null);
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-red-500 rounded-full transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      <p className="text-[10px] text-slate-500 font-semibold">
+                        Tambah hingga {MAX_EXTRA_PAX} peserta lain. Setiap
+                        peserta mendapat {purchasePackage.totalSession} sesi
+                        atas namanya sendiri.
+                      </p>
+                    </div>
+                  )}
 
                   {/* Voucher Input Field */}
                   <div className="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl mt-2">
@@ -3628,10 +3764,7 @@ export default function CommunityMicrosite({
                               validatingVoucher || !voucherCodeInput.trim()
                             }
                             onClick={async () => {
-                              const subtotal =
-                                isPrivateSession && purchasePackage.vipPrice
-                                  ? purchasePackage.vipPrice || 0
-                                  : purchasePackage.memberPrice || 0;
+                              const subtotal = purchaseSubtotal;
                               setValidatingVoucher(true);
                               setVoucherError("");
                               try {
@@ -3694,13 +3827,15 @@ export default function CommunityMicrosite({
                     {appliedVoucher ? (
                       <>
                         <div className="flex justify-between items-center text-slate-500 font-semibold mb-1">
-                          <span>Subtotal:</span>
                           <span>
-                            Rp{" "}
-                            {(isPrivateSession && purchasePackage.vipPrice
-                              ? purchasePackage.vipPrice || 0
-                              : purchasePackage.memberPrice || 0
-                            ).toLocaleString("id-ID")}
+                            Subtotal
+                            {purchasePaxCount > 1
+                              ? ` (${purchasePaxCount} pax)`
+                              : ""}
+                            :
+                          </span>
+                          <span>
+                            Rp {purchaseSubtotal.toLocaleString("id-ID")}
                           </span>
                         </div>
                         <div className="flex justify-between items-center text-emerald-600 font-semibold mb-1 pb-2 border-b border-indigo-100">
@@ -3718,25 +3853,31 @@ export default function CommunityMicrosite({
                             Rp{" "}
                             {Math.max(
                               0,
-                              (isPrivateSession && purchasePackage.vipPrice
-                                ? purchasePackage.vipPrice || 0
-                                : purchasePackage.memberPrice || 0) -
-                                appliedVoucher.discountAmount,
+                              purchaseSubtotal - appliedVoucher.discountAmount,
                             ).toLocaleString("id-ID")}
                           </span>
                         </div>
                       </>
                     ) : (
-                      <div className="flex justify-between items-center text-primary font-extrabold">
-                        <span>Total Transfer:</span>
-                        <span className="text-sm">
-                          Rp{" "}
-                          {(isPrivateSession && purchasePackage.vipPrice
-                            ? purchasePackage.vipPrice || 0
-                            : purchasePackage.memberPrice || 0
-                          ).toLocaleString("id-ID")}
-                        </span>
-                      </div>
+                      <>
+                        {purchasePaxCount > 1 && (
+                          <div className="flex justify-between items-center text-slate-500 font-semibold mb-1 pb-2 border-b border-indigo-100">
+                            <span>
+                              Rp {purchaseUnitPrice.toLocaleString("id-ID")} ×{" "}
+                              {purchasePaxCount} pax
+                            </span>
+                            <span>
+                              Rp {purchaseSubtotal.toLocaleString("id-ID")}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center text-primary font-extrabold">
+                          <span>Total Transfer:</span>
+                          <span className="text-sm">
+                            Rp {purchaseSubtotal.toLocaleString("id-ID")}
+                          </span>
+                        </div>
+                      </>
                     )}
                   </div>
 
@@ -3747,11 +3888,13 @@ export default function CommunityMicrosite({
                       (isPrivateSession
                         ? purchasePackage.privateQuota !== null &&
                           purchasePackage.privateQuota !== undefined &&
-                          (purchasePackage.currentPrivateParticipants || 0) >=
+                          (purchasePackage.currentPrivateParticipants || 0) +
+                            purchasePaxCount >
                             purchasePackage.privateQuota
                         : purchasePackage.quota !== null &&
                           purchasePackage.quota !== undefined &&
-                          (purchasePackage.currentParticipants || 0) >=
+                          (purchasePackage.currentParticipants || 0) +
+                            purchasePaxCount >
                             purchasePackage.quota);
 
                     if (isWaitlist) {

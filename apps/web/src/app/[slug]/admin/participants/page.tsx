@@ -14,6 +14,7 @@ interface SessionParticipant {
   remainingSession: number;
   expiredDate?: string | null;
   isPrivate: boolean;
+  participantName?: string | null;
   user: { name: string };
   package: { name: string };
 }
@@ -58,12 +59,14 @@ export default function SessionParticipantsPage({ params }: { params: Promise<{ 
     if (!keyword) return participants;
     return participants.filter((participant) =>
       participant.user.name.toLowerCase().includes(keyword) ||
+      (participant.participantName || '').toLowerCase().includes(keyword) ||
       participant.package.name.toLowerCase().includes(keyword),
     );
   }, [participants, searchTerm]);
 
   const handleCheckIn = async (participant: SessionParticipant) => {
-    if (!communityId || !window.confirm(`Check-in ${participant.user.name} menggunakan ${participant.package.name}?`)) return;
+    const participantLabel = participant.participantName || participant.user.name;
+    if (!communityId || !window.confirm(`Check-in ${participantLabel} menggunakan ${participant.package.name}?`)) return;
 
     setCheckingInId(participant.id);
     setMessage(null);
@@ -75,13 +78,14 @@ export default function SessionParticipantsPage({ params }: { params: Promise<{ 
           userId: participant.userId,
           communityId,
           packageId: participant.packageId,
+          walletId: participant.id,
           remarks: 'Check-in oleh Coach/Admin',
         }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.message || 'Check-in gagal.');
 
-      setMessage({ type: 'success', text: `Check-in ${participant.user.name} berhasil.` });
+      setMessage({ type: 'success', text: `Check-in ${participantLabel} berhasil.` });
       await loadParticipants(communityId);
     } catch (error) {
       setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Check-in gagal.' });
@@ -144,7 +148,12 @@ export default function SessionParticipantsPage({ params }: { params: Promise<{ 
                 <tr><td colSpan={5} className="px-6 py-14 text-center text-slate-500 font-bold">Tidak ada peserta aktif.</td></tr>
               ) : filteredParticipants.map((participant) => (
                 <tr key={participant.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-5 font-extrabold text-slate-900">{participant.user.name}</td>
+                  <td className="px-6 py-5">
+                    <div className="font-extrabold text-slate-900">{participant.participantName || participant.user.name}</div>
+                    {participant.participantName && (
+                      <div className="text-xs font-semibold text-slate-500 mt-1">Pax dari {participant.user.name}</div>
+                    )}
+                  </td>
                   <td className="px-6 py-5">
                     <div className="font-bold text-slate-700">{participant.package.name}</div>
                     {participant.isPrivate && <span className="text-xs font-bold text-amber-600">Private</span>}

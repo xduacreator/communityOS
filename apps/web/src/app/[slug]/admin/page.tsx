@@ -35,6 +35,8 @@ interface PendingSessionPackage {
   packageId: string;
   walletStatus: string;
   paymentProofUrl?: string | null;
+  participantName?: string | null;
+  orderGroupId?: string | null;
   createdAt: string;
   user?: {
     id: string;
@@ -472,8 +474,15 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
               {pendingPackages.map((pkg) => (
                 <tr key={pkg.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-4 text-left">
-                    <div className="text-sm font-bold text-slate-900">{pkg.user?.name}</div>
-                    <div className="text-xs text-slate-400 mt-0.5">{pkg.user?.email}</div>
+                    <div className="text-sm font-bold text-slate-900">{pkg.participantName || pkg.user?.name}</div>
+                    <div className="text-xs text-slate-400 mt-0.5">
+                      {pkg.participantName ? `Pax dari ${pkg.user?.name} · ${pkg.user?.email}` : pkg.user?.email}
+                    </div>
+                    {pkg.orderGroupId && (
+                      <div className="mt-1 inline-block px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-bold">
+                        Pesanan grup ({pendingPackages.filter((p) => p.orderGroupId === pkg.orderGroupId).length} pax)
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-left">
                     <div className="text-sm font-bold text-slate-800">
@@ -508,7 +517,9 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                           setConfirmModalConfig({
                             isOpen: true,
                             title: 'Setujui Pembelian',
-                            message: `Apakah Anda yakin ingin menyetujui pembelian paket sesi untuk ${pkg.user?.name}?`,
+                            message: pkg.orderGroupId
+                              ? `Pesanan grup dari ${pkg.user?.name} dibayar sekali. Menyetujui ini akan menyetujui semua pax dalam pesanan tersebut. Lanjutkan?`
+                              : `Apakah Anda yakin ingin menyetujui pembelian paket sesi untuk ${pkg.user?.name}?`,
                             confirmText: 'Setujui',
                             onConfirm: async () => {
                               try {

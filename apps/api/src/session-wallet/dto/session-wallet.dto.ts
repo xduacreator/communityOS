@@ -1,4 +1,6 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsInt,
   IsOptional,
@@ -7,7 +9,10 @@ import {
   Max,
   MaxLength,
   Min,
+  MinLength,
 } from 'class-validator';
+
+export const MAX_EXTRA_PAX = 5;
 
 export class PurchasePackageDto {
   @IsUUID()
@@ -32,6 +37,15 @@ export class PurchasePackageDto {
   @IsOptional()
   @IsUUID()
   promoVoucherId?: string;
+
+  // Names of additional participants (the buyer is always pax 1)
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_EXTRA_PAX)
+  @IsString({ each: true })
+  @MinLength(1, { each: true })
+  @MaxLength(100, { each: true })
+  participantNames?: string[];
 }
 
 export class PurchaseBundleDto extends PurchasePackageDto {
@@ -55,6 +69,11 @@ export class MemberAttendanceDto {
   @IsString()
   @MaxLength(500)
   remarks?: string;
+
+  // Targets one wallet, e.g. an extra pax; defaults to the user's own wallet
+  @IsOptional()
+  @IsUUID()
+  walletId?: string;
 }
 
 export class CoachCheckInDto extends MemberAttendanceDto {
