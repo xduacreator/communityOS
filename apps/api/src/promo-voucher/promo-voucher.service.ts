@@ -238,6 +238,10 @@ export class PromoVoucherService {
       throw new BadRequestException('Voucher ini sudah tidak aktif.');
     }
 
+    if (voucher.validFrom && new Date(voucher.validFrom) > new Date()) {
+      throw new BadRequestException('Voucher ini belum dapat digunakan.');
+    }
+
     if (voucher.validUntil && new Date(voucher.validUntil) < new Date()) {
       throw new BadRequestException('Voucher ini sudah kedaluwarsa.');
     }

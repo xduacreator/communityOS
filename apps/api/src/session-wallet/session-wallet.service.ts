@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { businessDateKey, startOfBusinessDay } from '../common/business-time';
 
 @Injectable()
 export class SessionWalletService {
@@ -164,15 +165,14 @@ export class SessionWalletService {
       throw new BadRequestException('No active session wallet found or wallet expired/empty');
     }
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
+    const startOfToday = startOfBusinessDay();
 
     const latestTx = await this.prisma.sessionTransaction.findFirst({
       where: { walletId: activeWallet.id, transactionType: 'ATTENDANCE', createdAt: { gte: startOfToday } },
       orderBy: { createdAt: 'desc' }
     });
 
-    if (latestTx && latestTx.remarks?.startsWith('Check-in')) {
+    if (latestTx && latestTx.changeSession < 0) {
       throw new BadRequestException('Member sudah check-in hari ini.');
     }
 
@@ -244,15 +244,14 @@ export class SessionWalletService {
       throw new BadRequestException('No active session wallet found or wallet expired/empty');
     }
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
+    const startOfToday = startOfBusinessDay();
 
     const latestTx = await this.prisma.sessionTransaction.findFirst({
       where: { walletId: activeWallet.id, transactionType: 'ATTENDANCE', createdAt: { gte: startOfToday } },
       orderBy: { createdAt: 'desc' }
     });
 
-    if (latestTx && latestTx.remarks?.startsWith('Check-in')) {
+    if (latestTx && latestTx.changeSession < 0) {
       throw new BadRequestException('Anda sudah check-in hari ini. Lakukan check-out dulu.');
     }
 
@@ -315,15 +314,14 @@ export class SessionWalletService {
       throw new BadRequestException('No session wallet found');
     }
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
+    const startOfToday = startOfBusinessDay();
 
     const latestTx = await this.prisma.sessionTransaction.findFirst({
       where: { walletId: wallet.id, transactionType: 'ATTENDANCE', createdAt: { gte: startOfToday } },
       orderBy: { createdAt: 'desc' }
     });
 
-    if (!latestTx || !latestTx.remarks?.startsWith('Check-in')) {
+    if (!latestTx || latestTx.changeSession >= 0) {
       throw new BadRequestException('Tidak ada check-in hari ini yang bisa di-checkout.');
     }
 
@@ -526,15 +524,15 @@ export class SessionWalletService {
     );
     const totalRevenue = membershipRevenue + sessionRevenue;
 
-    // Daily check-ins last 7 days
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    // Daily check-ins last 7 days (check-ins are ATTENDANCE rows that deduct a session)
+    const sevenDaysAgo = startOfBusinessDay(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000));
     const checkins = await this.prisma.sessionTransaction.findMany({
       where: {
         wallet: {
           communityId
         },
-        transactionType: 'CHECK_IN',
+        transactionType: 'ATTENDANCE',
+        changeSession: { lt: 0 },
         createdAt: { gte: sevenDaysAgo }
       },
       select: { createdAt: true }
@@ -542,10 +540,8 @@ export class SessionWalletService {
 
     const dailyCheckins = [];
     for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      const count = checkins.filter((c: any) => c.createdAt.toISOString().split('T')[0] === dateStr).length;
+      const dateStr = businessDateKey(new Date(Date.now() - i * 24 * 60 * 60 * 1000));
+      const count = checkins.filter((c: any) => businessDateKey(c.createdAt) === dateStr).length;
       dailyCheckins.push({ date: dateStr, count });
     }
 
@@ -590,12 +586,12 @@ export class SessionWalletService {
   }
 
   async getSuperAdminDashboardStats() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfBusinessDay();
 
     const todaysCheckins = await this.prisma.sessionTransaction.count({
       where: { 
         transactionType: 'ATTENDANCE',
+        changeSession: { lt: 0 },
         createdAt: { gte: today }
       }
     });
@@ -604,7 +600,8 @@ export class SessionWalletService {
       where: { walletStatus: 'ACTIVE' }
     });
 
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const [year, month] = businessDateKey(new Date()).split('-').map(Number);
+    const firstDayOfMonth = startOfBusinessDay(new Date(Date.UTC(year, month - 1, 1, 12)));
     const packagesSoldMtd = await this.prisma.sessionWallet.count({
       where: { purchaseDate: { gte: firstDayOfMonth } }
     });
@@ -667,7 +664,7 @@ export class SessionWalletService {
       const diffTime = activeMemberships[0].endDate.getTime() - Date.now();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       if (diffDays > 7) {
-        throw new Error(`Membership masih aktif. Anda baru bisa memperpanjang H-7 sebelum masa berlaku habis (Sisa: ${diffDays} hari).`);
+        throw new BadRequestException(`Membership masih aktif. Anda baru bisa memperpanjang H-7 sebelum masa berlaku habis (Sisa: ${diffDays} hari).`);
       }
     }
 

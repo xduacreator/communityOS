@@ -570,7 +570,8 @@ export default function CommunityMicrosite({
     const isCheckedIn =
       packageHistory.length > 0 &&
       packageHistory[0].date.toDateString() === todayStr &&
-      (packageHistory[0].remarks?.startsWith("Check-in") || false);
+      packageHistory[0].type === "ATTENDANCE" &&
+      packageHistory[0].change < 0;
 
     setCheckInActionData({ packageId, isCheckedIn });
     setIsCheckInConfirmOpen(true);
@@ -1569,7 +1570,8 @@ export default function CommunityMicrosite({
                                       latestTx &&
                                       latestTx.date.toDateString() ===
                                         todayStr &&
-                                      latestTx.remarks?.startsWith("Check-in"),
+                                      latestTx.type === "ATTENDANCE" &&
+                                      latestTx.change < 0,
                                     );
 
                                     return (

@@ -75,7 +75,7 @@ export class MembershipService {
 
            // Also approve linked session wallets
            const linkedWallets = await this.prisma.sessionWallet.findMany({
-             where: { userMembershipId: pendingUserMembership.id }
+             where: { userMembershipId: pendingUserMembership.id, walletStatus: 'PENDING' }
            });
            for (const w of linkedWallets) {
              const pkg = await this.prisma.sessionPackage.findUnique({ where: { id: w.packageId } });

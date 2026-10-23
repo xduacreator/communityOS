@@ -106,3 +106,49 @@ describe('SessionWalletService voucher pricing', () => {
     expect(prisma.sessionWallet.create).not.toHaveBeenCalled();
   });
 });
+
+describe('SessionWalletService attendance', () => {
+  const createPrismaMock = (latestTx: unknown) => ({
+    userMembership: { findFirst: jest.fn().mockResolvedValue({ id: 'um-1' }) },
+    sessionWallet: {
+      findFirst: jest.fn().mockResolvedValue({
+        id: 'wallet-1',
+        packageId: 'package-1',
+        remainingSession: 5,
+      }),
+    },
+    sessionTransaction: {
+      findFirst: jest.fn().mockResolvedValue(latestTx),
+      create: jest.fn(),
+    },
+    $transaction: jest.fn(),
+  });
+
+  it('blocks a second admin check-in on the same day regardless of remarks', async () => {
+    const prisma = createPrismaMock({ changeSession: -1, remarks: 'Manual Check-in via Admin' });
+    const service = new SessionWalletService(prisma as never);
+
+    await expect(
+      service.checkIn('user-1', 'community-1', 'admin-1', 'package-1', 'Manual Check-in via Admin'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('lets a member check out after an admin check-in', async () => {
+    const prisma = createPrismaMock({ changeSession: -1, remarks: 'Manual Check-in via Admin' });
+    prisma.sessionTransaction.create.mockImplementation(({ data }) => data);
+    const service = new SessionWalletService(prisma as never);
+
+    const result = await service.memberCheckOut('user-1', 'community-1', 'package-1');
+    expect(result.transaction).toEqual(expect.objectContaining({ changeSession: 0 }));
+  });
+
+  it('rejects check-out when the last attendance today was already a check-out', async () => {
+    const prisma = createPrismaMock({ changeSession: 0, remarks: 'Check-out' });
+    const service = new SessionWalletService(prisma as never);
+
+    await expect(
+      service.memberCheckOut('user-1', 'community-1', 'package-1'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+});
