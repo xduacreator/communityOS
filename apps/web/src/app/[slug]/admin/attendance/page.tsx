@@ -51,6 +51,7 @@ export default function AdminAttendance({ params }: { params: Promise<{ slug: st
 
   const filteredAttendance = attendance.filter(t => 
     t.wallet?.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    t.wallet?.participantName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
     t.wallet?.package?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -63,7 +64,7 @@ export default function AdminAttendance({ params }: { params: Promise<{ slug: st
     filteredAttendance.forEach(t => {
       const date = new Date(t.createdAt).toLocaleString('id-ID');
       const row = [
-        `"${t.wallet?.user?.name || '-'}"`,
+        `"${t.wallet?.participantName ? `${t.wallet.participantName} (pax dari ${t.wallet.user?.name || '-'})` : t.wallet?.user?.name || '-'}"`,
         `"${date}"`,
         `"${t.wallet?.package?.name || '-'}"`,
         t.changeSession,
@@ -146,7 +147,10 @@ export default function AdminAttendance({ params }: { params: Promise<{ slug: st
                   return (
                     <tr key={record.id} className="hover:bg-slate-50 transition-colors bg-white">
                       <td className="px-6 py-4">
-                        <div className="font-extrabold text-slate-900">{record.wallet?.user?.name || 'Unknown'}</div>
+                        <div className="font-extrabold text-slate-900">{record.wallet?.participantName || record.wallet?.user?.name || 'Unknown'}</div>
+                        {record.wallet?.participantName && (
+                          <div className="text-xs font-semibold text-slate-500 mt-1">Pax dari {record.wallet?.user?.name || '-'}</div>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-bold text-slate-800">{checkInDate.toLocaleDateString()}</div>

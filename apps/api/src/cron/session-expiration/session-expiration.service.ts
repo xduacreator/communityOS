@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { BUSINESS_TIME_ZONE } from '../../common/business-time';
 
 @Injectable()
 export class SessionExpirationService {
@@ -9,7 +10,7 @@ export class SessionExpirationService {
 
   constructor(private prisma: PrismaService) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { timeZone: BUSINESS_TIME_ZONE })
   async handleSessionExpiration() {
     this.logger.log('Running daily session expiration check...');
     const now = new Date();

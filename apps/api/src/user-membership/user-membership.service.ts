@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -26,7 +26,7 @@ export class UserMembershipService {
       const diffTime = activeMemberships[0].endDate.getTime() - Date.now();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       if (diffDays > 7) {
-        throw new Error(`Membership masih aktif. Anda baru bisa memperpanjang H-7 sebelum masa berlaku habis (Sisa: ${diffDays} hari).`);
+        throw new BadRequestException(`Membership masih aktif. Anda baru bisa memperpanjang H-7 sebelum masa berlaku habis (Sisa: ${diffDays} hari).`);
       }
     }
 
@@ -87,7 +87,9 @@ export class UserMembershipService {
       where: { id },
       include: { membership: true }
     });
-    if (!pending) throw new Error('Pending membership renewal not found');
+    if (!pending) throw new NotFoundException('Pending membership renewal not found');
+    // Already processed (e.g. double click, or approved via its bundled package): don't extend again
+    if (pending.status !== 'PENDING') return pending;
 
     // Find the furthest future active membership's endDate for this user in this community
     const activeMemberships = await this.prisma.userMembership.findMany({
@@ -117,7 +119,7 @@ export class UserMembershipService {
 
     // Also approve any linked session wallets!
     const linkedWallets = await this.prisma.sessionWallet.findMany({
-      where: { userMembershipId: id }
+      where: { userMembershipId: id, walletStatus: 'PENDING' }
     });
     for (const w of linkedWallets) {
       const pkg = await this.prisma.sessionPackage.findUnique({ where: { id: w.packageId } });

@@ -42,6 +42,7 @@ export class SessionWalletController {
       body.userMembershipId,
       body.paymentProofUrl,
       body.promoVoucherId,
+      body.participantNames,
     );
   }
 
@@ -82,6 +83,7 @@ export class SessionWalletController {
       body.communityId,
       body.packageId,
       body.remarks,
+      body.walletId,
     );
   }
 
@@ -93,6 +95,7 @@ export class SessionWalletController {
       body.communityId,
       body.packageId,
       body.remarks,
+      body.walletId,
     );
   }
 
@@ -106,6 +109,7 @@ export class SessionWalletController {
       req.user.userId,
       body.packageId,
       body.remarks,
+      body.walletId,
     );
   }
 

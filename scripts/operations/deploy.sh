@@ -20,12 +20,18 @@ export WEB_IMAGE="community-os-web:$release"
 
 # Automatic image rollback is only safe for a schema-compatible release. Reject
 # schema changes for a separate reviewed migration; startup no longer runs db push.
+# After applying a reviewed additive migration by hand, an operator approves exactly
+# one target schema with ALLOW_SCHEMA_SHA256 (see docs/operations.md). CI never sets it.
 running_schema=$(docker exec community-os-api cat /app/apps/api/prisma/schema.prisma | sha256sum | cut -d' ' -f1)
 target_schema=$(sha256sum apps/api/prisma/schema.prisma | cut -d' ' -f1)
-[[ "$running_schema" == "$target_schema" ]] || {
-  echo 'Schema change detected. A reviewed migration and recovery plan are required.'
-  exit 1
-}
+if [[ "$running_schema" != "$target_schema" ]]; then
+  [[ "${ALLOW_SCHEMA_SHA256:-}" == "$target_schema" ]] || {
+    echo 'Schema change detected. A reviewed migration and recovery plan are required.'
+    echo "Target schema sha256: $target_schema"
+    exit 1
+  }
+  echo "Schema change approved by operator: $target_schema"
+fi
 
 docker compose build api web
 docker compose run --rm --no-deps backup

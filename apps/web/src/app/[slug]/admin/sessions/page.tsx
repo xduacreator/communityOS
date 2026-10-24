@@ -787,7 +787,12 @@ export default function SessionsManagementPage({
                       className="hover:bg-slate-50/50 transition-colors"
                     >
                       <td className="px-6 py-5 font-bold text-slate-900">
-                        {w.user?.name || "-"}
+                        {w.participantName || w.user?.name || "-"}
+                        {w.participantName && (
+                          <div className="text-xs font-semibold text-slate-500">
+                            Pax dari {w.user?.name || "-"}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-5 font-bold text-slate-700">
                         {w.package?.name || "-"}

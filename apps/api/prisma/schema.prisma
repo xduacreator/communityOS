@@ -248,6 +248,10 @@ model SessionWallet {
   paidPrice        Float?
   discountAmount   Float?    @default(0)
   promoVoucherId   String?
+  // Extra pax booked by the user: null for the buyer's own wallet
+  participantName  String?
+  // Shared by every wallet created in one multi-pax order
+  orderGroupId     String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -256,6 +260,8 @@ model SessionWallet {
   package        SessionPackage       @relation(fields: [packageId], references: [id])
   userMembership UserMembership?      @relation(fields: [userMembershipId], references: [id])
   transactions   SessionTransaction[]
+
+  @@index([orderGroupId])
 }
 
 model SessionTransaction {

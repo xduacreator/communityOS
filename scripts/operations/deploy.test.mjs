@@ -4,6 +4,7 @@ import { mkdtempSync, mkdirSync, copyFileSync, writeFileSync, readFileSync, rmSy
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 
 // Exercise failure handling without connecting to Docker, SSH or production.
 const sha = 'a'.repeat(40);
@@ -30,7 +31,7 @@ if(tool === 'curl') {
 }
 `;
 
-function run(failure = '') {
+function run(failure = '', extraEnv = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'latih-deploy-test-'));
   try {
     mkdirSync(join(dir, 'scripts/operations'), { recursive: true });
@@ -45,7 +46,7 @@ function run(failure = '') {
     writeFileSync(join(dir, 'bin/flock'), '#!/bin/sh\nexit 0\n', { mode: 0o755 });
     const result = spawnSync('bash', [join(dir, 'scripts/operations/deploy.sh'), sha], {
       encoding: 'utf8',
-      env: { ...process.env, PATH: `${join(dir, 'bin')}:${process.env.PATH}`, TEST_LOG: join(dir, 'log'), TEST_FAILURE: failure },
+      env: { ...process.env, PATH: `${join(dir, 'bin')}:${process.env.PATH}`, TEST_LOG: join(dir, 'log'), TEST_FAILURE: failure, ...extraEnv },
     });
     return { ...result, events: readFileSync(join(dir, 'log'), 'utf8').trim().split('\n').map(JSON.parse) };
   } finally {
@@ -80,3 +81,14 @@ for (const failure of ['up', 'health', 'redirect']) {
     assert.ok(!result.events.some(e => e.tool === 'systemctl'));
   });
 }
+
+test('operator-approved schema change proceeds only for the exact target schema', () => {
+  const targetSchema = createHash('sha256').update('schema\n').digest('hex');
+  const approved = run('schema', { ALLOW_SCHEMA_SHA256: targetSchema });
+  assert.equal(approved.status, 0, approved.stderr);
+  assert.ok(approved.events.some(e => e.args.includes('--no-build')));
+
+  const wrongHash = run('schema', { ALLOW_SCHEMA_SHA256: 'b'.repeat(64) });
+  assert.notEqual(wrongHash.status, 0);
+  assert.ok(!wrongHash.events.some(e => e.args.includes('--no-build')));
+});

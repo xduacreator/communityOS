@@ -1,5 +1,19 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { randomUUID } from 'node:crypto';
+import { businessDateKey, startOfBusinessDay } from '../common/business-time';
+import { MAX_EXTRA_PAX } from './dto/session-wallet.dto';
+
+// Without an explicit wallet, attendance applies to the user's own wallet, never an extra pax.
+function walletTarget(walletId?: string) {
+  return walletId ? { id: walletId } : { participantName: null };
+}
+
+// Splits an amount into n parts that add up exactly; the first part takes the remainder.
+function splitAmount(total: number, parts: number): number[] {
+  const share = Math.floor(total / parts);
+  return Array.from({ length: parts }, (_, i) => (i === 0 ? total - share * (parts - 1) : share));
+}
 
 @Injectable()
 export class SessionWalletService {
@@ -52,7 +66,7 @@ export class SessionWalletService {
     };
   }
 
-  async purchasePackage(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, userMembershipId?: string, paymentProofUrl?: string, promoVoucherId?: string) {
+  async purchasePackage(userId: string, communityId: string, packageId: string, isPrivate: boolean = false, userMembershipId?: string, paymentProofUrl?: string, promoVoucherId?: string, participantNames: string[] = []) {
     const pkg = await this.prisma.sessionPackage.findUnique({
       where: { id: packageId },
       include: { category: { include: { activity: true } } },
@@ -61,6 +75,20 @@ export class SessionWalletService {
     if (pkg.category.activity.communityId !== communityId) {
       throw new BadRequestException('Package does not belong to this community');
     }
+
+    const extraPax = participantNames.map((name) => name.trim());
+    if (extraPax.length > 0) {
+      if (pkg.accessRule !== 'PUBLIC') {
+        throw new BadRequestException('Tambahan peserta hanya tersedia untuk paket tanpa membership.');
+      }
+      if (extraPax.length > MAX_EXTRA_PAX) {
+        throw new BadRequestException(`Maksimal ${MAX_EXTRA_PAX} peserta tambahan.`);
+      }
+      if (extraPax.some((name) => !name)) {
+        throw new BadRequestException('Nama setiap peserta tambahan wajib diisi.');
+      }
+    }
+    const paxCount = 1 + extraPax.length;
 
     if (userMembershipId) {
       const linkedMembership = await this.prisma.userMembership.findUnique({ where: { id: userMembershipId } });
@@ -81,13 +109,13 @@ export class SessionWalletService {
     // New logic: All new standalone purchases are pending approval by admin
     let initialStatus = 'PENDING';
     
-    // Check quota based on isPrivate
+    // Check quota based on isPrivate; every pax takes one seat and the whole order waits together
     if (isPrivate) {
       if (pkg.privateQuota !== null) {
         const privateCount = await this.prisma.sessionWallet.count({
           where: { packageId, isPrivate: true, walletStatus: { in: ['PENDING', 'ACTIVE', 'WAITING'] } }
         });
-        if (privateCount >= pkg.privateQuota) {
+        if (privateCount + paxCount > pkg.privateQuota) {
           initialStatus = 'WAITLIST';
         }
       }
@@ -99,59 +127,85 @@ export class SessionWalletService {
         const guestCount = await this.prisma.guestRegistration.count({
           where: { packageId, status: { in: ['PENDING', 'APPROVED'] } }
         });
-        if (walletCount + guestCount >= pkg.quota) {
+        if (walletCount + guestCount + paxCount > pkg.quota) {
           initialStatus = 'WAITLIST';
         }
       }
     }
     
-    const basePrice = isPrivate ? (pkg.vipPrice || 0) : pkg.memberPrice;
+    const unitPrice = isPrivate ? (pkg.vipPrice || 0) : pkg.memberPrice;
+    const basePrice = unitPrice * paxCount;
     const voucherResult = await this.calculateVoucherDiscount(
       promoVoucherId,
       communityId,
       basePrice,
     );
 
-    if (voucherResult.promoVoucherId) {
-      await this.prisma.promoVoucher.update({
-        where: { id: voucherResult.promoVoucherId },
-        data: { usedCount: { increment: 1 } }
-      });
-    }
-
     const paidPrice = Math.max(0, basePrice - voucherResult.discountAmount);
-    
-    return this.prisma.sessionWallet.create({
-      data: {
-        userId,
-        communityId,
-        packageId,
-        userMembershipId,
-        walletStatus: initialStatus,
-        totalSession: pkg.totalSession,
-        remainingSession: pkg.totalSession,
-        purchaseDate: new Date(),
-        paymentProofUrl,
-        isPrivate,
-        paidPrice,
-        discountAmount: voucherResult.discountAmount,
-        promoVoucherId: voucherResult.promoVoucherId,
+    // Each pax wallet records its share so revenue reports still add up to the order total
+    const paidShares = splitAmount(paidPrice, paxCount);
+    const discountShares = splitAmount(voucherResult.discountAmount, paxCount);
+    const orderGroupId = paxCount > 1 ? randomUUID() : null;
+    const purchaseDate = new Date();
+
+    return this.prisma.$transaction(async (tx: any) => {
+      if (voucherResult.promoVoucherId) {
+        await tx.promoVoucher.update({
+          where: { id: voucherResult.promoVoucherId },
+          data: { usedCount: { increment: 1 } }
+        });
       }
+
+      const wallets = [];
+      for (const [index, participantName] of [null, ...extraPax].entries()) {
+        wallets.push(await tx.sessionWallet.create({
+          data: {
+            userId,
+            communityId,
+            packageId,
+            userMembershipId,
+            walletStatus: initialStatus,
+            totalSession: pkg.totalSession,
+            remainingSession: pkg.totalSession,
+            purchaseDate,
+            paymentProofUrl,
+            isPrivate,
+            paidPrice: paidShares[index],
+            discountAmount: discountShares[index],
+            promoVoucherId: voucherResult.promoVoucherId,
+            participantName,
+            orderGroupId,
+          }
+        }));
+      }
+
+      return { ...wallets[0], paxCount, orderWallets: wallets };
     });
   }
 
-  async checkIn(userId: string, communityId: string, adminId: string, packageId?: string, remarks?: string) {
+  // Same rule as purchasing: a membership is only needed for member-only packages
+  // or in communities that require a paid membership.
+  private async assertCheckInMembership(userId: string, communityId: string, packageId: string, message: string) {
+    const [pkg, community] = await Promise.all([
+      this.prisma.sessionPackage.findUnique({ where: { id: packageId }, select: { accessRule: true } }),
+      this.prisma.community.findUnique({ where: { id: communityId }, select: { registrationMode: true } }),
+    ]);
+    if (pkg?.accessRule !== 'MEMBER_ONLY' && community?.registrationMode !== 'PAID') return;
+
     const activeMembership = await this.prisma.userMembership.findFirst({
       where: { userId, communityId, status: 'ACTIVE', endDate: { gt: new Date() } }
     });
     if (!activeMembership) {
-      throw new BadRequestException('Membership kedaluwarsa atau tidak aktif.');
+      throw new BadRequestException(message);
     }
+  }
 
+  async checkIn(userId: string, communityId: string, adminId: string, packageId?: string, remarks?: string, walletId?: string) {
     const activeWallet = await this.prisma.sessionWallet.findFirst({
       where: {
         userId,
         communityId,
+        ...walletTarget(walletId),
         ...(packageId ? { packageId } : {}),
         walletStatus: 'ACTIVE',
         remainingSession: { gt: 0 },
@@ -164,15 +218,16 @@ export class SessionWalletService {
       throw new BadRequestException('No active session wallet found or wallet expired/empty');
     }
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
+    await this.assertCheckInMembership(userId, communityId, activeWallet.packageId, 'Membership kedaluwarsa atau tidak aktif.');
+
+    const startOfToday = startOfBusinessDay();
 
     const latestTx = await this.prisma.sessionTransaction.findFirst({
       where: { walletId: activeWallet.id, transactionType: 'ATTENDANCE', createdAt: { gte: startOfToday } },
       orderBy: { createdAt: 'desc' }
     });
 
-    if (latestTx && latestTx.remarks?.startsWith('Check-in')) {
+    if (latestTx && latestTx.changeSession < 0) {
       throw new BadRequestException('Member sudah check-in hari ini.');
     }
 
@@ -220,18 +275,12 @@ export class SessionWalletService {
     });
   }
 
-  async memberCheckIn(userId: string, communityId: string, packageId?: string, remarks?: string) {
-    const activeMembership = await this.prisma.userMembership.findFirst({
-      where: { userId, communityId, status: 'ACTIVE', endDate: { gt: new Date() } }
-    });
-    if (!activeMembership) {
-      throw new BadRequestException('Membership Anda kedaluwarsa atau tidak aktif. Perpanjang membership terlebih dahulu.');
-    }
-
+  async memberCheckIn(userId: string, communityId: string, packageId?: string, remarks?: string, walletId?: string) {
     const activeWallet = await this.prisma.sessionWallet.findFirst({
       where: {
         userId,
         communityId,
+        ...walletTarget(walletId),
         ...(packageId ? { packageId } : {}),
         walletStatus: 'ACTIVE',
         remainingSession: { gt: 0 },
@@ -244,15 +293,16 @@ export class SessionWalletService {
       throw new BadRequestException('No active session wallet found or wallet expired/empty');
     }
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
+    await this.assertCheckInMembership(userId, communityId, activeWallet.packageId, 'Membership Anda kedaluwarsa atau tidak aktif. Perpanjang membership terlebih dahulu.');
+
+    const startOfToday = startOfBusinessDay();
 
     const latestTx = await this.prisma.sessionTransaction.findFirst({
       where: { walletId: activeWallet.id, transactionType: 'ATTENDANCE', createdAt: { gte: startOfToday } },
       orderBy: { createdAt: 'desc' }
     });
 
-    if (latestTx && latestTx.remarks?.startsWith('Check-in')) {
+    if (latestTx && latestTx.changeSession < 0) {
       throw new BadRequestException('Anda sudah check-in hari ini. Lakukan check-out dulu.');
     }
 
@@ -300,11 +350,12 @@ export class SessionWalletService {
     });
   }
 
-  async memberCheckOut(userId: string, communityId: string, packageId?: string, remarks?: string) {
+  async memberCheckOut(userId: string, communityId: string, packageId?: string, remarks?: string, walletId?: string) {
     const wallet = await this.prisma.sessionWallet.findFirst({
       where: {
         userId,
         communityId,
+        ...walletTarget(walletId),
         ...(packageId ? { packageId } : {}),
         walletStatus: { in: ['ACTIVE', 'COMPLETED'] }
       },
@@ -315,15 +366,14 @@ export class SessionWalletService {
       throw new BadRequestException('No session wallet found');
     }
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
+    const startOfToday = startOfBusinessDay();
 
     const latestTx = await this.prisma.sessionTransaction.findFirst({
       where: { walletId: wallet.id, transactionType: 'ATTENDANCE', createdAt: { gte: startOfToday } },
       orderBy: { createdAt: 'desc' }
     });
 
-    if (!latestTx || !latestTx.remarks?.startsWith('Check-in')) {
+    if (!latestTx || latestTx.changeSession >= 0) {
       throw new BadRequestException('Tidak ada check-in hari ini yang bisa di-checkout.');
     }
 
@@ -437,6 +487,7 @@ export class SessionWalletService {
         remainingSession: true,
         expiredDate: true,
         isPrivate: true,
+        participantName: true,
         user: { select: { name: true } },
         package: { select: { name: true } },
       },
@@ -463,6 +514,7 @@ export class SessionWalletService {
         updatedAt: true,
         wallet: {
           select: {
+            participantName: true,
             user: { select: { name: true } },
             package: { select: { name: true } },
           },
@@ -526,15 +578,15 @@ export class SessionWalletService {
     );
     const totalRevenue = membershipRevenue + sessionRevenue;
 
-    // Daily check-ins last 7 days
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    // Daily check-ins last 7 days (check-ins are ATTENDANCE rows that deduct a session)
+    const sevenDaysAgo = startOfBusinessDay(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000));
     const checkins = await this.prisma.sessionTransaction.findMany({
       where: {
         wallet: {
           communityId
         },
-        transactionType: 'CHECK_IN',
+        transactionType: 'ATTENDANCE',
+        changeSession: { lt: 0 },
         createdAt: { gte: sevenDaysAgo }
       },
       select: { createdAt: true }
@@ -542,10 +594,8 @@ export class SessionWalletService {
 
     const dailyCheckins = [];
     for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      const count = checkins.filter((c: any) => c.createdAt.toISOString().split('T')[0] === dateStr).length;
+      const dateStr = businessDateKey(new Date(Date.now() - i * 24 * 60 * 60 * 1000));
+      const count = checkins.filter((c: any) => businessDateKey(c.createdAt) === dateStr).length;
       dailyCheckins.push({ date: dateStr, count });
     }
 
@@ -590,12 +640,12 @@ export class SessionWalletService {
   }
 
   async getSuperAdminDashboardStats() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfBusinessDay();
 
     const todaysCheckins = await this.prisma.sessionTransaction.count({
       where: { 
         transactionType: 'ATTENDANCE',
+        changeSession: { lt: 0 },
         createdAt: { gte: today }
       }
     });
@@ -604,7 +654,8 @@ export class SessionWalletService {
       where: { walletStatus: 'ACTIVE' }
     });
 
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const [year, month] = businessDateKey(new Date()).split('-').map(Number);
+    const firstDayOfMonth = startOfBusinessDay(new Date(Date.UTC(year, month - 1, 1, 12)));
     const packagesSoldMtd = await this.prisma.sessionWallet.count({
       where: { purchaseDate: { gte: firstDayOfMonth } }
     });
@@ -667,7 +718,7 @@ export class SessionWalletService {
       const diffTime = activeMemberships[0].endDate.getTime() - Date.now();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       if (diffDays > 7) {
-        throw new Error(`Membership masih aktif. Anda baru bisa memperpanjang H-7 sebelum masa berlaku habis (Sisa: ${diffDays} hari).`);
+        throw new BadRequestException(`Membership masih aktif. Anda baru bisa memperpanjang H-7 sebelum masa berlaku habis (Sisa: ${diffDays} hari).`);
       }
     }
 
@@ -773,6 +824,32 @@ export class SessionWalletService {
   }
 
   async approvePackage(id: string) {
+    const target = await this.prisma.sessionWallet.findUnique({
+      where: { id },
+      select: { id: true, orderGroupId: true },
+    });
+    if (!target) {
+      throw new NotFoundException('Pending session wallet not found');
+    }
+    if (!target.orderGroupId) {
+      return this.approveSingleWallet(id);
+    }
+
+    // One payment covers every pax of a multi-pax order, so approve them together
+    const orderWallets = await this.prisma.sessionWallet.findMany({
+      where: { orderGroupId: target.orderGroupId },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true },
+    });
+    let approved;
+    for (const wallet of orderWallets) {
+      const result = await this.approveSingleWallet(wallet.id);
+      if (wallet.id === id) approved = result;
+    }
+    return approved;
+  }
+
+  private async approveSingleWallet(id: string) {
     const pendingWallet = await this.prisma.sessionWallet.findUnique({
       where: { id },
       include: { package: true }
@@ -791,12 +868,13 @@ export class SessionWalletService {
       return pendingWallet;
     }
 
-    // Check if there is an active wallet for the same package
+    // Check if there is an active wallet for the same package and participant
     const activeWallets = await this.prisma.sessionWallet.findMany({
       where: {
         userId: pendingWallet.userId,
         communityId: pendingWallet.communityId,
         packageId: pendingWallet.packageId,
+        participantName: pendingWallet.participantName,
         walletStatus: 'ACTIVE'
       }
     });

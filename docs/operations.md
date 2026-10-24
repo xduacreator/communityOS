@@ -22,6 +22,39 @@ Use the GitHub deployment workflow for releases. Avoid bare `docker compose up`
 on production: release image tags are supplied by the deployment script. Previously
 tagged images are retained; review disk usage before deliberately pruning old ones.
 
+## Schema changes
+
+The automatic deployment stops when `apps/api/prisma/schema.prisma` differs from
+the running API image. Only additive changes (new nullable/defaulted columns,
+new indexes) are released this way, so the previous image still works against the
+migrated database and image rollback stays safe. Each one ships a reviewed,
+idempotent SQL file in `apps/api/prisma/manual-migrations/`.
+
+When the GitHub deployment fails with `Schema change detected`, nothing has been
+replaced; the server checkout is already at the new commit. On the server, as root:
+
+```sh
+cd /root/communityOS
+git log -1 --format=%H   # must be the commit the workflow tried to deploy
+sudo bash scripts/operations/backup.sh
+docker exec -i community-os-db sh -c 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
+  < apps/api/prisma/manual-migrations/REPLACE_WITH_MIGRATION.sql
+(
+  exec 9>/var/lock/community-os-operations.lock
+  flock -w 1800 9
+  ALLOW_SCHEMA_SHA256=$(sha256sum apps/api/prisma/schema.prisma | cut -d' ' -f1) \
+    bash scripts/operations/deploy.sh "$(git rev-parse HEAD)"
+)
+```
+
+`ALLOW_SCHEMA_SHA256` approves only that exact schema; later releases with the
+same schema deploy normally from GitHub again. Rolling back the images does not
+remove the added columns, which the previous image ignores.
+
+| Migration | Release |
+|---|---|
+| `20261023_session_wallet_pax.sql` | Multi-pax session package orders (`SessionWallet.participantName`, `orderGroupId`) |
+
 ## Local backup
 
 `community-os-backup.timer` runs daily at 03:00 Asia/Jakarta with up to five minutes
