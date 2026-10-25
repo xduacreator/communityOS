@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { toPng } from "html-to-image";
 import ConfirmModal from "./ui/ConfirmModal";
+import ExtraPaxFields, { MAX_EXTRA_PAX } from "./ExtraPaxFields";
 import imageCompression from "browser-image-compression";
 import { getAuthHeaders, removeToken } from "../lib/auth";
 import { useParams, useRouter } from "next/navigation";
@@ -46,8 +47,6 @@ import {
   User,
   Event,
 } from "../types";
-
-const MAX_EXTRA_PAX = 5;
 
 // Wallets are shown per package and participant (extra pax have their own wallet)
 const walletKey = (w: { packageId: string; participantName?: string | null }) =>
@@ -163,6 +162,8 @@ export default function CommunityMicrosite({
     acceptedTnC: false,
   });
   const [submittingGuest, setSubmittingGuest] = useState(false);
+  // Extra participants registered together with the guest (pax 1)
+  const [guestExtraPaxNames, setGuestExtraPaxNames] = useState<string[]>([]);
 
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -514,6 +515,7 @@ export default function CommunityMicrosite({
           address: "",
           acceptedTnC: false,
         });
+        setGuestExtraPaxNames([]);
         setShowGuestRsvpModal(true);
         return;
       } else {
@@ -654,6 +656,13 @@ export default function CommunityMicrosite({
       : purchasePackage.memberPrice || 0
     : 0;
   const purchaseSubtotal = purchaseUnitPrice * purchasePaxCount;
+  const guestPaxCount = 1 + guestExtraPaxNames.length;
+  const guestIsWaitlist =
+    !!guestRsvpPackage &&
+    guestRsvpPackage.quota !== null &&
+    guestRsvpPackage.quota !== undefined &&
+    (guestRsvpPackage.currentParticipants || 0) + guestPaxCount >
+      guestRsvpPackage.quota;
 
   const getTabIcon = (tab: string) => {
     switch (tab) {
@@ -3638,75 +3647,17 @@ export default function CommunityMicrosite({
 
                   {/* Peserta / Pax */}
                   {purchaseAllowsPax && (
-                    <div className="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl mt-2 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                          <Users className="w-3.5 h-3.5 text-indigo-600" />
-                          Peserta ({purchasePaxCount} pax)
-                        </label>
-                        <button
-                          type="button"
-                          aria-label="Tambah peserta"
-                          disabled={extraPaxNames.length >= MAX_EXTRA_PAX}
-                          onClick={() => {
-                            setExtraPaxNames((prev) => [...prev, ""]);
-                            setAppliedVoucher(null);
-                          }}
-                          className="w-8 h-8 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs">
-                        <span className="font-bold text-slate-400 w-4">1.</span>
-                        <span className="flex-1 font-semibold text-slate-800 dark:text-slate-200">
-                          {status?.user?.name || "Anda"}
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">
-                          Pemesan
-                        </span>
-                      </div>
-                      {extraPaxNames.map((name, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <span className="font-bold text-slate-400 text-xs w-4 ml-3">
-                            {index + 2}.
-                          </span>
-                          <input
-                            type="text"
-                            required
-                            maxLength={100}
-                            value={name}
-                            onChange={(e) =>
-                              setExtraPaxNames((prev) =>
-                                prev.map((n, i) =>
-                                  i === index ? e.target.value : n,
-                                ),
-                              )
-                            }
-                            placeholder={`Nama peserta ${index + 2}`}
-                            className="flex-1 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-indigo-500"
-                          />
-                          <button
-                            type="button"
-                            aria-label={`Hapus peserta ${index + 2}`}
-                            onClick={() => {
-                              setExtraPaxNames((prev) =>
-                                prev.filter((_, i) => i !== index),
-                              );
-                              setAppliedVoucher(null);
-                            }}
-                            className="p-1.5 text-slate-400 hover:text-red-500 rounded-full transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                      <p className="text-[10px] text-slate-500 font-semibold">
-                        Tambah hingga {MAX_EXTRA_PAX} peserta lain. Setiap
-                        peserta mendapat {purchasePackage.totalSession} sesi
-                        atas namanya sendiri.
-                      </p>
-                    </div>
+                    <ExtraPaxFields
+                      leadName={status?.user?.name || "Anda"}
+                      leadLabel="Pemesan"
+                      names={extraPaxNames}
+                      onNamesChange={(names) => {
+                        setExtraPaxNames(names);
+                        // The voucher discount depends on the subtotal
+                        setAppliedVoucher(null);
+                      }}
+                      note={`Tambah hingga ${MAX_EXTRA_PAX} peserta lain. Setiap peserta mendapat ${purchasePackage.totalSession} sesi atas namanya sendiri.`}
+                    />
                   )}
 
                   {/* Voucher Input Field */}
@@ -4101,6 +4052,10 @@ export default function CommunityMicrosite({
                     alert("Anda harus menyetujui syarat & ketentuan");
                     return;
                   }
+                  if (guestExtraPaxNames.some((name) => !name.trim())) {
+                    alert("Nama setiap peserta tambahan wajib diisi");
+                    return;
+                  }
                   setSubmittingGuest(true);
                   try {
                     const res = await fetch(
@@ -4115,10 +4070,19 @@ export default function CommunityMicrosite({
                           email: guestForm.email,
                           phone: guestForm.phone,
                           address: guestForm.address,
+                          participantNames: guestExtraPaxNames.map((name) =>
+                            name.trim(),
+                          ),
                         }),
                       },
                     );
-                    if (!res.ok) throw new Error("Gagal mengirim pendaftaran");
+                    if (!res.ok) {
+                      const errorData = await res.json().catch(() => ({}));
+                      const message = Array.isArray(errorData.message)
+                        ? errorData.message.join(", ")
+                        : errorData.message;
+                      throw new Error(message || "Gagal mengirim pendaftaran");
+                    }
 
                     alert(
                       "Pendaftaran berhasil! Kami akan segera memprosesnya.",
@@ -4132,6 +4096,7 @@ export default function CommunityMicrosite({
                       address: "",
                       acceptedTnC: false,
                     });
+                    setGuestExtraPaxNames([]);
                   } catch (err) {
                     alert(
                       err instanceof Error ? err.message : "Terjadi kesalahan",
@@ -4204,13 +4169,37 @@ export default function CommunityMicrosite({
                     ></textarea>
                   </div>
 
+                  <ExtraPaxFields
+                    leadName={guestForm.name.trim() || "Pendaftar"}
+                    leadLabel="Pendaftar"
+                    names={guestExtraPaxNames}
+                    onNamesChange={setGuestExtraPaxNames}
+                    note={`Tambah hingga ${MAX_EXTRA_PAX} peserta lain. Kontak di atas dipakai untuk semua peserta.`}
+                  />
+
+                  {guestPaxCount > 1 && !!guestRsvpPackage.memberPrice && (
+                    <div className="p-4 bg-primary/5 border border-indigo-150 rounded-2xl text-xs space-y-2">
+                      <div className="flex justify-between items-center text-slate-500 font-semibold pb-2 border-b border-indigo-100">
+                        <span>
+                          Rp{" "}
+                          {guestRsvpPackage.memberPrice.toLocaleString("id-ID")}{" "}
+                          × {guestPaxCount} pax
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-primary font-extrabold">
+                        <span>Estimasi Total:</span>
+                        <span className="text-sm">
+                          Rp{" "}
+                          {(
+                            guestRsvpPackage.memberPrice * guestPaxCount
+                          ).toLocaleString("id-ID")}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   {(() => {
-                    const isWaitlist =
-                      guestRsvpPackage.quota !== null &&
-                      guestRsvpPackage.quota !== undefined &&
-                      (guestRsvpPackage.currentParticipants || 0) >=
-                        guestRsvpPackage.quota;
-                    if (isWaitlist) {
+                    if (guestIsWaitlist) {
                       return (
                         <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-2">
                           <div className="font-bold text-amber-800">
@@ -4275,18 +4264,11 @@ export default function CommunityMicrosite({
                     disabled={submittingGuest}
                     className="px-5 py-2 bg-primary hover:opacity-90 text-white font-bold rounded-xl text-xs shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
                   >
-                    {(() => {
-                      const isWaitlist =
-                        guestRsvpPackage.quota !== null &&
-                        guestRsvpPackage.quota !== undefined &&
-                        (guestRsvpPackage.currentParticipants || 0) >=
-                          guestRsvpPackage.quota;
-                      return submittingGuest
-                        ? "Mengirim..."
-                        : isWaitlist
-                          ? "Daftar Waiting List"
-                          : "Kirim Pendaftaran";
-                    })()}
+                    {submittingGuest
+                      ? "Mengirim..."
+                      : guestIsWaitlist
+                        ? "Daftar Waiting List"
+                        : "Kirim Pendaftaran"}
                   </button>
                 </div>
               </form>

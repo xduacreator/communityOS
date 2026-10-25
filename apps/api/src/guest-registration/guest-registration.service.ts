@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MAX_EXTRA_PAX } from '../session-wallet/dto/session-wallet.dto';
 
 @Injectable()
 export class GuestRegistrationService {
@@ -12,6 +13,7 @@ export class GuestRegistrationService {
     email: string;
     phone: string;
     address: string;
+    participantNames?: string[];
   }) {
     const pkg = await this.prisma.sessionPackage.findUnique({
       where: { id: data.packageId },
@@ -29,6 +31,16 @@ export class GuestRegistrationService {
       throw new BadRequestException('This package is not open for public guest registration.');
     }
 
+    const extraPax = (data.participantNames ?? []).map((name) => name.trim());
+    if (extraPax.length > MAX_EXTRA_PAX) {
+      throw new BadRequestException(`Maksimal ${MAX_EXTRA_PAX} peserta tambahan.`);
+    }
+    if (extraPax.some((name) => !name)) {
+      throw new BadRequestException('Nama setiap peserta tambahan wajib diisi.');
+    }
+    const paxCount = 1 + extraPax.length;
+
+    // Every pax takes a seat; the whole group waits together when seats run short
     let status = 'PENDING';
     if (pkg.quota !== null) {
       const walletCount = await this.prisma.sessionWallet.count({
@@ -37,22 +49,31 @@ export class GuestRegistrationService {
       const guestCount = await this.prisma.guestRegistration.count({
         where: { packageId: data.packageId, status: { in: ['PENDING', 'APPROVED'] } }
       });
-      if (walletCount + guestCount >= pkg.quota) {
+      if (walletCount + guestCount + paxCount > pkg.quota) {
         status = 'WAITLIST';
       }
     }
 
-    return this.prisma.guestRegistration.create({
-      data: {
-        communityId: data.communityId,
-        packageId: data.packageId,
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        address: data.address,
-        status: status
-      }
-    });
+    // One registration per pax; a shared createdAt lets admins see them as one group
+    const createdAt = new Date();
+    const registrations = await this.prisma.$transaction(
+      [data.name, ...extraPax].map((name) =>
+        this.prisma.guestRegistration.create({
+          data: {
+            communityId: data.communityId,
+            packageId: data.packageId,
+            name,
+            email: data.email,
+            phone: data.phone,
+            address: data.address,
+            status,
+            createdAt,
+          },
+        }),
+      ),
+    );
+
+    return { ...registrations[0], paxCount, registrations };
   }
 
   async getRegistrationsByCommunity(communityId: string) {

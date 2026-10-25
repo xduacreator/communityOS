@@ -1,11 +1,15 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsEmail,
   IsIn,
+  IsOptional,
   IsString,
   IsUUID,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { MAX_EXTRA_PAX } from '../../session-wallet/dto/session-wallet.dto';
 
 export class SubmitGuestRegistrationDto {
   @IsUUID()
@@ -32,6 +36,15 @@ export class SubmitGuestRegistrationDto {
   @MinLength(3)
   @MaxLength(500)
   address: string;
+
+  // Names of additional participants sharing the registrant's contact details
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_EXTRA_PAX)
+  @IsString({ each: true })
+  @MinLength(1, { each: true })
+  @MaxLength(100, { each: true })
+  participantNames?: string[];
 }
 
 export class UpdateGuestStatusDto {
