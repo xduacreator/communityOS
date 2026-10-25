@@ -13,6 +13,7 @@ interface GuestRegistration {
   phone: string;
   address: string;
   status: string;
+  packageId: string;
   createdAt: string;
   package: {
     name: string;
@@ -50,6 +51,14 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
   useEffect(() => {
     fetchData();
   }, [resolvedParams.slug]);
+
+  // Pax registered together share contact details and the same createdAt
+  const groupKey = (guest: GuestRegistration) =>
+    `${guest.email}|${guest.packageId}|${guest.createdAt}`;
+  const groupSizes = guests.reduce<Record<string, number>>((sizes, guest) => {
+    sizes[groupKey(guest)] = (sizes[groupKey(guest)] || 0) + 1;
+    return sizes;
+  }, {});
 
   const handleUpdateStatus = async (id: string, status: string) => {
     try {
@@ -114,6 +123,11 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
                     <td className="py-4 px-6">
                       <div className="font-bold text-slate-900">{guest.name}</div>
                       <div className="text-xs text-slate-400">{guest.address}</div>
+                      {groupSizes[groupKey(guest)] > 1 && (
+                        <div className="mt-1 inline-block px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-bold">
+                          Pendaftaran grup ({groupSizes[groupKey(guest)]} pax)
+                        </div>
+                      )}
                     </td>
                     <td className="py-4 px-6">
                       <div className="text-sm font-semibold text-slate-700">{guest.email}</div>
