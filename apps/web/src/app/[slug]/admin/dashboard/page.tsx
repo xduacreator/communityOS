@@ -209,7 +209,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                   const label = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
                   
                   return (
-                    <div key={idx} className="flex flex-col items-center flex-1 group">
+                    <div key={idx} className="flex flex-col items-center justify-end flex-1 h-full group">
                       <span className="text-[10px] font-black text-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity mb-1.5 bg-white px-1.5 py-0.5 rounded border border-slate-250 shadow-sm pointer-events-none absolute -translate-y-12">
                         {item.count} check-in
                       </span>

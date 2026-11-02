@@ -7,6 +7,7 @@ import { Save, Loader2, Globe, LayoutTemplate, AlertOctagon, Megaphone, Zap, Upl
 import { useRouter } from 'next/navigation';
 import ConfirmModal from '../../../components/ui/ConfirmModal';
 import imageCompression from 'browser-image-compression';
+import { HOME_DEFAULTS, HOME_FIELD_GROUPS } from '../../../lib/home-content';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -361,203 +362,50 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Landing Page Hero */}
-        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-100">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <Globe className="w-5 h-5" />
-            </div>
-            <h2 className="text-xl font-extrabold text-slate-900">Hero Section</h2>
-          </div>
-
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Headline</label>
-              <textarea
-                rows={3}
-                value={settings['landing.hero.headline'] || ''}
-                onChange={(e) => handleChange('landing.hero.headline', e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all font-medium text-slate-700"
-                placeholder="Ubah Audiens Anda Menjadi Bisnis Kelas & Aktivitas yang Laris Manis"
-              />
-              <p className="text-xs text-slate-500 mt-2">Gunakan &lt;span className=&quot;text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-500 to-cyan-500&quot;&gt; untuk teks gradien.</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Sub-headline</label>
-              <textarea
-                rows={4}
-                value={settings['landing.hero.subheadline'] || ''}
-                onChange={(e) => handleChange('landing.hero.subheadline', e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all font-medium text-slate-700"
-                placeholder="Platform all-in-one untuk membangun, mengelola, dan melejitkan bisnis..."
-              />
-            </div>
-
-            <div className="pt-4 border-t border-slate-100">
-              <h3 className="text-sm font-bold text-slate-800 mb-4">Hero Micro Features (Below Buttons)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <label className="block text-xs font-bold text-slate-600 mb-1">Micro Feature 1 (Title)</label>
-                  <input
-                    type="text"
-                    value={settings['landing.hero.micro1.title'] || ''}
-                    onChange={(e) => handleChange('landing.hero.micro1.title', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm mb-2"
-                  />
-                  <label className="block text-xs font-bold text-slate-600 mb-1">Description</label>
-                  <input
-                    type="text"
-                    value={settings['landing.hero.micro1.desc'] || ''}
-                    onChange={(e) => handleChange('landing.hero.micro1.desc', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
-                  />
-                </div>
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <label className="block text-xs font-bold text-slate-600 mb-1">Micro Feature 2 (Title)</label>
-                  <input
-                    type="text"
-                    value={settings['landing.hero.micro2.title'] || ''}
-                    onChange={(e) => handleChange('landing.hero.micro2.title', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm mb-2"
-                  />
-                  <label className="block text-xs font-bold text-slate-600 mb-1">Description</label>
-                  <input
-                    type="text"
-                    value={settings['landing.hero.micro2.desc'] || ''}
-                    onChange={(e) => handleChange('landing.hero.micro2.desc', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
-                  />
-                </div>
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <label className="block text-xs font-bold text-slate-600 mb-1">Micro Feature 3 (Title)</label>
-                  <input
-                    type="text"
-                    value={settings['landing.hero.micro3.title'] || ''}
-                    onChange={(e) => handleChange('landing.hero.micro3.title', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm mb-2"
-                  />
-                  <label className="block text-xs font-bold text-slate-600 mb-1">Description</label>
-                  <input
-                    type="text"
-                    value={settings['landing.hero.micro3.desc'] || ''}
-                    onChange={(e) => handleChange('landing.hero.micro3.desc', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Landing Page Features */}
+        {/* Landing Page */}
         <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
           <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-100">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <LayoutTemplate className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-extrabold text-slate-900">Features Section</h2>
+            <div>
+              <h2 className="text-xl font-extrabold text-slate-900">Landing Page</h2>
+              <p className="text-xs text-slate-500 mt-1">Kosongkan kolom untuk memakai teks bawaan (terlihat sebagai placeholder).</p>
+            </div>
           </div>
 
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Section Headline</label>
-              <input
-                type="text"
-                value={settings['landing.features.headline'] || ''}
-                onChange={(e) => handleChange('landing.features.headline', e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all font-medium text-slate-700"
-                placeholder="Semua yang Anda butuhkan untuk mengelola kelas, dalam satu platform."
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100">
-              <div className="col-span-full font-bold text-slate-800">Feature 1: Microsite</div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Title</label>
-                <input
-                  type="text"
-                  value={settings['landing.features.1.title'] || ''}
-                  onChange={(e) => handleChange('landing.features.1.title', e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                />
+          <div className="space-y-8">
+            {HOME_FIELD_GROUPS.map((group) => (
+              <div key={group.title} className="space-y-4">
+                <h3 className="text-sm font-bold text-slate-800">{group.title}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {group.fields.map((field) => (
+                    <div key={field.key} className={field.multiline ? 'md:col-span-2' : ''}>
+                      <label htmlFor={field.key} className="block text-xs font-bold text-slate-600 mb-1">{field.label}</label>
+                      {field.multiline ? (
+                        <textarea
+                          id={field.key}
+                          rows={2}
+                          value={settings[field.key] || ''}
+                          onChange={(e) => handleChange(field.key, e.target.value)}
+                          placeholder={HOME_DEFAULTS[field.key]}
+                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all font-medium text-slate-700"
+                        />
+                      ) : (
+                        <input
+                          id={field.key}
+                          type="text"
+                          value={settings[field.key] || ''}
+                          onChange={(e) => handleChange(field.key, e.target.value)}
+                          placeholder={HOME_DEFAULTS[field.key]}
+                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all font-medium text-slate-700"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Description</label>
-                <input
-                  type="text"
-                  value={settings['landing.features.1.desc'] || ''}
-                  onChange={(e) => handleChange('landing.features.1.desc', e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100">
-              <div className="col-span-full font-bold text-slate-800">Feature 2: Monetisasi</div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Title</label>
-                <input
-                  type="text"
-                  value={settings['landing.features.2.title'] || ''}
-                  onChange={(e) => handleChange('landing.features.2.title', e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Description</label>
-                <input
-                  type="text"
-                  value={settings['landing.features.2.desc'] || ''}
-                  onChange={(e) => handleChange('landing.features.2.desc', e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100">
-              <div className="col-span-full font-bold text-slate-800">Feature 3: Absensi</div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Title</label>
-                <input
-                  type="text"
-                  value={settings['landing.features.3.title'] || ''}
-                  onChange={(e) => handleChange('landing.features.3.title', e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Description</label>
-                <input
-                  type="text"
-                  value={settings['landing.features.3.desc'] || ''}
-                  onChange={(e) => handleChange('landing.features.3.desc', e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100">
-              <div className="col-span-full font-bold text-slate-800">Feature 4: Dashboard</div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Title</label>
-                <input
-                  type="text"
-                  value={settings['landing.features.4.title'] || ''}
-                  onChange={(e) => handleChange('landing.features.4.title', e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">Description</label>
-                <input
-                  type="text"
-                  value={settings['landing.features.4.desc'] || ''}
-                  onChange={(e) => handleChange('landing.features.4.desc', e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -659,39 +507,6 @@ export default function SettingsPage() {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-100">
-            <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center">
-              <Zap className="w-5 h-5" />
-            </div>
-            <h2 className="text-xl font-extrabold text-slate-900">Footer CTA Section</h2>
-          </div>
-
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Headline</label>
-              <input
-                type="text"
-                value={settings['landing.cta.headline'] || ''}
-                onChange={(e) => handleChange('landing.cta.headline', e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all font-medium text-slate-700"
-                placeholder="Siap Melejitkan Bisnis Kelas & Aktivitas Anda?"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Sub-headline</label>
-              <textarea
-                rows={3}
-                value={settings['landing.cta.subheadline'] || ''}
-                onChange={(e) => handleChange('landing.cta.subheadline', e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all font-medium text-slate-700"
-                placeholder="Bergabunglah dengan ratusan owner kursus..."
-              />
             </div>
           </div>
         </div>
