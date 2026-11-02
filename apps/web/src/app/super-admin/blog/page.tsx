@@ -1,372 +1,249 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { Eye, FileText, Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { getApiUrl } from '../../../lib/api';
+import { getAuthHeaders } from '../../../lib/auth';
+import { formatBlogDate, type BlogPostSummary } from '../../../lib/blog';
+import ConfirmModal from '../../../components/ui/ConfirmModal';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { LayoutDashboard, FileText, Plus, Edit2, Trash2, Globe } from 'lucide-react';
-import { getApiUrl } from '@/lib/api';
-import { getAuthHeaders } from '@/lib/auth';
-import imageCompression from 'browser-image-compression';
+type Filter = 'all' | 'published' | 'draft';
 
-interface BlogPost {
-  id: string;
-  slug: string;
-  title: string;
-  cluster: string | null;
-  isPublished: boolean;
-  createdAt: string;
-}
-
-export default function BlogAdmin() {
-  const router = useRouter();
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+export default function AdminBlogPage() {
+  const [posts, setPosts] = useState<BlogPostSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
-  const [currentId, setCurrentId] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState('');
+  const [filter, setFilter] = useState<Filter>('all');
+  const [search, setSearch] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [toDelete, setToDelete] = useState<BlogPostSummary | null>(null);
 
-  // Form State
-  const [formData, setFormData] = useState({
-    slug: '',
-    title: '',
-    excerpt: '',
-    content: '',
-    cluster: '',
-    featuredImage: '',
-    metaTitle: '',
-    metaDescription: '',
-    isPublished: false,
-  });
-
-  const fetchPosts = async () => {
+  const load = async () => {
     try {
-      const headers = getAuthHeaders();
-      const res = await fetch(`${getApiUrl()}/blog-post`, { headers });
-      if (res.ok) {
-        const data = await res.json();
-        setPosts(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch blog posts:', error);
+      const res = await fetch(`${getApiUrl()}/blog-post/admin/all`, { headers: getAuthHeaders() });
+      if (!res.ok) throw new Error('Gagal memuat artikel');
+      setPosts(await res.json());
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal memuat artikel');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPosts();
+    load();
   }, []);
 
-  const handleOpenNew = () => {
-    setFormData({
-      slug: '',
-      title: '',
-      excerpt: '',
-      content: '',
-      cluster: 'Membership',
-      featuredImage: '',
-      metaTitle: '',
-      metaDescription: '',
-      isPublished: true,
-    });
-    setIsEdit(false);
-    setIsModalOpen(true);
-  };
+  const counts = useMemo(
+    () => ({
+      all: posts.length,
+      published: posts.filter((p) => p.isPublished).length,
+      draft: posts.filter((p) => !p.isPublished).length,
+    }),
+    [posts],
+  );
 
-  const handleOpenEdit = async (id: string) => {
-    const headers = getAuthHeaders();
-    const res = await fetch(`${getApiUrl()}/blog-post/${id}`, { headers });
-    if (res.ok) {
-      const data = await res.json();
-      setFormData({
-        slug: data.slug,
-        title: data.title,
-        excerpt: data.excerpt || '',
-        content: data.content || '',
-        cluster: data.cluster || '',
-        featuredImage: data.featuredImage || '',
-        metaTitle: data.metaTitle || '',
-        metaDescription: data.metaDescription || '',
-        isPublished: data.isPublished,
-      });
-      setCurrentId(data.id);
-      setIsEdit(true);
-      setIsModalOpen(true);
-    }
-  };
+  const visible = posts.filter((post) => {
+    if (filter === 'published' && !post.isPublished) return false;
+    if (filter === 'draft' && post.isPublished) return false;
+    const needle = search.trim().toLowerCase();
+    return !needle || [post.title, post.cluster, post.slug].some((v) => v?.toLowerCase().includes(needle));
+  });
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Hapus artikel blog ini?')) return;
-    const headers = getAuthHeaders();
-    await fetch(`${getApiUrl()}/blog-post/${id}`, {
-      method: 'DELETE',
-      headers
-    });
-    fetchPosts();
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const headers = getAuthHeaders();
-    const url = isEdit ? `${getApiUrl()}/blog-post/${currentId}` : `${getApiUrl()}/blog-post`;
-    const method = isEdit ? 'PATCH' : 'POST';
-
+  const togglePublish = async (post: BlogPostSummary) => {
+    setBusyId(post.id);
     try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...headers
-        },
-        body: JSON.stringify(formData)
+      const res = await fetch(`${getApiUrl()}/blog-post/${post.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify({ isPublished: !post.isPublished }),
       });
-      
-      if (res.ok) {
-        setIsModalOpen(false);
-        fetchPosts();
-      } else {
-        const errorData = await res.json();
-        alert(`Error: ${errorData.message}`);
-      }
-    } catch (error) {
-      console.error(error);
-      alert('Terjadi kesalahan');
-    }
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    try {
-      const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
-      const compressedFile = await imageCompression(file, options);
-      
-      const formDataUpload = new FormData();
-      formDataUpload.append('file', compressedFile);
-
-      const res = await fetch(`${getApiUrl()}/upload`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: formDataUpload,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setFormData({ ...formData, featuredImage: data.url });
-      } else {
-        alert('Gagal upload gambar');
-      }
-    } catch (error) {
-      console.error(error);
-      alert('Terjadi kesalahan saat upload');
+      if (!res.ok) throw new Error();
+      setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, isPublished: !post.isPublished } : p)));
+    } catch {
+      setError('Gagal mengubah status artikel');
     } finally {
-      setIsUploading(false);
+      setBusyId(null);
     }
   };
+
+  const remove = async (post: BlogPostSummary) => {
+    setToDelete(null);
+    setBusyId(post.id);
+    try {
+      const res = await fetch(`${getApiUrl()}/blog-post/${post.id}`, { method: 'DELETE', headers: getAuthHeaders() });
+      if (!res.ok) throw new Error();
+      setPosts((prev) => prev.filter((p) => p.id !== post.id));
+    } catch {
+      setError('Gagal menghapus artikel');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const tabs: { key: Filter; label: string }[] = [
+    { key: 'all', label: 'Semua' },
+    { key: 'published', label: 'Terbit' },
+    { key: 'draft', label: 'Draf' },
+  ];
 
   return (
-    <div className="flex bg-slate-50">
-
-      <div className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                <FileText className="w-6 h-6 text-indigo-600" />
-                Blog CMS (Topical Authority)
-              </h1>
-              <p className="text-slate-500 text-sm mt-1">Tulis artikel berbasis cluster untuk meningkatkan authority SEO</p>
-            </div>
-            <button
-              onClick={handleOpenNew}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium text-sm transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Tulis Artikel
-            </button>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-12">Loading...</div>
-          ) : (
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-600">
-                  <tr>
-                    <th className="px-6 py-4 font-semibold">Judul Artikel</th>
-                    <th className="px-6 py-4 font-semibold">Slug</th>
-                    <th className="px-6 py-4 font-semibold">Cluster / Kategori</th>
-                    <th className="px-6 py-4 font-semibold">Status</th>
-                    <th className="px-6 py-4 font-semibold text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {posts.length === 0 ? (
-                    <tr><td colSpan={5} className="text-center py-8 text-slate-500">Belum ada artikel yang ditulis.</td></tr>
-                  ) : posts.map((post) => (
-                    <tr key={post.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-slate-900">{post.title}</td>
-                      <td className="px-6 py-4 font-mono text-indigo-600 text-xs">/blog/{post.slug}</td>
-                      <td className="px-6 py-4">
-                        <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium border border-slate-200">
-                          {post.cluster || 'Uncategorized'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        {post.isPublished ? (
-                          <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">Published</span>
-                        ) : (
-                          <span className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">Draft</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button onClick={() => handleOpenEdit(post.id)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors mr-2">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleDelete(post.id)} className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-slate-900">Artikel Blog</h1>
+          <p className="text-slate-500 text-sm mt-1">Tulis, terbitkan, dan kelola artikel di latih.club/blog.</p>
         </div>
+        <Link
+          href="/super-admin/blog/new"
+          className="inline-flex items-center gap-2 min-h-11 px-5 rounded-xl bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700 transition-colors"
+        >
+          <Plus className="w-4 h-4" aria-hidden="true" />
+          Tulis artikel baru
+        </Link>
       </div>
 
-      {/* Form Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-5xl max-h-[90vh] flex flex-col">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
-              <h2 className="text-xl font-bold text-slate-900">{isEdit ? 'Edit Artikel' : 'Tulis Artikel Baru'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">✕</button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="p-6 overflow-y-auto flex-1 space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Judul Artikel</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Slug (URL)</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                    value={formData.slug}
-                    onChange={(e) => setFormData({...formData, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')})}
-                  />
-                </div>
-              </div>
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          ['Total artikel', counts.all, 'text-slate-900'],
+          ['Terbit', counts.published, 'text-emerald-600'],
+          ['Draf', counts.draft, 'text-amber-600'],
+        ].map(([label, value, color]) => (
+          <div key={label as string} className="bg-white rounded-2xl border border-slate-200 p-4">
+            <div className="text-xs font-bold text-slate-500 uppercase tracking-wide">{label}</div>
+            <div className={`text-2xl font-extrabold mt-1 ${color}`}>{value}</div>
+          </div>
+        ))}
+      </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Topical Cluster (Kategori)</label>
-                  <select
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                    value={formData.cluster}
-                    onChange={(e) => setFormData({...formData, cluster: e.target.value})}
-                  >
-                    <option value="Membership">Membership</option>
-                    <option value="Absensi">Absensi</option>
-                    <option value="Akademi">Akademi</option>
-                    <option value="Retensi Member">Retensi Member</option>
-                    <option value="General">General</option>
-                  </select>
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-b border-slate-100">
+          <div role="tablist" aria-label="Filter status" className="flex gap-1 bg-slate-100 rounded-xl p-1">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                role="tab"
+                aria-selected={filter === tab.key}
+                onClick={() => setFilter(tab.key)}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${filter === tab.key ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+              >
+                {tab.label} <span className="text-slate-400 font-semibold">{counts[tab.key]}</span>
+              </button>
+            ))}
+          </div>
+          <label className="relative flex-1 min-w-[220px] max-w-sm">
+            <span className="sr-only">Cari artikel</span>
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari judul, kategori, atau slug"
+              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+            />
+          </label>
+        </div>
+
+        {error && <div className="px-4 py-3 bg-red-50 text-red-700 text-sm font-medium">{error}</div>}
+
+        {loading ? (
+          <div className="flex items-center justify-center gap-2 py-16 text-slate-500">
+            <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> Memuat artikel…
+          </div>
+        ) : visible.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-16 px-6 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <FileText className="w-6 h-6" aria-hidden="true" />
+            </div>
+            <b className="text-slate-900">{posts.length === 0 ? 'Belum ada artikel' : 'Tidak ada artikel yang cocok'}</b>
+            {posts.length === 0 && (
+              <Link href="/super-admin/blog/new" className="text-sm font-bold text-indigo-600 hover:underline">
+                Tulis artikel pertama →
+              </Link>
+            )}
+          </div>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {visible.map((post) => (
+              <li key={post.id} className="flex flex-wrap items-center gap-4 p-4 hover:bg-slate-50/60">
+                <div className="w-20 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                  {post.featuredImage && <img src={post.featuredImage} alt="" className="w-full h-full object-cover" />}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Image / Banner</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"
-                      value={formData.featuredImage}
-                      onChange={(e) => setFormData({...formData, featuredImage: e.target.value})}
-                      placeholder="/api/uploads/... atau https://..."
-                    />
-                    <label className={`flex-shrink-0 flex items-center justify-center px-4 py-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                      <span className="text-sm font-medium text-slate-600">{isUploading ? 'Uploading...' : 'Upload'}</span>
-                      <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
-                    </label>
+                <div className="flex-1 min-w-[220px]">
+                  <Link href={`/super-admin/blog/${post.id}`} className="font-bold text-slate-900 hover:text-indigo-600 line-clamp-1">
+                    {post.title}
+                  </Link>
+                  <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-500">
+                    <span
+                      className={`px-2 py-0.5 rounded-full font-bold ${post.isPublished ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}
+                    >
+                      {post.isPublished ? 'Terbit' : 'Draf'}
+                    </span>
+                    {post.cluster && <span className="px-2 py-0.5 rounded-full bg-slate-100 font-semibold text-slate-600">{post.cluster}</span>}
+                    <span>Diperbarui {formatBlogDate(post.updatedAt)}</span>
+                    <span>· {post.readingMinutes} mnt baca</span>
                   </div>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Konten Artikel (Mendukung HTML)</label>
-                <textarea
-                  required
-                  rows={12}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none font-mono text-sm leading-relaxed"
-                  value={formData.content}
-                  onChange={(e) => setFormData({...formData, content: e.target.value})}
-                  placeholder="<h2>Sub Judul</h2><p>Tulis paragraf di sini...</p>"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="col-span-2"><h3 className="font-semibold text-slate-800">SEO Settings</h3></div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Meta Title</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                    value={formData.metaTitle}
-                    onChange={(e) => setFormData({...formData, metaTitle: e.target.value})}
-                  />
+                <div className="flex items-center gap-1.5">
+                  {post.isPublished && (
+                    <a
+                      href={`/blog/${post.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Lihat ${post.title}`}
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                    >
+                      <Eye className="w-4 h-4" aria-hidden="true" />
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    disabled={busyId === post.id}
+                    onClick={() => togglePublish(post)}
+                    className={`min-h-10 px-3 rounded-xl text-xs font-bold transition-colors disabled:opacity-50 ${post.isPublished ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
+                  >
+                    {post.isPublished ? 'Jadikan draf' : 'Terbitkan'}
+                  </button>
+                  <Link
+                    href={`/super-admin/blog/${post.id}`}
+                    aria-label={`Edit ${post.title}`}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 hover:bg-indigo-50 hover:text-indigo-600"
+                  >
+                    <Pencil className="w-4 h-4" aria-hidden="true" />
+                  </Link>
+                  <button
+                    type="button"
+                    disabled={busyId === post.id}
+                    onClick={() => setToDelete(post)}
+                    aria-label={`Hapus ${post.title}`}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                  >
+                    <Trash2 className="w-4 h-4" aria-hidden="true" />
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">Meta Description / Excerpt</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                    value={formData.metaDescription}
-                    onChange={(e) => {
-                      setFormData({
-                        ...formData, 
-                        metaDescription: e.target.value,
-                        excerpt: e.target.value // Sync excerpt
-                      });
-                    }}
-                  />
-                </div>
-              </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="isPublished"
-                  checked={formData.isPublished}
-                  onChange={(e) => setFormData({...formData, isPublished: e.target.checked})}
-                  className="w-4 h-4 text-indigo-600 rounded"
-                />
-                <label htmlFor="isPublished" className="text-sm text-slate-700 font-medium">Publish Artikel Ini</label>
-              </div>
+      <p className="text-sm text-slate-500">
+        Tips: terbitkan 1–2 artikel per minggu seputar pertanyaan yang sering dicari pengelola klub (absensi, paket latihan, membership).
+        Artikel yang terbit muncul di landing page dan daftar blog dalam ±1 menit.
+      </p>
 
-              <div className="pt-6 pb-2 flex justify-end gap-3 shrink-0">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors">
-                  Batal
-                </button>
-                <button type="submit" className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors">
-                  Simpan Artikel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!toDelete}
+        title="Hapus artikel?"
+        message={toDelete ? `Artikel "${toDelete.title}" akan dihapus permanen.` : ''}
+        confirmText="Hapus"
+        isDestructive
+        onConfirm={() => toDelete && remove(toDelete)}
+        onCancel={() => setToDelete(null)}
+      />
     </div>
   );
 }

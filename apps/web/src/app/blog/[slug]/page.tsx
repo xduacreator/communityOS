@@ -1,163 +1,203 @@
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { getApiUrl } from '../../../lib/api';
+/* eslint-disable @next/next/no-img-element */
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, Clock, MessageCircle } from "lucide-react";
+import SiteHeader from "@/components/site/SiteHeader";
+import SiteFooter from "@/components/site/SiteFooter";
+import CopyLinkButton from "@/components/site/CopyLinkButton";
+import { ARTICLE_PROSE, formatBlogDate, tintFor, type BlogPost, type BlogPostSummary } from "@/lib/blog";
+import { outfit } from "@/lib/fonts";
+import { whatsappUrl } from "@/lib/home-content";
+import { apiGet } from "@/lib/server-api";
 
-async function getBlogPost(slug: string) {
-  const candidateUrls = [
-    process.env.INTERNAL_API_URL,
-    'http://api:3001/api',
-    getApiUrl(),
-    'http://localhost:3001/api',
-    'http://127.0.0.1:3001/api',
-  ].filter(Boolean) as string[];
+const SITE_ORIGIN = `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN || "latih.club"}`;
 
-  const uniqueUrls = Array.from(new Set(candidateUrls));
-
-  for (const baseUrl of uniqueUrls) {
-    try {
-      const cleanBase = baseUrl.replace(/\/$/, '');
-      const url = cleanBase.endsWith('/api')
-        ? `${cleanBase}/blog-post/${slug}`
-        : `${cleanBase}/api/blog-post/${slug}`;
-
-      const res = await fetch(url, {
-        next: { revalidate: 60 },
-        signal: AbortSignal.timeout(3000),
-      });
-
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch {
-      // Try next
-    }
-  }
-  return null;
+function getBlogPost(slug: string) {
+  // Fresh on every request so an unpublished or deleted article disappears at once
+  return apiGet<BlogPost | null>(`/blog-post/${encodeURIComponent(slug)}`, null, false);
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const resolvedParams = await params;
-  const post = await getBlogPost(resolvedParams.slug);
+  const { slug } = await params;
+  const post = await getBlogPost(slug);
+  if (!post) return { title: "Artikel tidak ditemukan" };
 
-  if (!post || !post.isPublished) {
-    return { title: 'Not Found' };
-  }
-
+  const description = post.metaDescription || post.excerpt || `Membaca artikel ${post.title}`;
   return {
+    // Resolves relative cover images to absolute URLs for link previews
+    metadataBase: new URL(SITE_ORIGIN),
     title: post.metaTitle || `${post.title} | Latih.club Blog`,
-    description: post.metaDescription || post.excerpt || `Membaca artikel ${post.title}`,
+    description,
+    alternates: { canonical: `${SITE_ORIGIN}/blog/${post.slug}` },
     openGraph: {
+      type: "article",
       title: post.metaTitle || post.title,
-      description: post.metaDescription || post.excerpt,
+      description,
+      publishedTime: post.createdAt,
+      modifiedTime: post.updatedAt,
       images: post.featuredImage ? [post.featuredImage] : [],
     },
   };
 }
 
-async function getSettings(): Promise<Record<string, string>> {
-  const candidateUrls = [
-    process.env.INTERNAL_API_URL,
-    'http://api:3001/api',
-    getApiUrl(),
-    'http://localhost:3001/api',
-    'http://127.0.0.1:3001/api',
-  ].filter(Boolean) as string[];
-
-  const uniqueUrls = Array.from(new Set(candidateUrls));
-
-  for (const baseUrl of uniqueUrls) {
-    try {
-      const cleanBase = baseUrl.replace(/\/$/, '');
-      const url = cleanBase.endsWith('/api')
-        ? `${cleanBase}/system-settings`
-        : `${cleanBase}/api/system-settings`;
-
-      const res = await fetch(url, {
-        next: { revalidate: 5 },
-        signal: AbortSignal.timeout(3000),
-      });
-
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch {
-      // Try next
-    }
-  }
-  return {};
-}
-
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
-  const resolvedParams = await params;
-  const [post, settings] = await Promise.all([
-    getBlogPost(resolvedParams.slug),
-    getSettings()
+  const { slug } = await params;
+  const [post, settings, allPosts] = await Promise.all([
+    getBlogPost(slug),
+    apiGet<Record<string, string>>("/system-settings", {}, 5),
+    apiGet<BlogPostSummary[]>("/blog-post", [], 60),
   ]);
+  if (!post) notFound();
 
-  if (!post || !post.isPublished) {
-    notFound();
-  }
+  const url = `${SITE_ORIGIN}/blog/${post.slug}`;
+  // Same category first, then the newest
+  const related = allPosts
+    .filter((item) => item.id !== post.id)
+    .sort((a, b) => Number(b.cluster === post.cluster) - Number(a.cluster === post.cluster))
+    .slice(0, 3);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.metaDescription || post.excerpt || undefined,
+    image: post.featuredImage ? [post.featuredImage.startsWith("http") ? post.featuredImage : `${SITE_ORIGIN}${post.featuredImage}`] : undefined,
+    datePublished: post.createdAt,
+    dateModified: post.updatedAt,
+    mainEntityOfPage: url,
+    publisher: { "@type": "Organization", name: settings["platform.name"] || "Latih.Club" },
+  };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 pt-24 pb-24">
-      {/* Navbar */}
-      <header className="fixed top-0 inset-x-0 bg-white/80 backdrop-blur-2xl z-50 border-b border-slate-200/60 shadow-sm shadow-slate-900/5 transition-all duration-300">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 h-16 sm:h-20 flex justify-between items-center gap-2">
-          <Link href="/" className="flex items-center group shrink-0">
-            <img 
-              src={settings['platform.logo'] || '/images/logo.svg'} 
-              alt={settings['platform.name'] || 'Latih.Club'} 
-              className="h-8 transition-transform group-hover:scale-105"
-            />
+    <div className={`${outfit.className} min-h-screen overflow-x-hidden bg-[#F6F6F2] text-[#111214]`}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <SiteHeader settings={settings} active="blog" />
+
+      <article className="pb-16">
+        <header className="mx-auto flex max-w-[820px] flex-col items-center gap-5 px-5 pt-8 text-center sm:px-8 md:pt-12">
+          <Link href="/blog" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-bold shadow-[0_1px_0_#E6E6E0] transition hover:bg-[#FBFBF8]">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Semua artikel
           </Link>
-          <nav className="flex items-center gap-6">
-            <Link href="/" className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors">
-              Kembali ke Beranda
+          {post.cluster && (
+            <Link href={`/blog?kategori=${encodeURIComponent(post.cluster)}`} className={`rounded-full px-3 py-1 text-[13px] font-bold ${tintFor(post.cluster)}`}>
+              {post.cluster}
             </Link>
-          </nav>
-        </div>
-      </header>
-      <div className="max-w-3xl mx-auto px-6">
-        <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 mb-8 transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          Kembali ke Blog
-        </Link>
-
-        {post.cluster && (
-          <div className="mb-4">
-            <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold">{post.cluster}</span>
+          )}
+          <h1 className="text-[36px] font-black leading-[1.05] tracking-[-0.035em] sm:text-5xl lg:text-[60px]">{post.title}</h1>
+          {post.excerpt && <p className="max-w-[680px] text-lg leading-relaxed text-[#55585E] sm:text-xl">{post.excerpt}</p>}
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm font-semibold text-[#55585E]">
+            <span>Tim {settings["platform.name"] || "Latih.Club"}</span>
+            <span aria-hidden="true">·</span>
+            <time dateTime={post.createdAt}>{formatBlogDate(post.createdAt)}</time>
+            <span aria-hidden="true">·</span>
+            <span className="inline-flex items-center gap-1">
+              <Clock className="h-4 w-4" aria-hidden="true" />
+              {post.readingMinutes} menit baca
+            </span>
           </div>
-        )}
+        </header>
 
-        <h1 className="text-3xl md:text-5xl font-black text-slate-900 mb-6 leading-tight">{post.title}</h1>
-        
-        <div className="flex items-center gap-4 text-sm text-slate-500 mb-10 pb-10 border-b border-slate-100">
-          <span>Ditulis pada {new Date(post.createdAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-        </div>
+        <figure className="mx-auto mt-10 max-w-[1080px] px-5 sm:px-8">
+          {post.featuredImage ? (
+            <img src={post.featuredImage} alt="" className="block max-h-[560px] w-full rounded-[28px] object-cover shadow-[0_40px_80px_-50px_rgba(17,18,20,0.45)]" />
+          ) : (
+            <div aria-hidden="true" className={`h-[180px] rounded-[28px] sm:h-[260px] ${tintFor(post.cluster || post.title)}`} />
+          )}
+        </figure>
 
-        {post.featuredImage && (
-          <div className="mb-10 rounded-2xl overflow-hidden bg-slate-100 aspect-video">
-            <img src={post.featuredImage} alt={post.title} className="w-full h-full object-cover" />
+        <div className="mx-auto mt-12 max-w-[740px] px-5 sm:px-8">
+          <div
+            className={ARTICLE_PROSE}
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+
+          <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-[#E6E6E0] pt-6">
+            <b className="text-base">Bagikan artikel ini</b>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`${post.title} ${url}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#2CE5B0] px-4 text-sm font-bold text-[#111214]"
+              >
+                <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                WhatsApp
+              </a>
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-bold shadow-[0_1px_0_#E6E6E0] transition hover:bg-[#FBFBF8]"
+              >
+                Facebook
+              </a>
+              <a
+                href={`https://x.com/intent/post?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(url)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-bold shadow-[0_1px_0_#E6E6E0] transition hover:bg-[#FBFBF8]"
+              >
+                X
+              </a>
+              <CopyLinkButton url={url} />
+            </div>
           </div>
-        )}
 
-        {/* Prose Content */}
-        <article 
-          className="prose prose-slate prose-lg max-w-none prose-headings:font-bold prose-a:text-indigo-600 hover:prose-a:text-indigo-500"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
-
-        <div className="mt-16 pt-10 border-t border-slate-100">
-          <div className="bg-slate-50 rounded-2xl p-8 text-center border border-slate-200">
-            <h3 className="text-xl font-bold text-slate-900 mb-3">Siap Mengelola Kelas Anda dengan Lebih Mudah?</h3>
-            <p className="text-slate-600 mb-6 text-sm">Coba Latih.club sekarang dan lihat bagaimana platform kami dapat menghemat waktu operasional Anda.</p>
-            <a href="https://wa.me/6287722125859" target="_blank" rel="noopener noreferrer" className="inline-flex px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors">
-              Mulai Konsultasi Gratis
+          <aside className="relative mt-10 flex flex-col gap-4 overflow-hidden rounded-[28px] bg-[#111214] p-8 text-white sm:p-10">
+            <span aria-hidden="true" className="absolute -right-4 -top-4 h-20 w-20 rotate-12 rounded-3xl bg-[#FFF0A6]" />
+            <span aria-hidden="true" className="absolute bottom-6 right-16 h-6 w-6 rounded-full bg-[#2CE5B0]" />
+            <b className="relative max-w-[460px] text-2xl leading-tight tracking-tight sm:text-3xl">
+              Kelola klub latihanmu lebih rapi dengan <span className="text-[#2CE5B0]">Latih.Club</span>.
+            </b>
+            <p className="relative max-w-[480px] text-base text-[#BEC0C5]">
+              Pendaftaran member, paket sesi, pembayaran, dan absensi dalam satu sistem. Chat tim kami untuk mulai.
+            </p>
+            <a
+              href={whatsappUrl(settings)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative inline-flex min-h-12 items-center self-start rounded-full bg-[#2CE5B0] px-6 text-base font-extrabold text-[#111214] transition hover:brightness-95"
+            >
+              Daftarkan Klub
             </a>
-          </div>
+          </aside>
         </div>
-      </div>
+      </article>
+
+      {related.length > 0 && (
+        <section className="mx-auto flex max-w-[1240px] flex-col gap-6 px-5 pb-20 sm:px-8 md:pb-28 lg:px-10">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <h2 className="text-3xl font-black tracking-[-0.03em] md:text-4xl">Baca juga</h2>
+            <Link href="/blog" className="inline-flex min-h-11 items-center text-base font-bold hover:underline">
+              Semua artikel →
+            </Link>
+          </div>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+            {related.map((item) => (
+              <Link key={item.id} href={`/blog/${item.slug}`} className="group flex flex-col rounded-3xl bg-white p-2.5 shadow-[0_1px_0_#E6E6E0] transition hover:-translate-y-1">
+                <div className="overflow-hidden rounded-2xl">
+                  {item.featuredImage ? (
+                    <img src={item.featuredImage} alt="" loading="lazy" className="block h-[170px] w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
+                  ) : (
+                    <div aria-hidden="true" className={`flex h-[170px] items-end p-4 ${tintFor(item.cluster || item.title)}`}>
+                      <span className="line-clamp-2 text-xl font-black leading-tight tracking-tight text-[#111214]/15">{item.title}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2 px-2.5 pb-3 pt-4">
+                  <span className="text-[13px] font-semibold text-[#55585E]">
+                    {[item.cluster, `${item.readingMinutes} mnt baca`].filter(Boolean).join(" · ")}
+                  </span>
+                  <b className="text-lg leading-snug">{item.title}</b>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <SiteFooter settings={settings} />
     </div>
   );
 }

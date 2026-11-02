@@ -17,16 +17,29 @@ export class BlogPostController {
     return this.blogPostService.create(createBlogPostDto);
   }
 
-  // Public endpoint
-  @Get()
-  findAll() {
-    return this.blogPostService.findAll();
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
+  @Get('admin/all')
+  findAllForAdmin() {
+    return this.blogPostService.findAllForAdmin();
   }
 
-  // Public endpoint
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  @RequireSuperAdmin()
+  @Get('admin/:id')
+  findOneForAdmin(@Param('id') id: string) {
+    return this.blogPostService.findOneForAdmin(id);
+  }
+
+  // Public endpoints: published posts only
+  @Get()
+  findPublished() {
+    return this.blogPostService.findPublished();
+  }
+
   @Get(':idOrSlug')
-  findOne(@Param('idOrSlug') idOrSlug: string) {
-    return this.blogPostService.findOne(idOrSlug);
+  findPublishedOne(@Param('idOrSlug') idOrSlug: string) {
+    return this.blogPostService.findPublishedOne(idOrSlug);
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)

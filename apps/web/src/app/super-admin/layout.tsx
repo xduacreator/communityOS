@@ -23,7 +23,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
     { name: 'Sessions', href: '/super-admin/sessions', icon: LayoutGrid },
     { name: 'SEO Landing Pages', href: '/super-admin/seo-pages', icon: Search },
     { name: 'Custom Pages', href: '/super-admin/custom-pages', icon: FileText },
-    { name: 'Blog (Topical)', href: '/super-admin/blog', icon: FileText },
+    { name: 'Blog', href: '/super-admin/blog', icon: FileText },
     { name: 'Settings', href: '/super-admin/settings', icon: Settings },
   ];
 
@@ -63,7 +63,8 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
                 Super Admin Menu
               </div>
               {navItems.map((item) => {
-                const isActive = pathname === item.href;
+                // Sub-pages (e.g. the blog editor) keep their section highlighted
+                const isActive = pathname === item.href || (item.href !== '/super-admin' && pathname.startsWith(`${item.href}/`));
                 return (
                   <Link 
                     key={item.name} 

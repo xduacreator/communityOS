@@ -1,26 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { Outfit } from "next/font/google";
-import {
-  ArrowRight,
-  Check,
-  Download,
-  Globe,
-  MessageCircle,
-  Plus,
-  QrCode,
-  Tag,
-  Users,
-  Zap,
-} from "lucide-react";
-import { getApiUrl } from "@/lib/api";
+import { ArrowRight, Check, Download, Globe, Plus, QrCode, Tag, Users } from "lucide-react";
+import SiteHeader from "@/components/site/SiteHeader";
+import SiteFooter from "@/components/site/SiteFooter";
+import { formatBlogDate, tintFor, type BlogPostSummary } from "@/lib/blog";
+import { outfit } from "@/lib/fonts";
 import { homeText, whatsappUrl } from "@/lib/home-content";
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
-  display: "swap",
-});
+import { apiGet } from "@/lib/server-api";
 
 interface ShowcaseCommunity {
   id: string;
@@ -31,49 +17,12 @@ interface ShowcaseCommunity {
   heroBanner?: string | null;
 }
 
-interface BlogPost {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string | null;
-  cluster: string | null;
-  featuredImage: string | null;
-  isPublished: boolean;
-  createdAt: string;
-}
-
 interface ClubCard {
   href: string;
   name: string;
   label?: string;
   desc?: string;
   image?: string | null;
-}
-
-// Server-side fetch that tries the internal API first (Docker), then public URLs.
-async function apiGet<T>(path: string, fallback: T, revalidate: number): Promise<T> {
-  const candidateUrls = [
-    process.env.INTERNAL_API_URL,
-    "http://api:3001/api",
-    getApiUrl(),
-    "http://localhost:3001/api",
-    "http://127.0.0.1:3001/api",
-  ].filter(Boolean) as string[];
-
-  for (const baseUrl of Array.from(new Set(candidateUrls))) {
-    try {
-      const cleanBase = baseUrl.replace(/\/$/, "");
-      const url = cleanBase.endsWith("/api") ? `${cleanBase}${path}` : `${cleanBase}/api${path}`;
-      const res = await fetch(url, {
-        next: { revalidate },
-        signal: AbortSignal.timeout(3000),
-      });
-      if (res.ok) return (await res.json()) as T;
-    } catch {
-      // Try next endpoint candidate
-    }
-  }
-  return fallback;
 }
 
 const SPORTS = [
@@ -111,18 +60,16 @@ const FAQS = [
   ],
 ] as const;
 
-const BLOG_TINTS = ["bg-[#D6FBEF]", "bg-[#FFF0A6]", "bg-[#DCEBFF]"];
-
 export default async function Home() {
   const [settings, showcase, posts] = await Promise.all([
     apiGet<Record<string, string>>("/system-settings", {}, 5),
     apiGet<ShowcaseCommunity[]>("/communities/public/showcase", [], 5),
-    apiGet<BlogPost[]>("/blog-post", [], 60),
+    apiGet<BlogPostSummary[]>("/blog-post", [], 60),
   ]);
 
   const t = (key: Parameters<typeof homeText>[1]) => homeText(settings, key);
   const waUrl = whatsappUrl(settings);
-  const latestPosts = posts.filter((post) => post.isPublished).slice(0, 3);
+  const latestPosts = posts.slice(0, 3);
 
   const clubs: ClubCard[] =
     showcase.length > 0
@@ -142,34 +89,9 @@ export default async function Home() {
           }))
           .filter((club) => club.name && club.href !== "/");
 
-  const platformName = settings["platform.name"] || "Latih.Club";
-
   return (
     <div className={`${outfit.className} min-h-screen overflow-x-hidden bg-[#F6F6F2] text-[#111214]`}>
-      {/* NAV */}
-      <header className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8 lg:px-10">
-        <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-10 w-10 -rotate-6 items-center justify-center rounded-[14px] bg-[#111214]">
-            <Zap className="h-5 w-5 text-[#2CE5B0]" strokeWidth={2.6} aria-hidden="true" />
-          </span>
-          <span className="text-[22px] font-extrabold tracking-tight">{platformName}</span>
-        </Link>
-        <nav aria-label="Navigasi utama" className="hidden flex-wrap items-center gap-1 text-[15px] font-semibold md:flex">
-          <a href="#fitur" className="rounded-full px-3.5 py-2.5 hover:bg-white">Fitur</a>
-          <a href="#mulai" className="rounded-full px-3.5 py-2.5 hover:bg-white">Cara Mulai</a>
-          <a href="#klub" className="rounded-full px-3.5 py-2.5 hover:bg-white">Klub</a>
-          <a href="#blog" className="rounded-full px-3.5 py-2.5 hover:bg-white">Blog</a>
-          <a href="#faq" className="rounded-full px-3.5 py-2.5 hover:bg-white">FAQ</a>
-        </nav>
-        <a
-          href={waUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-11 items-center rounded-full bg-[#111214] px-5 text-[15px] font-bold text-white transition hover:bg-[#2a2c30]"
-        >
-          Daftarkan Klub
-        </a>
-      </header>
+      <SiteHeader settings={settings} />
 
       {/* HERO */}
       <section id="top" className="mx-auto flex max-w-[1240px] flex-col items-center gap-6 px-5 pt-10 text-center sm:px-8 md:pt-16 lg:px-10">
@@ -431,18 +353,16 @@ export default async function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
-            {latestPosts.map((post, index) => (
+            {latestPosts.map((post) => (
               <Link key={post.id} href={`/blog/${post.slug}`} className="flex flex-col rounded-3xl bg-white p-2.5 shadow-[0_1px_0_#E6E6E0] transition hover:-translate-y-1">
                 {post.featuredImage ? (
                   <img src={post.featuredImage} alt="" loading="lazy" className="block h-[180px] w-full rounded-2xl object-cover" />
                 ) : (
-                  <div aria-hidden="true" className={`h-[180px] rounded-2xl ${BLOG_TINTS[index % BLOG_TINTS.length]}`} />
+                  <div aria-hidden="true" className={`h-[180px] rounded-2xl ${tintFor(post.cluster || post.title)}`} />
                 )}
                 <div className="flex flex-col gap-2 px-2.5 pb-3 pt-4">
                   <span className="text-[13px] font-semibold text-[#55585E]">
-                    {[post.cluster, new Date(post.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })]
-                      .filter(Boolean)
-                      .join(" · ")}
+                    {[post.cluster, formatBlogDate(post.createdAt), `${post.readingMinutes} mnt baca`].filter(Boolean).join(" · ")}
                   </span>
                   <b className="text-[19px] leading-snug">{post.title}</b>
                   {post.excerpt && <p className="line-clamp-2 text-[15px] leading-normal text-[#55585E]">{post.excerpt}</p>}
@@ -498,56 +418,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="overflow-hidden rounded-t-[40px] bg-white shadow-[0_-1px_0_#E6E6E0]">
-        <div className="mx-auto flex max-w-[1240px] flex-wrap justify-between gap-10 px-5 pt-12 sm:px-8 md:pt-[72px] lg:px-10">
-          <div className="flex min-w-0 max-w-[360px] flex-[1.4_1_280px] flex-col gap-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <span className="flex h-10 w-10 -rotate-6 items-center justify-center rounded-[14px] bg-[#111214]">
-                <Zap className="h-5 w-5 text-[#2CE5B0]" strokeWidth={2.6} aria-hidden="true" />
-              </span>
-              <span className="text-[22px] font-extrabold tracking-tight">{platformName}</span>
-            </Link>
-            <p className="text-[15px] leading-relaxed text-[#55585E]">
-              Sistem untuk menjalankan klub &amp; kelas latihan — pendaftaran, paket sesi, pembayaran, dan absensi dalam satu tempat.
-            </p>
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-12 items-center gap-2.5 self-start rounded-full bg-[#2CE5B0] px-[18px] text-[15px] font-bold text-[#111214]"
-            >
-              <MessageCircle className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden="true" />
-              Chat via WhatsApp
-            </a>
-          </div>
-          <nav aria-label="Produk" className="flex flex-[1_1_140px] flex-col gap-3 text-[15px]">
-            <b className="text-sm">Produk</b>
-            <a href="#fitur" className="text-[#55585E] hover:text-[#111214]">Fitur</a>
-            <a href="#mulai" className="text-[#55585E] hover:text-[#111214]">Cara Mulai</a>
-            <a href="#faq" className="text-[#55585E] hover:text-[#111214]">FAQ</a>
-          </nav>
-          <nav aria-label="Jelajahi" className="flex flex-[1_1_140px] flex-col gap-3 text-[15px]">
-            <b className="text-sm">Jelajahi</b>
-            <Link href="/blog" className="text-[#55585E] hover:text-[#111214]">Blog</Link>
-            <a href="#klub" className="text-[#55585E] hover:text-[#111214]">Klub</a>
-            {clubs[0] && <Link href={clubs[0].href} className="text-[#55585E] hover:text-[#111214]">Contoh microsite</Link>}
-          </nav>
-          <nav aria-label="Bantuan" className="flex flex-[1_1_160px] flex-col gap-3 text-[15px]">
-            <b className="text-sm">Bantuan</b>
-            <a href={whatsappUrl(settings, false)} target="_blank" rel="noopener noreferrer" className="text-[#55585E] hover:text-[#111214]">WhatsApp</a>
-            <Link href="/privacy-policy" className="text-[#55585E] hover:text-[#111214]">Kebijakan Privasi</Link>
-            <Link href="/terms-conditions" className="text-[#55585E] hover:text-[#111214]">Syarat &amp; Ketentuan</Link>
-          </nav>
-        </div>
-        <div className="mx-auto mt-10 flex max-w-[1240px] flex-wrap justify-between gap-3 border-t border-[#EDEDE8] px-5 py-5 text-sm text-[#55585E] sm:px-8 lg:px-10">
-          <span>© {new Date().getFullYear()} {platformName}. Semua hak dilindungi.</span>
-          <span>Dibuat untuk klub latihan di Indonesia.</span>
-        </div>
-        <div aria-hidden="true" className="mx-auto max-w-[1240px] select-none overflow-hidden whitespace-nowrap px-5 text-[clamp(72px,15vw,220px)] font-black leading-[0.78] tracking-[-0.04em] text-[#F1F1EC] sm:px-8 lg:px-10">
-          latih.club
-        </div>
-      </footer>
+      <SiteFooter settings={settings} exampleHref={clubs[0]?.href} />
     </div>
   );
 }
