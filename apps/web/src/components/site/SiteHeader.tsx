@@ -10,7 +10,18 @@ const NAV = [
   { href: "/#faq", label: "FAQ", key: "faq" },
 ];
 
-export function SiteLogo({ name }: { name: string }) {
+// Uses the logo uploaded in Super Admin → Settings (platform.logo), else the default mark + name
+export function SiteLogo({ settings }: { settings: Record<string, string> }) {
+  const name = settings["platform.name"] || "Latih.Club";
+  const logo = settings["platform.logo"];
+  if (logo) {
+    return (
+      <Link href="/" className="flex items-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logo} alt={name} className="h-10 w-auto max-w-[200px] object-contain" />
+      </Link>
+    );
+  }
   return (
     <Link href="/" className="flex items-center gap-2.5">
       <span className="flex h-10 w-10 -rotate-6 items-center justify-center rounded-[14px] bg-[#111214]">
@@ -24,7 +35,7 @@ export function SiteLogo({ name }: { name: string }) {
 export default function SiteHeader({ settings, active }: { settings: Record<string, string>; active?: string }) {
   return (
     <header className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8 lg:px-10">
-      <SiteLogo name={settings["platform.name"] || "Latih.Club"} />
+      <SiteLogo settings={settings} />
       <nav aria-label="Navigasi utama" className="hidden flex-wrap items-center gap-1 text-[15px] font-semibold md:flex">
         {NAV.map((item) => (
           <Link

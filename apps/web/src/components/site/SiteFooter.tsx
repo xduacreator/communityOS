@@ -11,7 +11,7 @@ export default function SiteFooter({ settings, exampleHref }: { settings: Record
     <footer className="overflow-hidden rounded-t-[40px] bg-white shadow-[0_-1px_0_#E6E6E0]">
       <div className="mx-auto flex max-w-[1240px] flex-wrap justify-between gap-10 px-5 pt-12 sm:px-8 md:pt-[72px] lg:px-10">
         <div className="flex min-w-0 max-w-[360px] flex-[1.4_1_280px] flex-col gap-4">
-          <SiteLogo name={platformName} />
+          <SiteLogo settings={settings} />
           <p className="text-[15px] leading-relaxed text-[#55585E]">
             Sistem untuk menjalankan klub &amp; kelas latihan — pendaftaran, paket sesi, pembayaran, dan absensi dalam satu tempat.
           </p>

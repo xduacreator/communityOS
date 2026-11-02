@@ -24,7 +24,7 @@ export class SystemSettingService {
   constructor(private prisma: PrismaService) {}
 
   private isPublicKey(key: string) {
-    return ['landing.', 'platform.', 'seo.'].some((prefix) =>
+    return ['landing.', 'home.', 'platform.', 'seo.'].some((prefix) =>
       key.startsWith(prefix),
     );
   }
