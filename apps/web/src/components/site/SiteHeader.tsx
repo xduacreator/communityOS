@@ -18,7 +18,7 @@ export function SiteLogo({ settings }: { settings: Record<string, string> }) {
     return (
       <Link href="/" className="flex items-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logo} alt={name} className="h-10 w-auto max-w-[200px] object-contain" />
+        <img src={logo} alt={name} className="h-11 w-auto max-w-[180px] object-contain object-left sm:max-w-[240px] md:h-12 md:max-w-[280px]" />
       </Link>
     );
   }

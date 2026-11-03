@@ -1,4 +1,4 @@
-import { ClubPage, clubPageMetadata } from "../../../components/club/ClubPage";
+import { ClubPage, clubPageMetadata } from "../../../../components/club/ClubPage";
 
 export const generateMetadata = clubPageMetadata((l) => l.contact);
 

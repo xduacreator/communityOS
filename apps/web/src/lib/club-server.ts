@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { headers } from "next/headers";
 import type { Community } from "../types";
 import { getApiUrl } from "./api";
@@ -16,7 +17,8 @@ function apiBases(): string[] {
   );
 }
 
-export async function getCommunity(slug: string): Promise<Community | null> {
+// Cached per request: the club layout, metadata and page all ask for the same club
+export const getCommunity = cache(async function getCommunity(slug: string): Promise<Community | null> {
   for (const baseUrl of apiBases()) {
     try {
       const clean = baseUrl.replace(/\/$/, "");
@@ -29,7 +31,7 @@ export async function getCommunity(slug: string): Promise<Community | null> {
     }
   }
   return null;
-}
+});
 
 /**
  * Path prefix for club links. On latih.club the club lives at /{slug};
