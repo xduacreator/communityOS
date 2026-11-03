@@ -48,7 +48,7 @@ export function ClubLogo({ community, size = 36 }: { community: Community; size?
 
 const PUBLIC_TABS = [
   { key: "home", path: "", icon: Home, label: (c: ClubCtx) => c.labels.home },
-  { key: "packages", path: "/paket", icon: Ticket, label: () => "Paket" },
+  { key: "packages", path: "/paket", icon: Ticket, label: (c: ClubCtx) => c.labels.packages },
   { key: "events", path: "/event", icon: CalendarDays, label: (c: ClubCtx) => c.labels.events },
   { key: "gallery", path: "/galeri", icon: Images, label: (c: ClubCtx) => c.labels.gallery },
   { key: "more", path: "/lainnya", icon: Menu, label: () => "Lainnya" },
@@ -104,19 +104,36 @@ export function DesktopHeader({ ctx, view }: { ctx: ClubCtx; view: ClubView }) {
     ? MEMBER_TABS.map((t) => ({ key: t.key, path: t.path, label: t.label === "Paket" ? "Paket saya" : t.label }))
     : [
         { key: "home", path: "", label: ctx.labels.home },
-        { key: "packages", path: "/paket", label: "Paket" },
+        { key: "packages", path: "/paket", label: ctx.labels.packages },
         { key: "events", path: "/event", label: ctx.labels.events },
         { key: "about", path: "/tentang", label: ctx.labels.about },
         { key: "gallery", path: "/galeri", label: ctx.labels.gallery },
         { key: "contact", path: "/kontak", label: ctx.labels.contact },
       ];
   return (
-    <header className="mx-auto hidden max-w-[1240px] items-center justify-between gap-4 px-8 py-5 md:flex">
-      <Link href={clubHref(ctx.base, member ? "/member" : "")} className="flex min-w-0 items-center gap-2.5">
-        <ClubLogo community={ctx.community} size={42} />
-        <b className="truncate text-[21px] font-extrabold tracking-[-0.02em]">{ctx.community.name}</b>
-      </Link>
-      <nav aria-label={member ? "Menu member" : "Menu klub"} className="flex flex-wrap gap-0.5 text-[15px] font-semibold">
+    <header className="mx-auto hidden max-w-[1240px] flex-col gap-3 px-8 pb-2 pt-5 md:flex">
+      <div className="flex items-center justify-between gap-6">
+        <Link href={clubHref(ctx.base, member ? "/member" : "")} className="flex min-w-0 items-center gap-3">
+          <ClubLogo community={ctx.community} size={44} />
+          <b className="truncate text-[21px] font-extrabold tracking-[-0.02em]">{ctx.community.name}</b>
+        </Link>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {member ? (
+            <Link href={clubHref(ctx.base, "/member/akun")} className="flex min-h-12 items-center gap-2.5">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-extrabold shadow-[inset_0_0_0_1px_#E6E6E0]">
+                {initials(ctx.currentUser?.name)}
+              </span>
+              <b className="max-w-[180px] truncate text-[15px]">{ctx.currentUser?.name}</b>
+            </Link>
+          ) : (
+            <HeaderActions ctx={ctx} />
+          )}
+        </div>
+      </div>
+      <nav
+        aria-label={member ? "Menu member" : "Menu klub"}
+        className="-mx-1 flex gap-1 overflow-x-auto whitespace-nowrap px-1 py-1 text-[15px] font-semibold"
+      >
         {links.map((l) => {
           const on = l.key === view;
           return (
@@ -124,25 +141,13 @@ export function DesktopHeader({ ctx, view }: { ctx: ClubCtx; view: ClubView }) {
               key={l.key}
               href={clubHref(ctx.base, l.path)}
               aria-current={on ? "page" : undefined}
-              className={`rounded-full px-3.5 py-2.5 transition hover:bg-white ${on ? "bg-white shadow-[0_1px_0_#E6E6E0]" : ""}`}
+              className={`shrink-0 rounded-full px-4 py-2.5 transition ${on ? "bg-[#111214] text-white" : "hover:bg-white"}`}
             >
               {l.label}
             </Link>
           );
         })}
       </nav>
-      <div className="flex shrink-0 items-center gap-1.5">
-        {member ? (
-          <Link href={clubHref(ctx.base, "/member/akun")} className="flex min-h-12 items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-extrabold shadow-[inset_0_0_0_1px_#E6E6E0]">
-              {initials(ctx.currentUser?.name)}
-            </span>
-            <b className="max-w-[160px] truncate text-[15px]">{ctx.currentUser?.name}</b>
-          </Link>
-        ) : (
-          <HeaderActions ctx={ctx} />
-        )}
-      </div>
     </header>
   );
 }
@@ -163,7 +168,7 @@ function HeaderActions({ ctx }: { ctx: ClubCtx }) {
       <Link href={clubHref(ctx.base, "/login")} className="inline-flex min-h-[46px] items-center px-4 text-[15px] font-bold">
         Masuk
       </Link>
-      {ctx.joinButton(`${btnDark} min-h-[46px] pl-5 pr-2`, ctx.labels.join, <ArrowBubble />)}
+      {ctx.joinButton(`${btnDark} min-h-[46px] max-w-[300px] whitespace-nowrap pl-5 pr-2`, ctx.labels.join, <ArrowBubble />)}
     </>
   );
 }

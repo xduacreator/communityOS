@@ -110,15 +110,29 @@ export function whatsappLink(number: string | null | undefined, text?: string): 
 
 // ---------- Club content helpers ----------
 
+// Labels typed in ALL CAPS in the CMS ("TENTANG KAMI") read as shouting next to
+// the rest of the page; show them in title case instead.
+function niceLabel(value: string | null | undefined, fallback: string): string {
+  const v = String(value || "").trim().replace(/\s+/g, " ");
+  if (!v) return fallback;
+  if (v.length > 3 && v === v.toUpperCase() && /[A-Z]/.test(v)) {
+    return v.toLowerCase().replace(/(^|[\s\-/(&])(\p{L})/gu, (_m, sep: string, ch: string) => sep + ch.toUpperCase());
+  }
+  return v;
+}
+
 export function clubLabels(c: Community) {
+  // The CMS "Events Menu" field has always labelled the session-package menu
+  const packages = niceLabel(c.menuEventsLabel, "Paket");
   return {
-    home: c.menuHomeLabel || "Beranda",
-    packages: c.packagesHeadingLabel || "Paket",
-    events: c.menuEventsLabel || "Event",
-    about: c.menuAboutLabel || "Tentang",
-    gallery: c.menuGalleryLabel || "Galeri",
-    contact: c.menuContactLabel || "Kontak",
-    join: c.joinCtaLabel || "Gabung Klub",
+    home: niceLabel(c.menuHomeLabel, "Beranda"),
+    packages,
+    packagesHeading: niceLabel(c.packagesHeadingLabel, packages),
+    events: "Event",
+    about: niceLabel(c.menuAboutLabel, "Tentang"),
+    gallery: niceLabel(c.menuGalleryLabel, "Galeri"),
+    contact: niceLabel(c.menuContactLabel, "Kontak"),
+    join: niceLabel(c.joinCtaLabel, "Gabung Klub"),
   };
 }
 
