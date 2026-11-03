@@ -19,10 +19,10 @@ export default function ExtraPaxFields({
   note,
 }: ExtraPaxFieldsProps) {
   return (
-    <div className="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl mt-2 space-y-2">
+    <div className="p-3.5 bg-white border border-[#E6E6E0] rounded-2xl mt-2 space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-          <Users className="w-3.5 h-3.5 text-indigo-600" />
+        <label className="text-[13px] font-bold text-[#3A3C41] flex items-center gap-1.5">
+          <Users className="w-3.5 h-3.5 text-[var(--club-text)]" />
           Peserta ({1 + names.length} pax)
         </label>
         <button
@@ -30,23 +30,23 @@ export default function ExtraPaxFields({
           aria-label="Tambah peserta"
           disabled={names.length >= MAX_EXTRA_PAX}
           onClick={() => onNamesChange([...names, ""])}
-          className="w-8 h-8 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-8 h-8 flex items-center justify-center bg-[#111214] hover:bg-[#2a2c30] text-white rounded-full transition-all disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Plus className="w-4 h-4" />
         </button>
       </div>
-      <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs">
-        <span className="font-bold text-slate-400 w-4">1.</span>
-        <span className="flex-1 font-semibold text-slate-800 dark:text-slate-200">
+      <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E6E6E0] rounded-xl text-sm">
+        <span className="font-bold text-[#6B6E74] w-4">1.</span>
+        <span className="flex-1 font-semibold text-[#111214]">
           {leadName}
         </span>
-        <span className="text-[10px] font-bold text-slate-400 uppercase">
+        <span className="text-xs font-bold text-[#6B6E74]">
           {leadLabel}
         </span>
       </div>
       {names.map((name, index) => (
         <div key={index} className="flex items-center gap-2">
-          <span className="font-bold text-slate-400 text-xs w-4 ml-3">
+          <span className="font-bold text-[#6B6E74] text-sm w-4 ml-3">
             {index + 2}.
           </span>
           <input
@@ -60,19 +60,19 @@ export default function ExtraPaxFields({
               )
             }
             placeholder={`Nama peserta ${index + 2}`}
-            className="flex-1 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-indigo-500"
+            className="flex-1 px-3 py-2 bg-white border border-[#E6E6E0] rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[var(--club)]"
           />
           <button
             type="button"
             aria-label={`Hapus peserta ${index + 2}`}
             onClick={() => onNamesChange(names.filter((_, i) => i !== index))}
-            className="p-1.5 text-slate-400 hover:text-red-500 rounded-full transition-colors"
+            className="p-1.5 text-[#6B6E74] hover:text-red-500 rounded-full transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
       ))}
-      <p className="text-[10px] text-slate-500 font-semibold">{note}</p>
+      <p className="text-xs text-[#55585E] font-semibold">{note}</p>
     </div>
   );
 }

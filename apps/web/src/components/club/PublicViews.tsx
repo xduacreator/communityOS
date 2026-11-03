@@ -69,16 +69,20 @@ function JoinCta({ ctx, className }: { ctx: ClubCtx; className: string }) {
 function MobileJoinBar({ ctx }: { ctx: ClubCtx }) {
   if (ctx.isLoggedIn && ctx.status) return null;
   const prices = ctx.packages.map((p) => p.memberPrice || 0).filter((v) => v > 0);
+  // A long CTA label from the CMS gets the whole bar
+  const wide = ctx.labels.join.length > 14;
   return (
-    <div className="fixed inset-x-3 bottom-[86px] z-[80] flex items-center justify-between gap-2.5 rounded-full bg-[#111214] py-[7px] pl-5 pr-[7px] text-white shadow-[0_20px_40px_-18px_rgba(17,18,20,0.6)] md:hidden">
-      <span className="flex min-w-0 flex-col">
-        <b className="truncate text-[15px]">{prices.length ? `Mulai ${rupiah(Math.min(...prices))}` : ctx.community.name}</b>
-        <span className="truncate text-xs text-[#BEC0C5]">
-          {ctx.community.registrationMode === "PAID" ? "gabung dengan membership" : "daftar member gratis"}
+    <div className="fixed inset-x-3 bottom-[86px] z-[80] flex items-center justify-between gap-2.5 rounded-full bg-[#111214] p-[7px] text-white shadow-[0_20px_40px_-18px_rgba(17,18,20,0.6)] md:hidden">
+      {!wide && (
+        <span className="flex min-w-0 flex-col pl-3.5">
+          <b className="truncate text-[15px]">{prices.length ? `Mulai ${rupiah(Math.min(...prices))}` : ctx.community.name}</b>
+          <span className="truncate text-xs text-[#BEC0C5]">
+            {ctx.community.registrationMode === "PAID" ? "gabung dengan membership" : "daftar member gratis"}
+          </span>
         </span>
-      </span>
+      )}
       {ctx.joinButton(
-        "inline-flex min-h-12 shrink-0 items-center rounded-full bg-[var(--club)] px-5 text-[15px] font-extrabold text-[var(--club-on)]",
+        `inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--club)] px-5 text-[15px] font-extrabold text-[var(--club-on)] ${wide ? "w-full" : "shrink-0"}`,
         ctx.labels.join,
         <span />,
       )}
@@ -125,7 +129,7 @@ export function HomeView({ ctx }: { ctx: ClubCtx }) {
               {c.registrationMode === "PAID" ? "Pendaftaran via membership" : "Pendaftaran dibuka"}
             </span>
           )}
-          <h1 className="text-[50px] font-black leading-[0.95] tracking-[-0.045em] [overflow-wrap:anywhere]">{c.name}</h1>
+          <h1 className={`font-black leading-[0.95] tracking-[-0.045em] [overflow-wrap:anywhere] ${c.name.length > 22 ? "text-[38px]" : c.name.length > 14 ? "text-[44px]" : "text-[50px]"}`}>{c.name}</h1>
           {c.tagline && <p className="text-[19px] font-bold leading-snug">{c.tagline}</p>}
           {c.shortDescription && <p className="text-[15px] leading-normal text-[#E8E9EC]">{c.shortDescription}</p>}
         </div>
@@ -143,7 +147,7 @@ export function HomeView({ ctx }: { ctx: ClubCtx }) {
               {c.registrationMode === "PAID" ? "Pendaftaran via membership" : "Pendaftaran member dibuka"}
             </span>
           )}
-          <h1 className="text-[64px] font-black leading-[0.92] tracking-[-0.05em] [overflow-wrap:anywhere] lg:text-[88px]">
+          <h1 className={`font-black leading-[0.92] tracking-[-0.05em] [overflow-wrap:anywhere] ${heroSize(c.name)}`}>
             {c.name}
             <span className="text-[var(--club)]">.</span>
           </h1>
@@ -174,7 +178,7 @@ export function HomeView({ ctx }: { ctx: ClubCtx }) {
       {/* Packages + next event */}
       <section className={`${page} grid grid-cols-1 gap-10 pt-10 md:grid-cols-12 md:gap-5 md:pt-24`}>
         <div className={`flex flex-col gap-3.5 ${nextEvent ? "md:col-span-8" : "md:col-span-12"}`}>
-          <SectionHead title="Paket" href={clubHref(ctx.base, "/paket")} linkLabel={ctx.packages.length > 3 ? `Semua ${ctx.packages.length} paket` : "Semua paket"} />
+          <SectionHead title={ctx.labels.packagesHeading} href={clubHref(ctx.base, "/paket")} linkLabel={ctx.packages.length > 3 ? `Semua ${ctx.packages.length} paket` : "Semua paket"} />
           {ctx.loadingPackages && cheapest.length === 0 ? (
             <Skeleton rows={1} />
           ) : cheapest.length === 0 ? (
@@ -238,6 +242,12 @@ export function HomeView({ ctx }: { ctx: ClubCtx }) {
   );
 }
 
+function heroSize(name: string): string {
+  if (name.length > 24) return "text-[52px] lg:text-[60px]";
+  if (name.length > 14) return "text-[56px] lg:text-[72px]";
+  return "text-[64px] lg:text-[88px]";
+}
+
 function DateBlock({ date, accent = false }: { date: string; accent?: boolean }) {
   const d = new Date(date);
   return (
@@ -270,7 +280,7 @@ export function PackagesView({ ctx }: { ctx: ClubCtx }) {
       <section className={`${page} flex flex-col gap-4 pt-5 md:gap-7 md:pt-12`}>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-col gap-3">
-            <h1 className={pageTitle}>{ctx.labels.packages}</h1>
+            <h1 className={pageTitle}>{ctx.labels.packagesHeading}</h1>
             <p className="max-w-[560px] text-base leading-relaxed text-[#55585E] md:text-[19px]">
               Harga per orang. Sesi dipakai kapan saja selama masa berlaku, dan bisa sekalian untuk hingga 5 teman.
             </p>
