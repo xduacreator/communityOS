@@ -32,6 +32,7 @@ import { outfit } from "../lib/fonts";
 import { clientClubBase, clubLabels, clubThemeStyle, visiblePackages } from "../lib/club";
 import type { ActiveWalletView, ClubCtx, ClubView, HistoryItem } from "./club/types";
 import { BottomTabs, ClubFooter, DesktopHeader } from "./club/ClubUI";
+import { ClubLoader } from "./club/ClubLoader";
 import {
   AboutView,
   ContactView,
@@ -91,6 +92,7 @@ export default function CommunityMicrosite({
   const [activeWallets, setActiveWallets] = useState<ActiveWalletView[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loadingDashboard, setLoadingDashboard] = useState(false);
+  const [dashboardLoaded, setDashboardLoaded] = useState(false);
   const [, setErrorDashboard] = useState("");
   const [userMemberships, setUserMemberships] = useState<
     UserMembershipWithMembership[]
@@ -325,6 +327,7 @@ export default function CommunityMicrosite({
       );
     } finally {
       setLoadingDashboard(false);
+      setDashboardLoaded(true);
     }
   };
 
@@ -385,6 +388,28 @@ export default function CommunityMicrosite({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, Boolean(status), view]);
+
+  // Club loader: covers the page until the data it opens with has arrived
+  const needsDashboard = isLoggedIn && !!status && (isMemberView || view === "packages" || view === "home");
+  const firstDataReady =
+    authChecked &&
+    !loadingSessions &&
+    !loadingEvents &&
+    !loadingGallery &&
+    (!needsDashboard || (dashboardLoaded && !loadingDashboard));
+  const [loaderPhase, setLoaderPhase] = useState<"on" | "leaving" | "off">("on");
+  useEffect(() => {
+    if (loaderPhase !== "on") return;
+    // Never keep the page hidden for long, even if a request hangs
+    const giveUp = setTimeout(() => setLoaderPhase("leaving"), 6000);
+    if (firstDataReady) setLoaderPhase("leaving");
+    return () => clearTimeout(giveUp);
+  }, [firstDataReady, loaderPhase]);
+  useEffect(() => {
+    if (loaderPhase !== "leaving") return;
+    const t = setTimeout(() => setLoaderPhase("off"), 300);
+    return () => clearTimeout(t);
+  }, [loaderPhase]);
 
   // After a purchase or registration, show the member's packages
   const handleTabChange = (tab: string) => {
@@ -751,6 +776,12 @@ export default function CommunityMicrosite({
         <ClubFooter ctx={ctx} />
       </div>
       <BottomTabs ctx={ctx} view={view} />
+      {loaderPhase !== "off" && (
+        <ClubLoader
+          brand={{ name: community.name, logo: community.logo, theme: community.theme }}
+          leaving={loaderPhase === "leaving"}
+        />
+      )}
       <div>
         {/* Package Details Modal */}
         {selectedPackage && (
