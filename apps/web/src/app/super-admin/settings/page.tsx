@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import ConfirmModal from '../../../components/ui/ConfirmModal';
 import imageCompression from 'browser-image-compression';
 import { HOME_DEFAULTS, HOME_FIELD_GROUPS } from '../../../lib/home-content';
+import { trimImageMargins } from '../../../lib/trim-image';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -55,7 +56,9 @@ export default function SettingsPage() {
     try {
       setSaving(true);
       const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
-      const compressedFile = await imageCompression(file, options);
+      // Logos are shown at a fixed height; trim empty margins so the artwork fills it
+      const source = key === 'platform.logo' ? await trimImageMargins(file) : file;
+      const compressedFile = await imageCompression(source, options);
       const formData = new FormData();
       formData.append('file', compressedFile);
       const res = await fetch(getApiUrl() + '/upload', {
