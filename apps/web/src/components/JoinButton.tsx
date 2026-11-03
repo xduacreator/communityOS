@@ -3,6 +3,7 @@ import { getApiUrl } from "../lib/api";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { clientClubBase } from "../lib/club";
 import { getAuthHeaders } from "../lib/auth";
 import { LogIn, X } from "lucide-react";
 
@@ -25,6 +26,7 @@ interface Membership {
 export default function JoinButton({
   communityId,
   slug,
+  base,
   registrationFields,
   registrationMode,
   memberships,
@@ -34,6 +36,7 @@ export default function JoinButton({
 }: {
   communityId: string;
   slug: string;
+  base?: string;
   registrationFields?: string | null;
   registrationMode?: string | null;
   memberships?: Membership[];
@@ -48,6 +51,7 @@ export default function JoinButton({
   const [formAnswers, setFormAnswers] = useState<Record<string, string>>({});
   const [selectedMembershipId, setSelectedMembershipId] = useState<string>("");
   const router = useRouter();
+  const clubBase = base ?? clientClubBase(slug);
 
   useEffect(() => {
     if (registrationFields) {
@@ -71,7 +75,7 @@ export default function JoinButton({
     const headers = getAuthHeaders();
     const authResponse = await fetch(getApiUrl() + "/auth/me", { headers });
     if (!authResponse.ok) {
-      router.push(`/${slug}/login`);
+      router.push(`${clubBase}/login`);
       return;
     }
 
@@ -131,7 +135,7 @@ export default function JoinButton({
       }
 
       setShowModal(false);
-      router.push(`/${slug}?tab=dashboard`);
+      router.push(`${clubBase}/member`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {

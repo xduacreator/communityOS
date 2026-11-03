@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Community } from "../../../types";
 import { clearLegacyToken } from "../../../lib/auth";
+import { clientClubBase } from "../../../lib/club";
 export default function MemberLogin({
   params,
 }: {
@@ -86,7 +87,7 @@ export default function MemberLogin({
         }
       }
 
-      router.push(`/${resolvedParams.slug}?tab=dashboard`);
+      router.push(`${clientClubBase(resolvedParams.slug)}/member`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
