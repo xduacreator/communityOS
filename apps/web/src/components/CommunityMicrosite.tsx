@@ -771,8 +771,8 @@ export default function CommunityMicrosite({
       style={clubThemeStyle(community.theme)}
     >
       <DesktopHeader ctx={ctx} view={view} />
-      <main className={view === "home" ? "pb-[150px] md:pb-0" : "pb-[110px] md:pb-0"}>{content}</main>
-      <div className={view === "home" ? "-mt-[150px] pb-[150px] md:mt-0 md:pb-0" : "-mt-[110px] pb-[110px] md:mt-0 md:pb-0"}>
+      <main className="pb-[110px] md:pb-0">{content}</main>
+      <div className="-mt-[110px] pb-[110px] md:mt-0 md:pb-0">
         <ClubFooter ctx={ctx} />
       </div>
       <BottomTabs ctx={ctx} view={view} />
