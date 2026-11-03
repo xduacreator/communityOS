@@ -193,6 +193,7 @@ export interface Membership {
   name: string;
   durationDays: number;
   price: number;
+  benefit?: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;

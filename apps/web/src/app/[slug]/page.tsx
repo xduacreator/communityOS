@@ -1,42 +1,11 @@
 import { notFound } from 'next/navigation';
 import CommunityMicrosite from '../../components/CommunityMicrosite';
+import { clubMetadata, getClubBase, getCommunity } from '../../lib/club-server';
 import SeoLandingPage from '../../components/seo/SeoLandingPage';
 import CustomPageView from '../../components/seo/CustomPageView';
 import { getApiUrl } from '../../lib/api';
 
-async function getCommunityData(slug: string) {
-  const candidateUrls = [
-    process.env.INTERNAL_API_URL,
-    'http://api:3001/api',
-    getApiUrl(),
-    'http://localhost:3001/api',
-    'http://127.0.0.1:3001/api',
-  ].filter(Boolean) as string[];
-
-  const uniqueUrls = Array.from(new Set(candidateUrls));
-
-  for (const baseUrl of uniqueUrls) {
-    try {
-      const cleanBase = baseUrl.replace(/\/$/, '');
-      const url = cleanBase.endsWith('/api')
-        ? `${cleanBase}/communities/${slug}`
-        : `${cleanBase}/api/communities/${slug}`;
-
-      const res = await fetch(url, {
-        cache: 'no-store',
-        signal: AbortSignal.timeout(3000),
-      });
-
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch {
-      // Try next endpoint candidate
-    }
-  }
-
-  return null;
-}
+const getCommunityData = getCommunity;
 
 async function getLandingPageData(slug: string) {
   const candidateUrls = [
@@ -110,16 +79,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // First check if it's a community
   const community = await getCommunityData(resolvedParams.slug);
   if (community) {
-    return {
-      title: community.seoTitle || community.name,
-      description: community.seoDescription || community.about || `Welcome to ${community.name}`,
-      keywords: community.seoKeywords || 'community, platform, groups',
-      openGraph: {
-        title: community.seoTitle || community.name,
-        description: community.seoDescription || community.about || `Welcome to ${community.name}`,
-        images: community.heroBanner || community.logo ? [community.heroBanner || community.logo] : [],
-      },
-    };
+    return clubMetadata(community);
   }
 
   // If not a community, check if it's an SEO Landing Page
@@ -156,7 +116,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   // Attempt to load Community
   const community = await getCommunityData(resolvedParams.slug);
   if (community) {
-    return <CommunityMicrosite community={community} slug={resolvedParams.slug} />;
+    const base = await getClubBase(resolvedParams.slug);
+    return <CommunityMicrosite community={community} slug={resolvedParams.slug} view="home" base={base} />;
   }
 
   // Attempt to load SEO Landing Page

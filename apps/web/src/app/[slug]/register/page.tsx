@@ -155,7 +155,7 @@ export default function MemberRegister({
       }
 
       // 3. Redirect them back to the member dashboard
-      router.push(`/${resolvedParams.slug}/dashboard`);
+      router.push(`/${resolvedParams.slug}/member`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
