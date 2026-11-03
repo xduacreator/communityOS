@@ -24,7 +24,7 @@ export const HOME_DEFAULTS = {
   'home.tile.packages.title': 'Jual paket latihanmu',
   'home.tile.packages.desc': 'Harga umum, private, khusus member — kuota penuh otomatis waiting list.',
   'home.tile.member.title': 'Check-in sendiri',
-  'home.tile.member.desc': 'Sisa sesi, masa berlaku, dan riwayat hadir di My Hub.',
+  'home.tile.member.desc': 'Sisa sesi, masa berlaku, dan riwayat hadir di halaman member.',
 
   'home.clubs.headline': 'Klub yang sudah jalan',
   'home.blog.headline': 'Tips seputar klub & latihan',
