@@ -754,8 +754,8 @@ export default function CommunityMicrosite({
       <div>
         {/* Package Details Modal */}
         {selectedPackage && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <div className="bg-white dark:bg-slate-950 rounded-[2rem] shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 overflow-hidden relative">
+          <div className="fixed inset-0 z-[110] flex items-end justify-center bg-[#111214]/55 md:items-center md:p-4">
+            <div className="bg-[#F6F6F2] rounded-t-[28px] md:rounded-[28px] max-w-lg w-full max-h-[92vh] flex flex-col overflow-hidden relative">
               {/* Modal Header with Background Image */}
               <div className="relative shrink-0 flex flex-col justify-end p-6 md:p-8 pt-10 md:pt-12 min-h-[160px] md:min-h-[200px]">
                 {selectedPackage.image ? (
@@ -765,79 +765,79 @@ export default function CommunityMicrosite({
                       alt={selectedPackage.name}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-slate-950 dark:via-slate-950/80"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent"></div>
                   </div>
                 ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-900 dark:to-slate-800"></div>
+                  <div className="absolute inset-0 bg-[var(--club-soft)]"></div>
                 )}
 
                 <button
                   onClick={() => setSelectedPackage(null)}
-                  className="absolute top-4 right-4 p-2 bg-white dark:bg-slate-950/70 hover:bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 rounded-full backdrop-blur-md transition-colors shadow-sm z-10"
+                  className="absolute top-4 right-4 p-2 bg-white hover:bg-white text-[#111214] rounded-full transition-colors z-10"
                 >
                   <X className="w-6 h-6" />
                 </button>
 
                 <div className="relative z-10">
                   <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <div className="inline-block bg-primary/20/80 backdrop-blur-md text-primary text-xs font-black px-3 py-1.5 rounded-xl uppercase tracking-wider border border-primary/30/50">
+                    <div className="inline-block bg-primary/20/80 text-[var(--club-text)] text-sm font-extrabold px-3 py-1.5 rounded-xl border border-primary/30/50">
                       {selectedPackage.category?.activity?.name ||
                         selectedPackage.activity?.name ||
                         "Activity"}{" "}
                       • {selectedPackage.category?.name || "General"}
                     </div>
                     {selectedPackage.accessRule === "MEMBER_ONLY" && (
-                      <div className="inline-block bg-amber-100/90 backdrop-blur-md text-amber-800 text-xs font-black px-3 py-1.5 rounded-xl uppercase tracking-wider border border-amber-200/50">
+                      <div className="inline-block bg-amber-100/90 text-amber-800 text-sm font-extrabold px-3 py-1.5 rounded-xl border border-amber-200/50">
                         Member Only
                       </div>
                     )}
                     {selectedPackage.accessRule === "PAID_MEMBERSHIP_ONLY" && (
-                      <div className="inline-block bg-rose-100/90 backdrop-blur-md text-rose-800 text-xs font-black px-3 py-1.5 rounded-xl uppercase tracking-wider border border-rose-200/50">
+                      <div className="inline-block bg-rose-100/90 text-rose-800 text-sm font-extrabold px-3 py-1.5 rounded-xl border border-rose-200/50">
                         Paid Member Only
                       </div>
                     )}
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 mb-1 leading-tight">
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-[#111214] mb-1 leading-tight">
                     {selectedPackage.name}
                   </h2>
                   {selectedPackage.memberPrice && selectedPackage.vipPrice ? (
                     <>
-                      <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 flex items-end gap-2">
+                      <div className="text-2xl md:text-3xl font-extrabold text-[#111214] flex items-end gap-2">
                         Rp{" "}
                         {(isPrivateSession
                           ? selectedPackage.vipPrice
                           : selectedPackage.memberPrice
                         ).toLocaleString("id-ID")}
                       </div>
-                      <div className="text-sm font-bold text-amber-600 mt-1">
+                      <div className="text-[15px] font-bold text-amber-600 mt-1">
                         Private: Rp{" "}
                         {selectedPackage.vipPrice.toLocaleString("id-ID")}
                       </div>
                     </>
                   ) : selectedPackage.vipPrice &&
                     !selectedPackage.memberPrice ? (
-                    <div className="text-2xl md:text-3xl font-black text-amber-500 flex items-end gap-2">
+                    <div className="text-2xl md:text-3xl font-extrabold text-amber-500 flex items-end gap-2">
                       Private: Rp{" "}
                       {selectedPackage.vipPrice.toLocaleString("id-ID")}
                     </div>
                   ) : selectedPackage.memberPrice &&
                     !selectedPackage.vipPrice ? (
-                    <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 flex items-end gap-2">
+                    <div className="text-2xl md:text-3xl font-extrabold text-[#111214] flex items-end gap-2">
                       Rp {selectedPackage.memberPrice.toLocaleString("id-ID")}
                     </div>
                   ) : (
-                    <div className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-50 flex items-end gap-2">
+                    <div className="text-2xl md:text-3xl font-extrabold text-[#111214] flex items-end gap-2">
                       Gratis
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar flex flex-col py-2">
+              <div className="flex-1 overflow-y-auto min-h-0 flex flex-col py-2">
                 {!!selectedPackage.memberPrice &&
                   !!selectedPackage.vipPrice && (
                     <div className="px-6 md:px-8 pt-4 pb-2 shrink-0">
-                      <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
+                      <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 rounded-xl cursor-pointer">
                         <input
                           type="checkbox"
                           checked={isPrivateSession}
@@ -847,10 +847,10 @@ export default function CommunityMicrosite({
                           className="w-5 h-5 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
                         />
                         <div>
-                          <div className="font-bold text-amber-800 dark:text-amber-400 text-sm">
+                          <div className="font-bold text-amber-800 text-[15px]">
                             Gunakan Harga Private
                           </div>
-                          <div className="text-xs text-amber-700 dark:text-amber-500/80">
+                          <div className="text-sm text-amber-700">
                             Saya ingin mengambil sesi secara private
                           </div>
                         </div>
@@ -860,21 +860,21 @@ export default function CommunityMicrosite({
 
                 <div className="px-6 md:px-8 pt-4 shrink-0">
                   <div className="grid grid-cols-2 gap-3 md:gap-4 mb-4">
-                    <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 md:p-4 flex flex-col justify-center items-center text-center border border-slate-100 dark:border-slate-800">
+                    <div className="bg-white rounded-2xl p-3 md:p-4 flex flex-col justify-center items-center text-center border border-[#E6E6E0]">
                       <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-emerald-500 mb-1.5 md:mb-2" />
-                      <span className="text-lg md:text-xl font-bold text-slate-900 dark:text-slate-50">
+                      <span className="text-lg md:text-xl font-bold text-[#111214]">
                         {selectedPackage.totalSession}
                       </span>
-                      <span className="text-[10px] md:text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      <span className="text-xs md:text-xs font-semibold text-[#55585E]">
                         Sesi
                       </span>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 md:p-4 flex flex-col justify-center items-center text-center border border-slate-100 dark:border-slate-800">
+                    <div className="bg-white rounded-2xl p-3 md:p-4 flex flex-col justify-center items-center text-center border border-[#E6E6E0]">
                       <Clock className="w-5 h-5 md:w-6 md:h-6 text-amber-500 mb-1.5 md:mb-2" />
-                      <span className="text-lg md:text-xl font-bold text-slate-900 dark:text-slate-50">
+                      <span className="text-lg md:text-xl font-bold text-[#111214]">
                         {selectedPackage.validDays}
                       </span>
-                      <span className="text-[10px] md:text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      <span className="text-xs md:text-xs font-semibold text-[#55585E]">
                         Hari Aktif
                       </span>
                     </div>
@@ -882,16 +882,16 @@ export default function CommunityMicrosite({
                 </div>
 
                 <div className="px-6 md:px-8 mb-4 mt-2 shrink-0">
-                  <h3 className="text-xs md:text-sm font-bold text-slate-900 dark:text-slate-50 uppercase tracking-wider mb-2 md:mb-3">
+                  <h3 className="text-sm md:text-sm font-bold text-[#111214] mb-2 md:mb-3">
                     Deskripsi Paket
                   </h3>
-                  <div className="text-slate-600 dark:text-slate-400 text-xs md:text-sm">
+                  <div className="text-[#3A3C41] text-sm md:text-sm">
                     {selectedPackage.description ? (
                       <p className="whitespace-pre-wrap leading-relaxed break-words">
                         {selectedPackage.description}
                       </p>
                     ) : (
-                      <p className="italic text-slate-400">
+                      <p className="italic text-[#6B6E74]">
                         Tidak ada detail tambahan untuk paket ini.
                       </p>
                     )}
@@ -899,14 +899,14 @@ export default function CommunityMicrosite({
                 </div>
               </div>
 
-              <div className="p-6 md:p-8 pt-4 md:pt-4 mt-auto shrink-0 border-t border-slate-50 dark:border-slate-800 bg-white dark:bg-slate-950 z-10">
+              <div className="p-6 md:p-8 pt-4 md:pt-4 mt-auto shrink-0 border-t border-[#E6E6E0] bg-white z-10">
                 <button
                   onClick={() => {
                     handlePurchase(selectedPackage.id);
                     setSelectedPackage(null);
                   }}
                   disabled={purchasingMap[selectedPackage.id]}
-                  className="w-full py-3 md:py-4 bg-primary text-white font-bold rounded-2xl hover:opacity-90 transition-colors shadow-lg shadow-primary/30 text-sm md:text-base mt-2 md:mt-4 disabled:opacity-50"
+                  className="w-full py-3 md:py-4 bg-[var(--club)] text-[var(--club-on)] font-bold rounded-2xl hover:opacity-90 transition-colors text-[15px] md:text-base mt-2 md:mt-4 disabled:opacity-50"
                 >
                   {purchasingMap[selectedPackage.id]
                     ? "Processing..."
@@ -918,21 +918,21 @@ export default function CommunityMicrosite({
         )}
         {/* Membership Renewal Request Modal */}
         {showRenewalModal && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-950 rounded-[2rem] shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
-              <div className="px-6 py-5 shrink-0 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div className="fixed inset-0 z-[110] flex items-end justify-center bg-[#111214]/55 md:items-center md:p-4">
+            <div className="bg-[#F6F6F2] rounded-t-[28px] md:rounded-[28px] max-w-md w-full overflow-hidden flex flex-col max-h-[92vh]">
+              <div className="px-6 py-5 shrink-0 border-b border-[#E6E6E0] flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
+                  <h3 className="text-lg font-bold text-[#111214]">
                     Perpanjang Membership
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-sm text-[#55585E] mt-1">
                     Pilih paket membership dan unggah bukti transfer.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowRenewalModal(false)}
-                  className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-700 dark:text-slate-300 transition-colors"
+                  className="p-1.5 hover:bg-[#F1F1EC] rounded-full text-[#6B6E74] hover:text-[#111214] transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -988,19 +988,19 @@ export default function CommunityMicrosite({
                 }}
                 className="flex flex-col flex-1 min-h-0"
               >
-                <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+                <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="block text-sm font-bold text-[#3A3C41] mb-2">
                       Pilih Paket Membership
                     </label>
                     <div className="space-y-2">
                       {(community.memberships || []).map((m: Membership) => (
                         <label
                           key={m.id}
-                          className={`flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900 border rounded-xl cursor-pointer transition-all hover:border-primary/70 ${
+                          className={`flex items-center justify-between p-3.5 bg-white border rounded-xl cursor-pointer transition-all hover:border-primary/70 ${
                             selectedRenewalTierId === m.id
-                              ? "border-primary ring-2 ring-primary/10"
-                              : "border-slate-200 dark:border-slate-700"
+                              ? "border-[var(--club)] ring-2 ring-primary/10"
+                              : "border-[#E6E6E0]"
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
@@ -1009,18 +1009,18 @@ export default function CommunityMicrosite({
                               name="renewalTier"
                               checked={selectedRenewalTierId === m.id}
                               onChange={() => setSelectedRenewalTierId(m.id)}
-                              className="w-4 h-4 text-primary focus:ring-primary border-slate-300 dark:border-slate-600"
+                              className="w-4 h-4 text-[var(--club-text)] focus:ring-[var(--club)] border-[#E6E6E0]"
                             />
                             <div className="text-left">
-                              <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">
+                              <div className="font-bold text-[#111214] text-sm">
                                 {m.name}
                               </div>
-                              <div className="text-[10px] text-slate-400 font-semibold mt-0.5">
+                              <div className="text-xs text-[#6B6E74] font-semibold mt-0.5">
                                 Durasi: {m.durationDays} hari
                               </div>
                             </div>
                           </div>
-                          <div className="font-black text-primary text-xs">
+                          <div className="font-extrabold text-[var(--club-text)] text-sm">
                             Rp {m.price?.toLocaleString("id-ID") || 0}
                           </div>
                         </label>
@@ -1031,23 +1031,23 @@ export default function CommunityMicrosite({
                   {selectedRenewalTierId && (
                     <div className="space-y-3">
                       {/* Voucher Input Field */}
-                      <div className="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
-                          <Tag className="w-3.5 h-3.5 text-indigo-600" />
+                      <div className="p-3.5 bg-white border border-[#E6E6E0] rounded-2xl">
+                        <label className="block text-[13px] font-bold text-[#3A3C41] mb-1.5 flex items-center gap-1.5">
+                          <Tag className="w-3.5 h-3.5 text-[var(--club-text)]" />
                           Punya Kode Promo / Voucher?
                         </label>
                         {appliedVoucher ? (
-                          <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between">
+                          <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                               <div>
-                                <div className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                                <div className="text-sm font-bold text-emerald-800">
                                   Kode:{" "}
                                   <span className="font-mono">
                                     {appliedVoucher.code}
                                   </span>
                                 </div>
-                                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                <div className="text-xs text-emerald-600 font-semibold">
                                   Hemat Rp{" "}
                                   {appliedVoucher.discountAmount.toLocaleString(
                                     "id-ID",
@@ -1061,7 +1061,7 @@ export default function CommunityMicrosite({
                                 setAppliedVoucher(null);
                                 setVoucherCodeInput("");
                               }}
-                              className="text-[11px] font-bold text-red-500 hover:underline px-2 py-1"
+                              className="text-[13px] font-bold text-red-500 hover:underline px-2 py-1"
                             >
                               Hapus
                             </button>
@@ -1078,7 +1078,7 @@ export default function CommunityMicrosite({
                                 setVoucherError("");
                               }}
                               placeholder="Contoh: LATIHNEWBER"
-                              className="flex-1 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono uppercase font-bold text-indigo-600 outline-none focus:ring-2 focus:ring-indigo-500"
+                              className="flex-1 px-3 py-2 bg-white border border-[#E6E6E0] rounded-xl text-sm font-mono font-bold text-[var(--club-text)] outline-none focus:ring-2 focus:ring-[var(--club)]"
                             />
                             <button
                               type="button"
@@ -1132,7 +1132,7 @@ export default function CommunityMicrosite({
                                   setValidatingVoucher(false);
                                 }
                               }}
-                              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1 shrink-0"
+                              className="px-3.5 py-2 bg-[#111214] hover:bg-[#2a2c30] text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50 flex items-center gap-1 shrink-0"
                             >
                               {validatingVoucher ? (
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1143,7 +1143,7 @@ export default function CommunityMicrosite({
                           </div>
                         )}
                         {voucherError && (
-                          <p className="text-[11px] text-rose-500 font-semibold mt-1.5">
+                          <p className="text-[13px] text-rose-500 font-semibold mt-1.5">
                             {voucherError}
                           </p>
                         )}
@@ -1163,22 +1163,22 @@ export default function CommunityMicrosite({
                         const finalTotal = Math.max(0, original - discount);
 
                         return (
-                          <div className="p-3.5 bg-slate-900 text-white rounded-2xl flex items-center justify-between">
+                          <div className="p-3.5 bg-[#111214] text-white rounded-2xl flex items-center justify-between">
                             <div>
-                              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                              <span className="text-xs text-[#6B6E74] font-bold block">
                                 Total Pembayaran
                               </span>
                               {discount > 0 && (
-                                <span className="text-[11px] text-slate-400 line-through mr-2">
+                                <span className="text-[13px] text-[#6B6E74] line-through mr-2">
                                   Rp {original.toLocaleString("id-ID")}
                                 </span>
                               )}
-                              <span className="text-sm font-black text-emerald-400">
+                              <span className="text-[15px] font-extrabold text-emerald-400">
                                 Rp {finalTotal.toLocaleString("id-ID")}
                               </span>
                             </div>
                             {discount > 0 && (
-                              <span className="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded-lg">
+                              <span className="text-xs font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-1 rounded-lg">
                                 Hemat Rp {discount.toLocaleString("id-ID")}
                               </span>
                             )}
@@ -1186,13 +1186,13 @@ export default function CommunityMicrosite({
                         );
                       })()}
 
-                      <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl text-xs space-y-3 text-slate-600 dark:text-slate-400 font-medium">
+                      <div className="p-4 bg-[var(--club-soft)] border border-primary/20 rounded-2xl text-sm space-y-3 text-[#3A3C41] font-medium">
                         {community.qrisImageUrl && (
                           <div className="mb-2">
-                            <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">
+                            <p className="font-bold text-[#111214] mb-2">
                               Scan QRIS:
                             </p>
-                            <div className="bg-white dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 inline-block">
+                            <div className="bg-white p-2 rounded-xl border border-[#E6E6E0] inline-block">
                               <img
                                 src={community.qrisImageUrl}
                                 alt="QRIS"
@@ -1201,27 +1201,27 @@ export default function CommunityMicrosite({
                             </div>
                           </div>
                         )}
-                        <p className="font-bold text-slate-800 dark:text-slate-200">
+                        <p className="font-bold text-[#111214]">
                           {community.paymentInstructions
                             ? "Instruksi Pembayaran:"
                             : "Silakan lakukan transfer ke salah satu rekening:"}
                         </p>
                         {community.paymentInstructions ? (
-                          <div className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                          <div className="whitespace-pre-wrap text-[#3A3C41]">
                             {community.paymentInstructions}
                           </div>
                         ) : (
-                          <div className="space-y-1 text-slate-500 dark:text-slate-400">
+                          <div className="space-y-1 text-[#55585E]">
                             <div>
                               • Bank BCA:{" "}
-                              <span className="font-extrabold text-slate-700 dark:text-slate-300">
+                              <span className="font-extrabold text-[#3A3C41]">
                                 8002931293
                               </span>{" "}
                               a/n Kas Komunitas
                             </div>
                             <div>
                               • Bank Mandiri:{" "}
-                              <span className="font-extrabold text-slate-700 dark:text-slate-300">
+                              <span className="font-extrabold text-[#3A3C41]">
                                 120001828828
                               </span>{" "}
                               a/n Kas Komunitas
@@ -1233,12 +1233,12 @@ export default function CommunityMicrosite({
                   )}
 
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <label className="block text-sm font-bold text-[#3A3C41]">
                       Unggah Bukti Transfer (Image)
                     </label>
                     {renewalProofUrl ? (
                       <div className="space-y-2">
-                        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-950 p-2">
+                        <div className="rounded-xl overflow-hidden border border-[#E6E6E0] bg-white p-2">
                           <img
                             src={renewalProofUrl}
                             alt="Bukti Transfer"
@@ -1248,7 +1248,7 @@ export default function CommunityMicrosite({
                         <button
                           type="button"
                           onClick={() => setRenewalProofUrl("")}
-                          className="text-[10px] text-red-500 hover:text-red-700 font-bold"
+                          className="text-xs text-red-500 hover:text-red-700 font-bold"
                         >
                           Hapus Gambar & Ganti
                         </button>
@@ -1297,24 +1297,24 @@ export default function CommunityMicrosite({
                             }
                           }
                         }}
-                        className="w-full text-xs font-semibold text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-extrabold file:bg-primary/5 file:text-primary hover:file:bg-primary/20"
+                        className="block w-full cursor-pointer rounded-2xl border-[1.5px] border-dashed border-[#CFCFC8] bg-white p-3 text-sm font-semibold text-[#55585E] file:mr-3 file:min-h-10 file:cursor-pointer file:rounded-full file:border-0 file:bg-[#111214] file:px-4 file:text-sm file:font-bold file:text-white hover:border-[var(--club)]"
                       />
                     )}
                   </div>
                 </div>
 
-                <div className="p-6 pt-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
+                <div className="px-6 pt-4 pb-[max(16px,env(safe-area-inset-bottom))] flex justify-end gap-2 border-t border-[#E6E6E0] bg-white shrink-0">
                   <button
                     type="button"
                     onClick={() => setShowRenewalModal(false)}
-                    className="px-4 py-2 font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs transition-colors"
+                    className="min-h-12 px-5 font-bold text-[#111214] hover:bg-[#EAEAE3] rounded-full text-[15px] transition-colors"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={submittingRenewal}
-                    className="px-5 py-2 bg-primary hover:opacity-90 text-white font-bold rounded-xl text-xs shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
+                    className="min-h-12 px-6 bg-[var(--club)] hover:brightness-95 text-[var(--club-on)] font-extrabold rounded-full text-[15px] transition-all disabled:opacity-50"
                   >
                     {submittingRenewal ? "Mengirim..." : "Kirim Permintaan"}
                   </button>
@@ -1326,14 +1326,14 @@ export default function CommunityMicrosite({
 
         {/* Membership & Session Bundle Checkout Modal */}
         {showBundleModal && bundlePackage && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-950 rounded-[2rem] shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
-              <div className="px-6 py-5 shrink-0 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div className="fixed inset-0 z-[110] flex items-end justify-center bg-[#111214]/55 md:items-center md:p-4">
+            <div className="bg-[#F6F6F2] rounded-t-[28px] md:rounded-[28px] max-w-lg w-full overflow-hidden flex flex-col max-h-[92vh]">
+              <div className="px-6 py-5 shrink-0 border-b border-[#E6E6E0] flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
+                  <h3 className="text-lg font-bold text-[#111214]">
                     Pembayaran Bundling Keanggotaan & Paket
                   </h3>
-                  <p className="text-xs text-rose-500 font-semibold mt-1">
+                  <p className="text-sm text-rose-500 font-semibold mt-1">
                     Keanggotaan Anda hampir berakhir/sudah habis. Wajib
                     perpanjang untuk membeli paket sesi.
                   </p>
@@ -1344,7 +1344,7 @@ export default function CommunityMicrosite({
                     setShowBundleModal(false);
                     setBundlePackage(null);
                   }}
-                  className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-700 dark:text-slate-300 transition-colors"
+                  className="p-1.5 hover:bg-[#F1F1EC] rounded-full text-[#6B6E74] hover:text-[#111214] transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1409,18 +1409,18 @@ export default function CommunityMicrosite({
                 }}
                 className="flex flex-col flex-1 min-h-0"
               >
-                <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+                <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
                   {/* Detail Paket Sesi */}
-                  <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-150 flex justify-between items-center text-xs">
+                  <div className="p-4 bg-white rounded-2xl border border-[#E6E6E0] flex justify-between items-center text-sm">
                     <div>
-                      <div className="font-bold text-slate-800 dark:text-slate-200">
+                      <div className="font-bold text-[#111214]">
                         Paket Sesi Pilihan:
                       </div>
-                      <div className="text-slate-600 dark:text-slate-400 font-semibold mt-0.5">
+                      <div className="text-[#3A3C41] font-semibold mt-0.5">
                         {bundlePackage.name} ({bundlePackage.totalSession} Sesi)
                       </div>
                     </div>
-                    <div className="font-black text-slate-900 dark:text-slate-50">
+                    <div className="font-extrabold text-[#111214]">
                       Rp{" "}
                       {(isPrivateSession && bundlePackage.vipPrice
                         ? bundlePackage.vipPrice
@@ -1431,7 +1431,7 @@ export default function CommunityMicrosite({
 
                   {!!bundlePackage.memberPrice && !!bundlePackage.vipPrice && (
                     <div className="mt-2">
-                      <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
+                      <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 rounded-xl cursor-pointer">
                         <input
                           type="checkbox"
                           checked={isPrivateSession}
@@ -1441,10 +1441,10 @@ export default function CommunityMicrosite({
                           className="w-5 h-5 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
                         />
                         <div>
-                          <div className="font-bold text-amber-800 dark:text-amber-400 text-sm">
+                          <div className="font-bold text-amber-800 text-[15px]">
                             Gunakan Harga Private
                           </div>
-                          <div className="text-xs text-amber-700 dark:text-amber-500/80">
+                          <div className="text-sm text-amber-700">
                             Saya ingin mengambil sesi secara private
                           </div>
                         </div>
@@ -1454,17 +1454,17 @@ export default function CommunityMicrosite({
 
                   {/* Tipe Membership */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="block text-sm font-bold text-[#3A3C41] mb-2">
                       Pilih Paket Perpanjangan Membership
                     </label>
                     <div className="space-y-2">
                       {(community.memberships || []).map((m: Membership) => (
                         <label
                           key={m.id}
-                          className={`flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900 border rounded-xl cursor-pointer transition-all hover:border-primary/70 ${
+                          className={`flex items-center justify-between p-3.5 bg-white border rounded-xl cursor-pointer transition-all hover:border-primary/70 ${
                             selectedBundleTierId === m.id
-                              ? "border-primary ring-2 ring-primary/10"
-                              : "border-slate-200 dark:border-slate-700"
+                              ? "border-[var(--club)] ring-2 ring-primary/10"
+                              : "border-[#E6E6E0]"
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
@@ -1473,18 +1473,18 @@ export default function CommunityMicrosite({
                               name="bundleTier"
                               checked={selectedBundleTierId === m.id}
                               onChange={() => setSelectedBundleTierId(m.id)}
-                              className="w-4 h-4 text-primary focus:ring-primary border-slate-300 dark:border-slate-600"
+                              className="w-4 h-4 text-[var(--club-text)] focus:ring-[var(--club)] border-[#E6E6E0]"
                             />
                             <div className="text-left">
-                              <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">
+                              <div className="font-bold text-[#111214] text-sm">
                                 {m.name}
                               </div>
-                              <div className="text-[10px] text-slate-400 font-semibold mt-0.5">
+                              <div className="text-xs text-[#6B6E74] font-semibold mt-0.5">
                                 Durasi: {m.durationDays} hari
                               </div>
                             </div>
                           </div>
-                          <div className="font-black text-primary text-xs">
+                          <div className="font-extrabold text-[var(--club-text)] text-sm">
                             Rp {m.price?.toLocaleString("id-ID") || 0}
                           </div>
                         </label>
@@ -1493,23 +1493,23 @@ export default function CommunityMicrosite({
                   </div>
 
                   {/* Voucher Input Field for Bundle */}
-                  <div className="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl mt-4">
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
-                      <Tag className="w-3.5 h-3.5 text-indigo-600" />
+                  <div className="p-3.5 bg-white border border-[#E6E6E0] rounded-2xl mt-4">
+                    <label className="block text-[13px] font-bold text-[#3A3C41] mb-1.5 flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5 text-[var(--club-text)]" />
                       Punya Kode Promo / Voucher?
                     </label>
                     {appliedVoucher ? (
-                      <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between">
+                      <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                           <div>
-                            <div className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                            <div className="text-sm font-bold text-emerald-800">
                               Kode:{" "}
                               <span className="font-mono">
                                 {appliedVoucher.code}
                               </span>
                             </div>
-                            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                            <div className="text-xs text-emerald-600 font-semibold">
                               Hemat Rp{" "}
                               {appliedVoucher.discountAmount.toLocaleString(
                                 "id-ID",
@@ -1523,7 +1523,7 @@ export default function CommunityMicrosite({
                             setAppliedVoucher(null);
                             setVoucherCodeInput("");
                           }}
-                          className="text-[11px] font-bold text-red-500 hover:underline px-2 py-1"
+                          className="text-[13px] font-bold text-red-500 hover:underline px-2 py-1"
                         >
                           Hapus
                         </button>
@@ -1539,7 +1539,7 @@ export default function CommunityMicrosite({
                               setVoucherError("");
                             }}
                             placeholder="Contoh: PROMO123"
-                            className="flex-1 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono uppercase font-bold text-indigo-600 outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="flex-1 px-3 py-2 bg-white border border-[#E6E6E0] rounded-xl text-sm font-mono font-bold text-[var(--club-text)] outline-none focus:ring-2 focus:ring-[var(--club)]"
                           />
                           <button
                             type="button"
@@ -1597,7 +1597,7 @@ export default function CommunityMicrosite({
                                 setValidatingVoucher(false);
                               }
                             }}
-                            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1 shrink-0"
+                            className="px-3.5 py-2 bg-[#111214] hover:bg-[#2a2c30] text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50 flex items-center gap-1 shrink-0"
                           >
                             {validatingVoucher ? (
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1607,7 +1607,7 @@ export default function CommunityMicrosite({
                           </button>
                         </div>
                         {voucherError && (
-                          <p className="text-[10px] font-bold text-red-500 ml-1 flex items-center gap-1">
+                          <p className="text-xs font-bold text-red-500 ml-1 flex items-center gap-1">
                             <X className="w-3 h-3" /> {voucherError}
                           </p>
                         )}
@@ -1617,8 +1617,8 @@ export default function CommunityMicrosite({
 
                   {/* Rincian Total Pembayaran */}
                   {selectedBundleTierId && (
-                    <div className="p-4 bg-primary/5 border border-indigo-150 rounded-2xl space-y-2 text-xs mt-4">
-                      <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 font-bold">
+                    <div className="p-4 bg-[var(--club-soft)] border border-[#E6E6E0] rounded-2xl space-y-2 text-sm mt-4">
+                      <div className="flex justify-between items-center text-[#3A3C41] font-bold">
                         <span>Harga Paket Sesi:</span>
                         <span>
                           Rp{" "}
@@ -1628,7 +1628,7 @@ export default function CommunityMicrosite({
                           )?.toLocaleString("id-ID")}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-slate-600 dark:text-slate-400 font-bold">
+                      <div className="flex justify-between items-center text-[#3A3C41] font-bold">
                         <span>Harga Membership:</span>
                         <span>
                           Rp{" "}
@@ -1641,7 +1641,7 @@ export default function CommunityMicrosite({
                       </div>
 
                       {appliedVoucher && (
-                        <div className="flex justify-between items-center text-emerald-600 font-semibold pt-2 pb-2 border-t border-b border-indigo-150">
+                        <div className="flex justify-between items-center text-emerald-600 font-semibold pt-2 pb-2 border-t border-b border-[#E6E6E0]">
                           <span>Diskon (Voucher):</span>
                           <span>
                             - Rp{" "}
@@ -1652,9 +1652,9 @@ export default function CommunityMicrosite({
                         </div>
                       )}
 
-                      <div className="flex justify-between items-center text-primary font-extrabold pt-2">
+                      <div className="flex justify-between items-center text-[var(--club-text)] font-extrabold pt-2">
                         <span>Total Transfer:</span>
-                        <span className="text-sm">
+                        <span className="text-[15px]">
                           Rp{" "}
                           {Math.max(
                             0,
@@ -1688,7 +1688,7 @@ export default function CommunityMicrosite({
 
                     if (isWaitlist) {
                       return (
-                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-2 mb-2 mt-2">
+                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-sm space-y-2 mb-2 mt-2">
                           <div className="font-bold text-amber-800">
                             Kuota Penuh - Masuk Waiting List
                           </div>
@@ -1706,13 +1706,13 @@ export default function CommunityMicrosite({
                   })()}
 
                   {/* Rekening Transfer */}
-                  <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 rounded-2xl text-xs space-y-3 text-slate-600 dark:text-slate-400 font-medium">
+                  <div className="p-4 bg-white border border-[#E6E6E0] rounded-2xl text-sm space-y-3 text-[#3A3C41] font-medium">
                     {community.qrisImageUrl && (
                       <div className="mb-2">
-                        <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">
+                        <p className="font-bold text-[#111214] mb-2">
                           Scan QRIS:
                         </p>
-                        <div className="bg-white dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 inline-block">
+                        <div className="bg-white p-2 rounded-xl border border-[#E6E6E0] inline-block">
                           <img
                             src={community.qrisImageUrl}
                             alt="QRIS"
@@ -1721,27 +1721,27 @@ export default function CommunityMicrosite({
                         </div>
                       </div>
                     )}
-                    <p className="font-bold text-slate-800 dark:text-slate-200">
+                    <p className="font-bold text-[#111214]">
                       {community.paymentInstructions
                         ? "Instruksi Pembayaran:"
                         : "Silakan lakukan transfer ke salah satu rekening pengelola:"}
                     </p>
                     {community.paymentInstructions ? (
-                      <div className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                      <div className="whitespace-pre-wrap text-[#3A3C41]">
                         {community.paymentInstructions}
                       </div>
                     ) : (
-                      <div className="space-y-1 text-slate-500 dark:text-slate-400">
+                      <div className="space-y-1 text-[#55585E]">
                         <div>
                           • Bank BCA:{" "}
-                          <span className="font-extrabold text-slate-700 dark:text-slate-300">
+                          <span className="font-extrabold text-[#3A3C41]">
                             8002931293
                           </span>{" "}
                           a/n Kas Komunitas
                         </div>
                         <div>
                           • Bank Mandiri:{" "}
-                          <span className="font-extrabold text-slate-700 dark:text-slate-300">
+                          <span className="font-extrabold text-[#3A3C41]">
                             120001828828
                           </span>{" "}
                           a/n Kas Komunitas
@@ -1752,12 +1752,12 @@ export default function CommunityMicrosite({
 
                   {/* Bukti Transfer */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <label className="block text-sm font-bold text-[#3A3C41]">
                       Unggah Bukti Transfer (Image)
                     </label>
                     {bundleProofUrl ? (
                       <div className="space-y-2">
-                        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-950 p-2">
+                        <div className="rounded-xl overflow-hidden border border-[#E6E6E0] bg-white p-2">
                           <img
                             src={bundleProofUrl}
                             alt="Bukti Transfer"
@@ -1767,7 +1767,7 @@ export default function CommunityMicrosite({
                         <button
                           type="button"
                           onClick={() => setBundleProofUrl("")}
-                          className="text-[10px] text-red-500 hover:text-red-700 font-bold"
+                          className="text-xs text-red-500 hover:text-red-700 font-bold"
                         >
                           Hapus Gambar & Ganti
                         </button>
@@ -1816,27 +1816,27 @@ export default function CommunityMicrosite({
                             }
                           }
                         }}
-                        className="w-full text-xs font-semibold text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-extrabold file:bg-primary/5 file:text-primary hover:file:bg-primary/20"
+                        className="block w-full cursor-pointer rounded-2xl border-[1.5px] border-dashed border-[#CFCFC8] bg-white p-3 text-sm font-semibold text-[#55585E] file:mr-3 file:min-h-10 file:cursor-pointer file:rounded-full file:border-0 file:bg-[#111214] file:px-4 file:text-sm file:font-bold file:text-white hover:border-[var(--club)]"
                       />
                     )}
                   </div>
                 </div>
 
-                <div className="p-6 pt-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
+                <div className="px-6 pt-4 pb-[max(16px,env(safe-area-inset-bottom))] flex justify-end gap-2 border-t border-[#E6E6E0] bg-white shrink-0">
                   <button
                     type="button"
                     onClick={() => {
                       setShowBundleModal(false);
                       setBundlePackage(null);
                     }}
-                    className="px-4 py-2 font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs transition-colors"
+                    className="min-h-12 px-5 font-bold text-[#111214] hover:bg-[#EAEAE3] rounded-full text-[15px] transition-colors"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={submittingBundle}
-                    className="px-5 py-2 bg-primary hover:opacity-90 text-white font-bold rounded-xl text-xs shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
+                    className="min-h-12 px-6 bg-[var(--club)] hover:brightness-95 text-[var(--club-on)] font-extrabold rounded-full text-[15px] transition-all disabled:opacity-50"
                   >
                     {submittingBundle ? "Mengirim..." : "Kirim Permintaan"}
                   </button>
@@ -1847,14 +1847,14 @@ export default function CommunityMicrosite({
         )}
 
         {showPurchaseModal && purchasePackage && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-950 rounded-[2rem] shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh]">
-              <div className="px-6 py-5 shrink-0 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div className="fixed inset-0 z-[110] flex items-end justify-center bg-[#111214]/55 md:items-center md:p-4">
+            <div className="bg-[#F6F6F2] rounded-t-[28px] md:rounded-[28px] max-w-lg w-full overflow-hidden flex flex-col max-h-[92vh]">
+              <div className="px-6 py-5 shrink-0 border-b border-[#E6E6E0] flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
+                  <h3 className="text-lg font-bold text-[#111214]">
                     Pembelian Paket Sesi
                   </h3>
-                  <p className="text-xs text-slate-500 font-semibold mt-1">
+                  <p className="text-sm text-[#55585E] font-semibold mt-1">
                     Selesaikan pembayaran untuk membeli paket sesi ini.
                   </p>
                 </div>
@@ -1864,7 +1864,7 @@ export default function CommunityMicrosite({
                     setShowPurchaseModal(false);
                     setPurchasePackage(null);
                   }}
-                  className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-700 dark:text-slate-300 transition-colors"
+                  className="p-1.5 hover:bg-[#F1F1EC] rounded-full text-[#6B6E74] hover:text-[#111214] transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1956,22 +1956,22 @@ export default function CommunityMicrosite({
                 }}
                 className="flex flex-col flex-1 min-h-0"
               >
-                <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+                <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
                   {/* Detail Paket Sesi */}
-                  <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-150 flex justify-between items-center text-xs">
+                  <div className="p-4 bg-white rounded-2xl border border-[#E6E6E0] flex justify-between items-center text-sm">
                     <div>
-                      <div className="font-bold text-slate-800 dark:text-slate-200">
+                      <div className="font-bold text-[#111214]">
                         Paket Sesi Pilihan:
                       </div>
-                      <div className="text-slate-600 dark:text-slate-400 font-semibold mt-0.5">
+                      <div className="text-[#3A3C41] font-semibold mt-0.5">
                         {purchasePackage.name} ({purchasePackage.totalSession}{" "}
                         Sesi)
                       </div>
                     </div>
-                    <div className="font-black text-slate-900 dark:text-slate-50 text-right">
+                    <div className="font-extrabold text-[#111214] text-right">
                       Rp {purchaseUnitPrice.toLocaleString("id-ID")}
                       {purchaseAllowsPax && (
-                        <div className="text-[10px] font-semibold text-slate-500">
+                        <div className="text-xs font-semibold text-[#55585E]">
                           per orang
                         </div>
                       )}
@@ -1981,7 +1981,7 @@ export default function CommunityMicrosite({
                   {!!purchasePackage.memberPrice &&
                     !!purchasePackage.vipPrice && (
                       <div className="mt-2">
-                        <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 dark:bg-amber-900/20 rounded-xl cursor-pointer">
+                        <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 rounded-xl cursor-pointer">
                           <input
                             type="checkbox"
                             checked={isPrivateSession}
@@ -1992,10 +1992,10 @@ export default function CommunityMicrosite({
                             className="w-5 h-5 text-amber-600 border-amber-300 rounded focus:ring-amber-500"
                           />
                           <div>
-                            <div className="font-bold text-amber-800 dark:text-amber-400 text-sm">
+                            <div className="font-bold text-amber-800 text-[15px]">
                               Gunakan Harga Private
                             </div>
-                            <div className="text-xs text-amber-700 dark:text-amber-500/80">
+                            <div className="text-sm text-amber-700">
                               Saya ingin mengambil sesi secara private
                             </div>
                           </div>
@@ -2019,23 +2019,23 @@ export default function CommunityMicrosite({
                   )}
 
                   {/* Voucher Input Field */}
-                  <div className="p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl mt-2">
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
-                      <Tag className="w-3.5 h-3.5 text-indigo-600" />
+                  <div className="p-3.5 bg-white border border-[#E6E6E0] rounded-2xl mt-2">
+                    <label className="block text-[13px] font-bold text-[#3A3C41] mb-1.5 flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5 text-[var(--club-text)]" />
                       Punya Kode Promo / Voucher?
                     </label>
                     {appliedVoucher ? (
-                      <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between">
+                      <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                           <div>
-                            <div className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                            <div className="text-sm font-bold text-emerald-800">
                               Kode:{" "}
                               <span className="font-mono">
                                 {appliedVoucher.code}
                               </span>
                             </div>
-                            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                            <div className="text-xs text-emerald-600 font-semibold">
                               Hemat Rp{" "}
                               {appliedVoucher.discountAmount.toLocaleString(
                                 "id-ID",
@@ -2049,7 +2049,7 @@ export default function CommunityMicrosite({
                             setAppliedVoucher(null);
                             setVoucherCodeInput("");
                           }}
-                          className="text-[11px] font-bold text-red-500 hover:underline px-2 py-1"
+                          className="text-[13px] font-bold text-red-500 hover:underline px-2 py-1"
                         >
                           Hapus
                         </button>
@@ -2065,7 +2065,7 @@ export default function CommunityMicrosite({
                               setVoucherError("");
                             }}
                             placeholder="Contoh: PROMO123"
-                            className="flex-1 px-3 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono uppercase font-bold text-indigo-600 outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="flex-1 px-3 py-2 bg-white border border-[#E6E6E0] rounded-xl text-sm font-mono font-bold text-[var(--club-text)] outline-none focus:ring-2 focus:ring-[var(--club)]"
                           />
                           <button
                             type="button"
@@ -2113,7 +2113,7 @@ export default function CommunityMicrosite({
                                 setValidatingVoucher(false);
                               }
                             }}
-                            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1 shrink-0"
+                            className="px-3.5 py-2 bg-[#111214] hover:bg-[#2a2c30] text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50 flex items-center gap-1 shrink-0"
                           >
                             {validatingVoucher ? (
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -2123,7 +2123,7 @@ export default function CommunityMicrosite({
                           </button>
                         </div>
                         {voucherError && (
-                          <p className="text-[10px] font-bold text-red-500 ml-1 flex items-center gap-1">
+                          <p className="text-xs font-bold text-red-500 ml-1 flex items-center gap-1">
                             <X className="w-3 h-3" /> {voucherError}
                           </p>
                         )}
@@ -2132,10 +2132,10 @@ export default function CommunityMicrosite({
                   </div>
 
                   {/* Rincian Total Pembayaran */}
-                  <div className="p-4 bg-primary/5 border border-indigo-150 rounded-2xl space-y-2 text-xs mt-4">
+                  <div className="p-4 bg-[var(--club-soft)] border border-[#E6E6E0] rounded-2xl space-y-2 text-sm mt-4">
                     {appliedVoucher ? (
                       <>
-                        <div className="flex justify-between items-center text-slate-500 font-semibold mb-1">
+                        <div className="flex justify-between items-center text-[#55585E] font-semibold mb-1">
                           <span>
                             Subtotal
                             {purchasePaxCount > 1
@@ -2147,7 +2147,7 @@ export default function CommunityMicrosite({
                             Rp {purchaseSubtotal.toLocaleString("id-ID")}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center text-emerald-600 font-semibold mb-1 pb-2 border-b border-indigo-100">
+                        <div className="flex justify-between items-center text-emerald-600 font-semibold mb-1 pb-2 border-b border-[#E6E6E0]">
                           <span>Diskon (Voucher):</span>
                           <span>
                             - Rp{" "}
@@ -2156,9 +2156,9 @@ export default function CommunityMicrosite({
                             )}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center text-primary font-extrabold pt-1">
+                        <div className="flex justify-between items-center text-[var(--club-text)] font-extrabold pt-1">
                           <span>Total Transfer:</span>
-                          <span className="text-sm">
+                          <span className="text-[15px]">
                             Rp{" "}
                             {Math.max(
                               0,
@@ -2170,7 +2170,7 @@ export default function CommunityMicrosite({
                     ) : (
                       <>
                         {purchasePaxCount > 1 && (
-                          <div className="flex justify-between items-center text-slate-500 font-semibold mb-1 pb-2 border-b border-indigo-100">
+                          <div className="flex justify-between items-center text-[#55585E] font-semibold mb-1 pb-2 border-b border-[#E6E6E0]">
                             <span>
                               Rp {purchaseUnitPrice.toLocaleString("id-ID")} ×{" "}
                               {purchasePaxCount} pax
@@ -2180,9 +2180,9 @@ export default function CommunityMicrosite({
                             </span>
                           </div>
                         )}
-                        <div className="flex justify-between items-center text-primary font-extrabold">
+                        <div className="flex justify-between items-center text-[var(--club-text)] font-extrabold">
                           <span>Total Transfer:</span>
-                          <span className="text-sm">
+                          <span className="text-[15px]">
                             Rp {purchaseSubtotal.toLocaleString("id-ID")}
                           </span>
                         </div>
@@ -2208,7 +2208,7 @@ export default function CommunityMicrosite({
 
                     if (isWaitlist) {
                       return (
-                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-2 mb-4">
+                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-sm space-y-2 mb-4">
                           <div className="font-bold text-amber-800">
                             Kuota Penuh - Masuk Waiting List
                           </div>
@@ -2226,13 +2226,13 @@ export default function CommunityMicrosite({
                   })()}
 
                   {/* Rekening Transfer */}
-                  <div className="p-4 bg-slate-50 dark:bg-slate-900 border border-slate-150 rounded-2xl text-xs space-y-3 text-slate-600 dark:text-slate-400 font-medium">
+                  <div className="p-4 bg-white border border-[#E6E6E0] rounded-2xl text-sm space-y-3 text-[#3A3C41] font-medium">
                     {community.qrisImageUrl && (
                       <div className="mb-2">
-                        <p className="font-bold text-slate-800 dark:text-slate-200 mb-2">
+                        <p className="font-bold text-[#111214] mb-2">
                           Scan QRIS:
                         </p>
-                        <div className="bg-white dark:bg-slate-950 p-2 rounded-xl border border-slate-200 dark:border-slate-800 inline-block">
+                        <div className="bg-white p-2 rounded-xl border border-[#E6E6E0] inline-block">
                           <img
                             src={community.qrisImageUrl}
                             alt="QRIS"
@@ -2241,27 +2241,27 @@ export default function CommunityMicrosite({
                         </div>
                       </div>
                     )}
-                    <p className="font-bold text-slate-800 dark:text-slate-200">
+                    <p className="font-bold text-[#111214]">
                       {community.paymentInstructions
                         ? "Instruksi Pembayaran:"
                         : "Silakan lakukan transfer ke salah satu rekening pengelola:"}
                     </p>
                     {community.paymentInstructions ? (
-                      <div className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                      <div className="whitespace-pre-wrap text-[#3A3C41]">
                         {community.paymentInstructions}
                       </div>
                     ) : (
-                      <div className="space-y-1 text-slate-500 dark:text-slate-400">
+                      <div className="space-y-1 text-[#55585E]">
                         <div>
                           • Bank BCA:{" "}
-                          <span className="font-extrabold text-slate-700 dark:text-slate-300">
+                          <span className="font-extrabold text-[#3A3C41]">
                             8002931293
                           </span>{" "}
                           a/n Kas Komunitas
                         </div>
                         <div>
                           • Bank Mandiri:{" "}
-                          <span className="font-extrabold text-slate-700 dark:text-slate-300">
+                          <span className="font-extrabold text-[#3A3C41]">
                             120001828828
                           </span>{" "}
                           a/n Kas Komunitas
@@ -2272,12 +2272,12 @@ export default function CommunityMicrosite({
 
                   {/* Bukti Transfer */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <label className="block text-sm font-bold text-[#3A3C41]">
                       Unggah Bukti Transfer (Image)
                     </label>
                     {purchaseProofUrl ? (
                       <div className="space-y-2">
-                        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-950 p-2">
+                        <div className="rounded-xl overflow-hidden border border-[#E6E6E0] bg-white p-2">
                           <img
                             src={purchaseProofUrl}
                             alt="Bukti Transfer"
@@ -2287,7 +2287,7 @@ export default function CommunityMicrosite({
                         <button
                           type="button"
                           onClick={() => setPurchaseProofUrl("")}
-                          className="text-[10px] text-red-500 hover:text-red-700 font-bold"
+                          className="text-xs text-red-500 hover:text-red-700 font-bold"
                         >
                           Hapus Gambar & Ganti
                         </button>
@@ -2336,27 +2336,27 @@ export default function CommunityMicrosite({
                             }
                           }
                         }}
-                        className="w-full text-xs font-semibold text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-extrabold file:bg-primary/5 file:text-primary hover:file:bg-primary/20"
+                        className="block w-full cursor-pointer rounded-2xl border-[1.5px] border-dashed border-[#CFCFC8] bg-white p-3 text-sm font-semibold text-[#55585E] file:mr-3 file:min-h-10 file:cursor-pointer file:rounded-full file:border-0 file:bg-[#111214] file:px-4 file:text-sm file:font-bold file:text-white hover:border-[var(--club)]"
                       />
                     )}
                   </div>
                 </div>
 
-                <div className="p-6 pt-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
+                <div className="px-6 pt-4 pb-[max(16px,env(safe-area-inset-bottom))] flex justify-end gap-2 border-t border-[#E6E6E0] bg-white shrink-0">
                   <button
                     type="button"
                     onClick={() => {
                       setShowPurchaseModal(false);
                       setPurchasePackage(null);
                     }}
-                    className="px-4 py-2 font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs transition-colors"
+                    className="min-h-12 px-5 font-bold text-[#111214] hover:bg-[#EAEAE3] rounded-full text-[15px] transition-colors"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={purchasingMap[purchasePackage.id]}
-                    className="px-5 py-2 bg-primary hover:opacity-90 text-white font-bold rounded-xl text-xs shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
+                    className="min-h-12 px-6 bg-[var(--club)] hover:brightness-95 text-[var(--club-on)] font-extrabold rounded-full text-[15px] transition-all disabled:opacity-50"
                   >
                     {(() => {
                       const isWaitlist =
@@ -2385,19 +2385,19 @@ export default function CommunityMicrosite({
 
         {/* Guest RSVP Modal */}
         {showGuestRsvpModal && guestRsvpPackage && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] flex items-end justify-center md:items-center md:p-4">
             <div
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-[#111214]/55"
               onClick={() => setShowGuestRsvpModal(false)}
             />
-            <div className="relative bg-white dark:bg-slate-950 w-full max-w-md rounded-3xl shadow-2xl flex flex-col max-h-[90vh]">
-              <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
-                <h3 className="text-lg font-black text-slate-900 dark:text-slate-50 tracking-tight">
+            <div className="relative bg-[#F6F6F2] w-full max-w-md rounded-t-[28px] md:rounded-[28px] flex flex-col max-h-[92vh]">
+              <div className="p-6 pb-4 border-b border-[#E6E6E0] shrink-0">
+                <h3 className="text-lg font-extrabold text-[#111214] tracking-tight">
                   Pendaftaran Peserta Umum
                 </h3>
-                <p className="text-xs text-slate-500 font-medium mt-1">
+                <p className="text-sm text-[#55585E] font-medium mt-1">
                   Isi formulir di bawah ini untuk mendaftar pada{" "}
-                  <span className="font-bold text-primary">
+                  <span className="font-bold text-[var(--club-text)]">
                     {guestRsvpPackage.name}
                   </span>
                 </p>
@@ -2465,9 +2465,9 @@ export default function CommunityMicrosite({
                 }}
                 className="flex flex-col flex-1 min-h-0"
               >
-                <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+                <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-sm font-bold text-[#3A3C41] mb-1">
                       Nama Lengkap
                     </label>
                     <input
@@ -2477,12 +2477,12 @@ export default function CommunityMicrosite({
                       onChange={(e) =>
                         setGuestForm({ ...guestForm, name: e.target.value })
                       }
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400"
+                      className="w-full px-4 py-3 bg-white border border-[#E6E6E0] rounded-xl text-[15px] text-[#111214] placeholder:text-[#8A8C91]"
                       placeholder="Masukkan nama lengkap"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-sm font-bold text-[#3A3C41] mb-1">
                       Alamat Email
                     </label>
                     <input
@@ -2492,12 +2492,12 @@ export default function CommunityMicrosite({
                       onChange={(e) =>
                         setGuestForm({ ...guestForm, email: e.target.value })
                       }
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400"
+                      className="w-full px-4 py-3 bg-white border border-[#E6E6E0] rounded-xl text-[15px] text-[#111214] placeholder:text-[#8A8C91]"
                       placeholder="email@contoh.com"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-sm font-bold text-[#3A3C41] mb-1">
                       Nomor Handphone (WhatsApp)
                     </label>
                     <input
@@ -2507,12 +2507,12 @@ export default function CommunityMicrosite({
                       onChange={(e) =>
                         setGuestForm({ ...guestForm, phone: e.target.value })
                       }
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400"
+                      className="w-full px-4 py-3 bg-white border border-[#E6E6E0] rounded-xl text-[15px] text-[#111214] placeholder:text-[#8A8C91]"
                       placeholder="08xxxxxxxxxx"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-sm font-bold text-[#3A3C41] mb-1">
                       Alamat Domisili
                     </label>
                     <textarea
@@ -2522,7 +2522,7 @@ export default function CommunityMicrosite({
                         setGuestForm({ ...guestForm, address: e.target.value })
                       }
                       rows={3}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400 resize-none"
+                      className="w-full px-4 py-3 bg-white border border-[#E6E6E0] rounded-xl text-[15px] text-[#111214] placeholder:text-[#8A8C91] resize-none"
                       placeholder="Masukkan alamat lengkap"
                     ></textarea>
                   </div>
@@ -2536,17 +2536,17 @@ export default function CommunityMicrosite({
                   />
 
                   {guestPaxCount > 1 && !!guestRsvpPackage.memberPrice && (
-                    <div className="p-4 bg-primary/5 border border-indigo-150 rounded-2xl text-xs space-y-2">
-                      <div className="flex justify-between items-center text-slate-500 font-semibold pb-2 border-b border-indigo-100">
+                    <div className="p-4 bg-[var(--club-soft)] border border-[#E6E6E0] rounded-2xl text-sm space-y-2">
+                      <div className="flex justify-between items-center text-[#55585E] font-semibold pb-2 border-b border-[#E6E6E0]">
                         <span>
                           Rp{" "}
                           {guestRsvpPackage.memberPrice.toLocaleString("id-ID")}{" "}
                           × {guestPaxCount} pax
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-primary font-extrabold">
+                      <div className="flex justify-between items-center text-[var(--club-text)] font-extrabold">
                         <span>Estimasi Total:</span>
-                        <span className="text-sm">
+                        <span className="text-[15px]">
                           Rp{" "}
                           {(
                             guestRsvpPackage.memberPrice * guestPaxCount
@@ -2559,7 +2559,7 @@ export default function CommunityMicrosite({
                   {(() => {
                     if (guestIsWaitlist) {
                       return (
-                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-2">
+                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-sm space-y-2">
                           <div className="font-bold text-amber-800">
                             Kuota Penuh - Waiting List
                           </div>
@@ -2584,14 +2584,14 @@ export default function CommunityMicrosite({
                             acceptedTnC: e.target.checked,
                           })
                         }
-                        className="mt-1 w-4 h-4 text-primary rounded"
+                        className="mt-1 w-4 h-4 text-[var(--club-text)] rounded"
                       />
-                      <span className="text-xs text-slate-500 leading-tight">
+                      <span className="text-sm text-[#55585E] leading-tight">
                         Saya telah membaca dan menyetujui seluruh{" "}
                         <a
                           href="/terms-conditions"
                           target="_blank"
-                          className="text-primary font-bold hover:underline"
+                          className="text-[var(--club-text)] font-bold hover:underline"
                         >
                           Syarat & Ketentuan
                         </a>{" "}
@@ -2599,7 +2599,7 @@ export default function CommunityMicrosite({
                         <a
                           href="/privacy-policy"
                           target="_blank"
-                          className="text-primary font-bold hover:underline"
+                          className="text-[var(--club-text)] font-bold hover:underline"
                         >
                           Kebijakan Privasi
                         </a>{" "}
@@ -2609,18 +2609,18 @@ export default function CommunityMicrosite({
                   </div>
                 </div>
 
-                <div className="p-6 pt-4 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
+                <div className="px-6 pt-4 pb-[max(16px,env(safe-area-inset-bottom))] flex justify-end gap-2 border-t border-[#E6E6E0] bg-white shrink-0">
                   <button
                     type="button"
                     onClick={() => setShowGuestRsvpModal(false)}
-                    className="px-4 py-2 font-bold text-slate-500 hover:bg-slate-100 rounded-xl text-xs transition-colors"
+                    className="min-h-12 px-5 font-bold text-[#111214] hover:bg-[#EAEAE3] rounded-full text-[15px] transition-colors"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={submittingGuest}
-                    className="px-5 py-2 bg-primary hover:opacity-90 text-white font-bold rounded-xl text-xs shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
+                    className="min-h-12 px-6 bg-[var(--club)] hover:brightness-95 text-[var(--club-on)] font-extrabold rounded-full text-[15px] transition-all disabled:opacity-50"
                   >
                     {submittingGuest
                       ? "Mengirim..."

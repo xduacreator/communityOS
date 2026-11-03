@@ -173,37 +173,37 @@ export default function JoinButton({
         )}
       </button>
       {error && (
-        <p className="mt-2 text-sm text-red-600 text-center bg-red-50 p-2 rounded">
+        <p className="mt-2 text-[15px] text-red-600 text-center bg-red-50 p-2 rounded">
           {error}
         </p>
       )}
 
       {/* Modal Dialog */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-950 w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[140] flex items-end justify-center bg-[#111214]/55 md:items-center md:p-4">
+          <div className="bg-[#F6F6F2] w-full max-w-lg rounded-t-[28px] md:rounded-[28px] overflow-hidden flex flex-col max-h-[92vh]">
             {/* Header */}
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
+            <div className="p-6 border-b border-[#E6E6E0] flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-bold text-slate-950 dark:text-slate-50">
+                <h3 className="text-xl font-bold text-[#111214]">
                   Formulir Pendaftaran
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-[15px] text-[#55585E] mt-1">
                   Silakan lengkapi data profil komunitas Anda.
                 </p>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                className="p-2 hover:bg-[#F1F1EC] rounded-full transition-colors text-[#55585E] hover:text-[#111214]"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {registrationMode === "PAID" && (
-              <div className="mx-6 mt-4 p-4 bg-primary/5 border border-primary/20 rounded-2xl text-primary text-xs font-semibold flex items-center gap-2.5 shadow-sm text-left">
+              <div className="mx-6 mt-4 p-4 bg-[var(--club-soft)] border border-primary/20 rounded-2xl text-[var(--club-text)] text-sm font-semibold flex items-center gap-2.5 text-left">
                 <svg
-                  className="w-5 h-5 text-primary shrink-0"
+                  className="w-5 h-5 text-[var(--club-text)] shrink-0"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -217,7 +217,7 @@ export default function JoinButton({
                 </svg>
                 <div>
                   <div className="font-extrabold">Pendaftaran Berbayar</div>
-                  <div className="text-[10px] opacity-80 font-medium mt-0.5">
+                  <div className="text-xs opacity-80 font-medium mt-0.5">
                     Komunitas ini mewajibkan pemilihan paket membership aktif
                     untuk mendaftar.
                   </div>
@@ -234,8 +234,8 @@ export default function JoinButton({
               {registrationMode === "PAID" &&
                 memberships &&
                 memberships.length > 0 && (
-                  <div className="bg-primary/5 p-5 rounded-2xl border border-primary/10 space-y-3">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
+                  <div className="bg-[var(--club-soft)] p-5 rounded-2xl border border-primary/10 space-y-3">
+                    <label className="block text-[15px] font-bold text-[#3A3C41]">
                       Pilih Paket Membership{" "}
                       <span className="text-red-500">*</span>
                     </label>
@@ -243,10 +243,10 @@ export default function JoinButton({
                       {memberships.map((m) => (
                         <label
                           key={m.id}
-                          className={`flex items-center justify-between p-3 bg-white dark:bg-slate-900 border rounded-xl cursor-pointer transition-all hover:border-primary/50 ${
+                          className={`flex items-center justify-between p-3 bg-white border rounded-xl cursor-pointer transition-all hover:border-primary/50 ${
                             selectedMembershipId === m.id
-                              ? "border-primary ring-2 ring-primary/10"
-                              : "border-slate-200 dark:border-slate-700"
+                              ? "border-[var(--club)] ring-2 ring-primary/10"
+                              : "border-[#E6E6E0]"
                           }`}
                         >
                           <div className="flex items-center gap-2">
@@ -255,18 +255,18 @@ export default function JoinButton({
                               name="joinMembershipTier"
                               checked={selectedMembershipId === m.id}
                               onChange={() => setSelectedMembershipId(m.id)}
-                              className="w-4 h-4 text-primary focus:ring-primary border-slate-300 dark:border-slate-600 dark:bg-slate-800"
+                              className="w-4 h-4 text-[var(--club-text)] focus:ring-[var(--club)] border-[#E6E6E0]"
                             />
                             <div className="text-left">
-                              <div className="font-bold text-slate-900 dark:text-slate-100 text-xs">
+                              <div className="font-bold text-[#111214] text-sm">
                                 {m.name}
                               </div>
-                              <div className="text-[10px] font-semibold text-slate-400">
+                              <div className="text-xs font-semibold text-[#6B6E74]">
                                 Durasi: {m.durationDays} hari
                               </div>
                             </div>
                           </div>
-                          <div className="font-black text-primary text-xs">
+                          <div className="font-extrabold text-[var(--club-text)] text-sm">
                             Rp {m.price?.toLocaleString("id-ID") || 0}
                           </div>
                         </label>
@@ -277,7 +277,7 @@ export default function JoinButton({
 
               {fields.map((field) => (
                 <div key={field.id} className="space-y-2 text-left">
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
+                  <label className="block text-[15px] font-bold text-[#3A3C41]">
                     {field.label}
                     {field.required && (
                       <span className="text-red-500 ml-1">*</span>
@@ -295,7 +295,7 @@ export default function JoinButton({
                           [field.id]: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-medium text-sm resize-none dark:text-white"
+                      className="w-full px-4 py-3 bg-white border border-[#E6E6E0] rounded-xl focus:ring-2 focus:ring-[var(--club)] focus:border-primary outline-none transition-all font-medium text-[15px] resize-none"
                     />
                   ) : field.type === "select" ? (
                     <select
@@ -307,7 +307,7 @@ export default function JoinButton({
                           [field.id]: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-semibold text-sm dark:text-white"
+                      className="w-full px-4 py-3 bg-white border border-[#E6E6E0] rounded-xl focus:ring-2 focus:ring-[var(--club)] focus:border-primary outline-none transition-all font-semibold text-[15px]"
                     >
                       {(field.options || []).map((opt) => (
                         <option key={opt} value={opt}>
@@ -326,25 +326,25 @@ export default function JoinButton({
                           [field.id]: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-medium text-sm dark:text-white"
+                      className="w-full px-4 py-3 bg-white border border-[#E6E6E0] rounded-xl focus:ring-2 focus:ring-[var(--club)] focus:border-primary outline-none transition-all font-medium text-[15px]"
                     />
                   )}
                 </div>
               ))}
 
               {/* Actions */}
-              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 mt-6">
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-[#E6E6E0] mt-6">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-5 py-3 font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all text-sm"
+                  className="px-5 py-3 font-bold text-[#55585E] hover:text-[#111214] hover:bg-[#F1F1EC] rounded-xl transition-all text-[15px]"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-3 bg-primary hover:opacity-90 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all text-sm disabled:opacity-50"
+                  className="min-h-12 px-6 bg-[var(--club)] hover:brightness-95 text-[var(--club-on)] font-extrabold rounded-full transition-all text-[15px] disabled:opacity-50"
                 >
                   {loading ? "Mengirim..." : "Kirim Pendaftaran"}
                 </button>
