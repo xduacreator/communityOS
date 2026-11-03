@@ -66,30 +66,6 @@ function JoinCta({ ctx, className }: { ctx: ClubCtx; className: string }) {
 }
 
 /** Floating join bar above the bottom tabs on phones */
-function MobileJoinBar({ ctx }: { ctx: ClubCtx }) {
-  if (ctx.isLoggedIn && ctx.status) return null;
-  const prices = ctx.packages.map((p) => p.memberPrice || 0).filter((v) => v > 0);
-  // A long CTA label from the CMS gets the whole bar
-  const wide = ctx.labels.join.length > 14;
-  return (
-    <div className="fixed inset-x-3 bottom-[86px] z-[80] flex items-center justify-between gap-2.5 rounded-full bg-[#111214] p-[7px] text-white shadow-[0_20px_40px_-18px_rgba(17,18,20,0.6)] md:hidden">
-      {!wide && (
-        <span className="flex min-w-0 flex-col pl-3.5">
-          <b className="truncate text-[15px]">{prices.length ? `Mulai ${rupiah(Math.min(...prices))}` : ctx.community.name}</b>
-          <span className="truncate text-xs text-[#BEC0C5]">
-            {ctx.community.registrationMode === "PAID" ? "gabung dengan membership" : "daftar member gratis"}
-          </span>
-        </span>
-      )}
-      {ctx.joinButton(
-        `inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--club)] px-5 text-[15px] font-extrabold text-[var(--club-on)] ${wide ? "w-full" : "shrink-0"}`,
-        ctx.labels.join,
-        <span />,
-      )}
-    </div>
-  );
-}
-
 function WhatsAppButton({ ctx, className, label = "Chat WhatsApp" }: { ctx: ClubCtx; className: string; label?: string }) {
   const href = whatsappLink(ctx.community.whatsappNumber, `Halo pengurus ${ctx.community.name}, saya mau tanya.`);
   if (!href) return null;
@@ -230,14 +206,11 @@ export function HomeView({ ctx }: { ctx: ClubCtx }) {
             <span className="text-[15px] text-[#D4D5D9] md:text-lg">{joinNote(ctx)}.</span>
           </div>
           <div className="flex flex-wrap gap-2.5">
+            <JoinCta ctx={ctx} className={`${btnClub} min-h-12 pl-6 pr-2 md:min-h-14 md:text-[17px]`} />
             <WhatsAppButton ctx={ctx} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white/10 px-5 text-[15px] font-bold text-white md:min-h-14 md:text-[17px]" />
-            <span className="hidden md:inline-flex">
-              <JoinCta ctx={ctx} className={`${btnClub} min-h-14 pl-6 pr-2 text-[17px]`} />
-            </span>
           </div>
         </div>
       </section>
-      <MobileJoinBar ctx={ctx} />
     </>
   );
 }
@@ -351,8 +324,12 @@ export function PackagesView({ ctx }: { ctx: ClubCtx }) {
           ))}
           <PaymentCard ctx={ctx} />
         </div>
+        {!(ctx.isLoggedIn && ctx.status) && (
+          <div className="md:hidden">
+            <JoinCta ctx={ctx} className={`${btnClub} min-h-14 w-full pl-6 pr-2 text-[17px]`} />
+          </div>
+        )}
       </section>
-      <MobileJoinBar ctx={ctx} />
     </>
   );
 }
