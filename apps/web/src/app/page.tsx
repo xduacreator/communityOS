@@ -147,7 +147,7 @@ export default async function Home() {
           <figure className="absolute -right-2 bottom-0 w-[120px] rotate-[4deg] rounded-[24px] bg-[#111214] p-1.5 shadow-[0_30px_60px_-20px_rgba(17,18,20,0.5)] sm:-right-4 sm:w-[210px] sm:rounded-[34px] sm:p-2">
             <img
               src="/images/landing/member-hub-mobile.webp"
-              alt="Member Hub dengan tombol check-in"
+              alt="Halaman member dengan tombol check-in"
               width={600}
               height={1298}
               className="block h-auto w-full rounded-[18px] sm:rounded-[27px]"
@@ -239,9 +239,9 @@ export default async function Home() {
             <p className="text-base leading-relaxed text-[#4A4220]">{t("home.tile.packages.desc")}</p>
             <img
               src="/images/landing/microsite-sessions-desktop.webp"
-              alt="Daftar paket sesi di microsite klub"
+              alt="Daftar paket di halaman klub"
               loading="lazy"
-              className="mt-5 block h-[230px] w-full rounded-t-2xl object-cover object-[20%_35%]"
+              className="mt-5 block h-[230px] w-full rounded-t-2xl object-cover object-[0%_35%]"
             />
           </article>
           <article className="flex min-w-0 flex-[1_1_340px] flex-col gap-2.5 overflow-hidden rounded-[28px] bg-[#DCEBFF] px-6 pt-7 sm:px-8 sm:pt-8">
@@ -250,9 +250,9 @@ export default async function Home() {
             <p className="text-base leading-relaxed text-[#24364F]">{t("home.tile.member.desc")}</p>
             <img
               src="/images/landing/member-hub-mobile.webp"
-              alt="Member Hub dengan sisa sesi"
+              alt="Halaman member dengan sisa sesi"
               loading="lazy"
-              className="mt-5 block h-[230px] w-[70%] self-center rounded-t-3xl border-[7px] border-b-0 border-[#111214] object-cover object-[center_62%]"
+              className="mt-5 block h-[230px] w-[70%] self-center rounded-t-3xl border-[7px] border-b-0 border-[#111214] object-cover object-[center_30%]"
             />
           </article>
         </div>
