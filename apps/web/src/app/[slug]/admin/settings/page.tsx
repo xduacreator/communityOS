@@ -4,10 +4,68 @@ import { getApiUrl } from '../../../../lib/api';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuthHeaders } from '../../../../lib/auth';
-import { Settings, Save, Globe, Type, Info, Phone, Image as ImageIcon, BarChart2, Search, X, Trash2 } from 'lucide-react';
+import { Save, Image as ImageIcon, X, Trash2, Pencil, Plus, ArrowUp, ArrowDown, UserRound, Palette, House, Menu, Phone, CreditCard, ClipboardList, Search, type LucideIcon } from 'lucide-react';
+import { clubPalette } from '../../../../lib/club';
 import ConfirmModal from '../../../../components/ui/ConfirmModal';
 import { Community, Membership } from '../../../../types';
 import imageCompression from 'browser-image-compression';
+
+const inputCls =
+  'w-full rounded-xl border border-[#E6E6E0] bg-[#F6F6F2] px-4 py-3 font-medium outline-none transition-colors focus:border-[#111214] focus:bg-white';
+const ghostBtn =
+  'inline-flex items-center rounded-xl border border-[#E6E6E0] px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-[#F1F1EC]';
+
+const SECTIONS: { id: string; label: string; icon: LucideIcon }[] = [
+  { id: 'profil', label: 'Profil', icon: UserRound },
+  { id: 'tampilan', label: 'Tampilan', icon: Palette },
+  { id: 'beranda', label: 'Beranda', icon: House },
+  { id: 'menu', label: 'Nama menu', icon: Menu },
+  { id: 'kontak', label: 'Kontak', icon: Phone },
+  { id: 'pendaftaran', label: 'Pendaftaran', icon: CreditCard },
+  { id: 'formulir', label: 'Formulir', icon: ClipboardList },
+  { id: 'seo', label: 'Alamat & SEO', icon: Search },
+];
+
+function Section({ id, title, desc, children }: { id: string; title: string; desc: string; children: React.ReactNode }) {
+  return (
+    <section id={id} className="scroll-mt-32 rounded-3xl border border-[#E6E6E0] bg-white p-5 sm:p-7 lg:scroll-mt-24">
+      <div className="mb-5 border-b border-[#EEEEE8] pb-4">
+        <h2 className="text-lg font-extrabold text-slate-900">{title}</h2>
+        <p className="mt-0.5 text-sm text-slate-500">{desc}</p>
+      </div>
+      <div className="space-y-5">{children}</div>
+    </section>
+  );
+}
+
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-sm font-bold text-slate-700">{label}</span>
+      {children}
+      {hint && <span className="text-xs leading-relaxed text-slate-500">{hint}</span>}
+    </div>
+  );
+}
+
+/** Button-styled file picker for one image */
+function FileButton({ label, onFile }: { label: string; onFile: (file: File) => void }) {
+  return (
+    <label className="inline-flex cursor-pointer items-center rounded-xl bg-[#111214] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#2A2C30]">
+      {label}
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onFile(file);
+          e.target.value = '';
+        }}
+      />
+    </label>
+  );
+}
 
 export default function AdminSettings({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = React.use(params);
@@ -54,7 +112,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
         setMembershipTiers(tiersData);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
     } finally {
       setLoading(false);
     }
@@ -106,7 +164,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
       setEditingTier(null);
       setTierForm({ name: '', durationDays: 30, price: 0 });
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'An error occurred');
+      alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
     }
   };
 
@@ -141,7 +199,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
         setMembershipTiers(await tiersRes.json());
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'An error occurred');
+      alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
     } finally {
       setIsConfirmModalOpen(false);
       setTierToDelete(null);
@@ -229,9 +287,18 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
         router.push(`/${community.slug}/admin/settings`);
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'An error occurred');
+      alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const compressBanner = async (file: File) => {
+    try {
+      setBannerFile(await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1600, useWebWorker: true }));
+    } catch (err) {
+      console.error('Error compressing image:', err);
+      setBannerFile(file);
     }
   };
 
@@ -265,618 +332,285 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
   };
 
   if (loading) return (
-    <div className="flex items-center justify-center h-[60vh]">
-      <div className="animate-pulse flex flex-col items-center">
-        <div className="w-12 h-12 bg-indigo-200 rounded-full mb-4"></div>
-        <div className="text-slate-400 font-medium">Memuat pengaturan…</div>
-      </div>
-    </div>
+    <div className="flex h-[60vh] items-center justify-center font-medium text-slate-400">Memuat pengaturan…</div>
   );
 
   if (error) return <div className="p-8 text-center text-red-500 bg-red-50 m-8 rounded-2xl">{error}</div>;
 
   if (!community) return <div className="p-8 text-center text-slate-500 font-bold">Klub tidak ditemukan.</div>;
 
+  const set = (patch: Partial<Community>) => setCommunity({ ...community, ...patch });
+  const theme = community.theme || '#E4572E';
+  const logoSrc = logoFile ? URL.createObjectURL(logoFile) : community.logo || '';
+  const bannerSrc = bannerFile ? URL.createObjectURL(bannerFile) : community.heroBanner || '';
+  const qrisSrc = qrisFile ? URL.createObjectURL(qrisFile) : community.qrisImageUrl || '';
+  const paid = community.registrationMode === 'PAID';
+
   return (
-    <div className="max-w-5xl mx-auto pb-12">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Pengaturan Klub</h1>
-          <p className="mt-2 text-slate-500">Semua isi halaman klub: profil, tampilan, menu, pembayaran, dan formulir pendaftaran.</p>
-        </div>
+    <div className="mx-auto max-w-6xl pb-8">
+      <div className="mb-6">
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Pengaturan Klub</h1>
+        <p className="mt-2 text-slate-500">Atur semua yang tampil di halaman klub. Perubahan tampil setelah disimpan.</p>
       </div>
 
-      <div className="bg-white shadow-sm rounded-3xl border border-slate-200">
-        <form onSubmit={handleSave} className="p-4 sm:p-8 space-y-10">
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            {/* General Info */}
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center">
-                 <Type className="w-5 h-5 mr-2 text-indigo-500" /> Informasi Umum
-              </h3>
-              
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Nama klub</label>
-                <input
-                  type="text"
-                  required
-                  value={community.name || ''}
-                  onChange={(e) => setCommunity({ ...community, name: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Tagline</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Komunitas Pecinta Alam Indonesia"
-                  value={community.tagline || ''}
-                  onChange={(e) => setCommunity({ ...community, tagline: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                />
-                <p className="text-xs text-slate-500 mt-2">Kalimat pendek di bawah nama klub di beranda.</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Alamat halaman (slug)</label>
-                <input
-                  type="text"
-                  required
-                  value={community.slug || ''}
-                  onChange={(e) => setCommunity({ ...community, slug: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                />
-                <p className="text-xs text-slate-500 mt-2">Bagian akhir alamat halaman klub, misalnya latih.club/nama-klub. Hati-hati: mengubahnya membuat link lama tidak berlaku.</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Tipe pendaftaran member</label>
-                <select
-                  value={community.registrationMode || 'FREE'}
-                  onChange={(e) => setCommunity({ ...community, registrationMode: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-700"
+      <div className="lg:grid lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-8">
+        {/* Section navigation */}
+        <nav aria-label="Bagian pengaturan" className="sticky top-16 z-10 -mx-4 mb-5 overflow-x-auto bg-[#F6F6F2]/95 px-4 py-2 backdrop-blur lg:top-24 lg:mx-0 lg:mb-0 lg:self-start lg:bg-transparent lg:p-0">
+          <ul className="flex gap-1.5 lg:flex-col lg:gap-0.5">
+            {SECTIONS.map((s) => (
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  className="flex items-center gap-2.5 whitespace-nowrap rounded-full border border-[#E6E6E0] bg-white px-3.5 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 lg:rounded-xl lg:border-0 lg:bg-transparent lg:px-3 lg:hover:bg-white"
                 >
-                  <option value="FREE">Gratis — daftar dulu, bayar per paket</option>
-                  <option value="PAID">Berbayar — wajib beli membership saat daftar</option>
-                </select>
-                <p className="text-xs text-slate-400 mt-2">Gratis: calon member cukup isi formulir. Berbayar: calon member wajib memilih dan membayar paket membership di bawah.</p>
-              </div>
+                  <s.icon className="hidden h-4 w-4 text-slate-400 lg:block" />
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-              {community.registrationMode === 'PAID' && (
-                <div className="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100 space-y-4 text-left">
-                  <div className="flex justify-between items-center">
-                    <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-wider">Paket Membership Komunitas</h4>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingTier(null);
-                        setTierForm({ name: '', durationDays: 30, price: 0 });
-                        setShowTierModal(true);
-                      }}
-                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors"
-                    >
-                      + Tambah Paket
+        <form onSubmit={handleSave} className="min-w-0 space-y-5">
+          {/* Profil */}
+          <Section id="profil" title="Profil klub" desc="Nama dan cerita klub yang dibaca calon member.">
+            <Field label="Nama klub">
+              <input type="text" required value={community.name || ''} onChange={(e) => set({ name: e.target.value })} className={inputCls} />
+            </Field>
+            <Field label="Tagline" hint="Kalimat pendek di bawah nama klub di beranda.">
+              <input type="text" placeholder="Contoh: Lari bareng, tumbuh bareng." value={community.tagline || ''} onChange={(e) => set({ tagline: e.target.value })} className={inputCls} />
+            </Field>
+            <Field label="Deskripsi singkat" hint="Satu-dua kalimat di beranda, di bawah tagline.">
+              <textarea rows={2} value={community.shortDescription || ''} onChange={(e) => set({ shortDescription: e.target.value })} placeholder="Contoh: Komunitas lari Jakarta dengan sesi easy run dan long run setiap pekan." className={`${inputCls} resize-y`} />
+            </Field>
+            <Field label="Sambutan pengurus" hint="Kutipan dari pengurus, tampil di halaman Tentang. Boleh dikosongkan.">
+              <textarea rows={2} value={community.welcomeMessage || ''} onChange={(e) => set({ welcomeMessage: e.target.value })} placeholder="Contoh: Selamat datang! Ayo lari bareng tiap pekan." className={`${inputCls} resize-y`} />
+            </Field>
+            <Field label="Tentang klub" hint="Cerita lengkap klub, tampil di halaman Tentang.">
+              <textarea rows={6} value={community.about || ''} onChange={(e) => set({ about: e.target.value })} placeholder="Sejarah klub, jadwal rutin, coach, prestasi…" className={`${inputCls} resize-y`} />
+            </Field>
+          </Section>
+
+          {/* Tampilan */}
+          <Section id="tampilan" title="Logo & tampilan" desc="Logo, warna, dan foto utama halaman klub.">
+            <Field label="Logo" hint="Gambar persegi, minimal 256 × 256 px. Juga dipakai di loader dan kartu member.">
+              <div className="flex items-center gap-4">
+                <span className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#E6E6E0] bg-[#F6F6F2]">
+                  {logoSrc ? <img src={logoSrc} alt="Logo klub" className="h-full w-full object-cover" /> : <ImageIcon className="h-7 w-7 text-slate-300" />}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <FileButton label={logoSrc ? 'Ganti logo' : 'Pilih logo'} onFile={setLogoFile} />
+                  {logoSrc && (
+                    <button type="button" onClick={() => { setLogoFile(null); set({ logo: '' }); }} className={ghostBtn}>
+                      Hapus
                     </button>
-                  </div>
-                  {membershipTiers.length > 0 ? (
-                    <div className="space-y-2">
-                      {membershipTiers.map((tier) => (
-                        <div key={tier.id} className="flex justify-between items-center p-3 bg-white border border-slate-200 rounded-xl">
-                          <div>
-                            <div className="text-sm font-bold text-slate-800">{tier.name}</div>
-                            <div className="text-[10px] text-slate-400 font-semibold mt-0.5">Durasi: {tier.durationDays} hari</div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-black text-indigo-600">Rp {tier.price?.toLocaleString('id-ID')}</span>
-                            <div className="flex gap-1">
-                              <button
-                                type="button"
-                                onClick={() => handleEditTierClick(tier)}
-                                className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
-                                title="Edit"
-                              >
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteTierRequest(tier.id)}
-                                className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
-                                title="Hapus"
-                              >
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6 text-slate-400 font-medium text-xs bg-white border border-dashed border-slate-200 rounded-xl">
-                      Belum ada paket membership. Tambah paket untuk membatasi pendaftaran berbayar.
-                    </div>
                   )}
                 </div>
-              )}
-            </div>
-
-            {/* Profile Info */}
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center">
-                <Info className="w-5 h-5 mr-2 text-indigo-500" /> Isi Halaman Klub
-              </h3>
-              
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Label kecil di atas nama klub</label>
-                <input
-                  type="text"
-                  value={community.welcomeMessage || ''}
-                  onChange={(e) => setCommunity({ ...community, welcomeMessage: e.target.value })}
-                  placeholder="Contoh: Pendaftaran member dibuka"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                />
-                <p className="text-xs text-slate-500 mt-2">Tampil sebagai label kecil di atas judul beranda.</p>
               </div>
+            </Field>
 
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Teks tombol gabung</label>
-                <input
-                  type="text"
-                  value={community.joinCtaLabel || ''}
-                  onChange={(e) => setCommunity({ ...community, joinCtaLabel: e.target.value })}
-                  placeholder="Gabung Klub"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                />
-                <p className="text-xs text-slate-500 mt-2">Teks tombol utama untuk mendaftar. Usahakan singkat, maksimal 2–3 kata.</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Deskripsi singkat</label>
-                <textarea
-                  rows={2}
-                  value={community.shortDescription || ''}
-                  onChange={(e) => setCommunity({ ...community, shortDescription: e.target.value })}
-                  placeholder="Komunitas yang menghubungkan orang, berbagi pengetahuan..."
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium resize-none"
-                />
-                <p className="text-xs text-slate-500 mt-2">Satu-dua kalimat di beranda, di bawah tagline.</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Tentang klub</label>
-                <textarea
-                  rows={4}
-                  value={community.about || ''}
-                  onChange={(e) => setCommunity({ ...community, about: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium resize-none"
-                />
-                <p className="text-xs text-slate-500 mt-2">Cerita lengkap klub, tampil di halaman Tentang.</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center">
-                  <Phone className="w-4 h-4 mr-2 text-slate-400" /> Contact Info
+            <Field label="Warna utama" hint="Dipakai untuk tombol dan aksen. Warna teks di atasnya menyesuaikan otomatis.">
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-[#E6E6E0]" style={{ background: theme }}>
+                  <input type="color" value={theme} onChange={(e) => set({ theme: e.target.value })} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" aria-label="Pilih warna" />
                 </label>
-                <textarea
-                  rows={4}
-                  value={community.contactInfo || ''}
-                  onChange={(e) => setCommunity({ ...community, contactInfo: e.target.value })}
-                  placeholder="Contoh:&#10;Sekretariat: Pintu 7 GBK, Senayan&#10;Instagram: @namaklub"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium resize-y min-h-[120px]"
-                />
-                <p className="text-xs text-slate-500 mt-2">Alamat, email, media sosial, dan lainnya. Tampil di halaman Kontak.</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Nomor WhatsApp</label>
                 <input
                   type="text"
-                  value={community.whatsappNumber || ''}
-                  onChange={(e) => setCommunity({ ...community, whatsappNumber: e.target.value })}
-                  placeholder="Contoh: 081234567890"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
+                  value={community.theme || ''}
+                  onChange={(e) => set({ theme: e.target.value })}
+                  placeholder="#E4572E"
+                  className="w-32 rounded-xl border border-[#E6E6E0] bg-[#F6F6F2] px-4 py-3 font-mono font-medium uppercase outline-none focus:border-[#111214] focus:bg-white"
+                  aria-label="Kode warna"
                 />
-                <p className="text-xs text-slate-500 mt-2">Dipakai untuk tombol Chat WhatsApp di halaman klub.</p>
+                <span className="inline-flex items-center rounded-full px-5 py-2.5 text-sm font-extrabold" style={{ background: theme, color: clubPalette(theme).on }}>
+                  Contoh tombol
+                </span>
               </div>
-            </div>
-          </div>
+            </Field>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            {/* Branding */}
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center">
-                <ImageIcon className="w-5 h-5 mr-2 text-indigo-500" /> Logo & Warna
-              </h3>
-              
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Logo klub</label>
-                {(logoFile || community.logo) && (
-                  <img 
-                    src={logoFile ? URL.createObjectURL(logoFile) : (community.logo || undefined)} 
-                    alt="Logo Preview" 
-                    className="w-24 h-24 object-cover rounded-xl mb-4 shadow-sm border border-slate-200"
-                  />
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setLogoFile(e.target.files[0]);
-                    }
-                  }}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                />
-                <p className="text-xs text-slate-500 mt-2">Gambar persegi, minimal 256 × 256 px. Juga dipakai sebagai loader dan kartu member.</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Warna utama</label>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="color"
-                    value={community.theme || '#4f46e5'}
-                    onChange={(e) => setCommunity({ ...community, theme: e.target.value })}
-                    className="w-14 h-14 p-1 bg-white border border-slate-200 rounded-xl cursor-pointer"
-                  />
-                  <div className="text-xs text-slate-500">
-                    <p className="font-semibold text-slate-700 mb-1">Pilih warna klub</p>
-                    <p>Dipakai untuk tombol dan aksen di halaman klub. Warna teks menyesuaikan otomatis supaya tetap terbaca.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Foto utama beranda</label>
-                {(bannerFile || community.heroBanner) && (
-                  <div className="relative mb-4">
-                    <img 
-                      src={bannerFile ? URL.createObjectURL(bannerFile) : (community.heroBanner || undefined)} 
-                      alt="Banner Preview" 
-                      className="w-full h-32 object-cover rounded-xl shadow-sm border border-slate-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setBannerFile(null);
-                        setCommunity({ ...community, heroBanner: '' });
-                      }}
-                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-sm transition-colors"
-                      title="Hapus Banner"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async (e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      const file = e.target.files[0];
-                      try {
-                        const compressedFile = await imageCompression(file, {
-                          maxSizeMB: 1,
-                          maxWidthOrHeight: 1200,
-                          useWebWorker: true
-                        });
-                        setBannerFile(compressedFile);
-                      } catch (error) {
-                        console.error('Error compressing image:', error);
-                        setBannerFile(file);
-                      }
-                    }
-                  }}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                />
-                <p className="text-xs text-slate-500 mt-2">
-                  Direkomendasikan: Resolusi 1200 x 400px (Rasio 3:1). Gambar akan dikompres secara otomatis.
-                </p>
-              </div>
-            </div>
-
-            {/* Menu Labels */}
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center">
-                <Settings className="w-5 h-5 mr-2 text-indigo-500" /> Nama Menu
-              </h3>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Menu Beranda</label>
-                  <input
-                    type="text"
-                    value={community.menuHomeLabel || ''}
-                    onChange={(e) => setCommunity({ ...community, menuHomeLabel: e.target.value })}
-                    placeholder="Beranda"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Menu Paket</label>
-                  <input
-                    type="text"
-                    value={community.menuEventsLabel || ''}
-                    onChange={(e) => setCommunity({ ...community, menuEventsLabel: e.target.value })}
-                    placeholder="Paket"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Menu Galeri</label>
-                  <input
-                    type="text"
-                    value={community.menuGalleryLabel || ''}
-                    onChange={(e) => setCommunity({ ...community, menuGalleryLabel: e.target.value })}
-                    placeholder="Galeri"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Menu Tentang</label>
-                  <input
-                    type="text"
-                    value={community.menuAboutLabel || ''}
-                    onChange={(e) => setCommunity({ ...community, menuAboutLabel: e.target.value })}
-                    placeholder="Tentang"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Menu Kontak</label>
-                  <input
-                    type="text"
-                    value={community.menuContactLabel || ''}
-                    onChange={(e) => setCommunity({ ...community, menuContactLabel: e.target.value })}
-                    placeholder="Kontak"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Judul halaman Paket</label>
-                  <input
-                    type="text"
-                    value={community.packagesHeadingLabel || ''}
-                    onChange={(e) => setCommunity({ ...community, packagesHeadingLabel: e.target.value })}
-                    placeholder="Paket"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                  />
-                  <p className="text-xs text-slate-500 mt-2">Judul besar di atas daftar paket. Kosongkan untuk memakai nama Menu Paket.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Statistics */}
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center">
-                <BarChart2 className="w-5 h-5 mr-2 text-indigo-500" /> Angka Statistik di Beranda
-              </h3>
-              <p className="text-sm text-slate-500 mb-4">Empat angka di beranda klub. Kosongkan untuk memakai data asli (misalnya jumlah member).</p>
-              
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Member</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: 150+"
-                  value={community.statMembersValue || ''}
-                  onChange={(e) => setCommunity({ ...community, statMembersValue: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Kegiatan</label>
-                  <input
-                    type="text"
-                    placeholder="Contoh: 45+"
-                    value={community.statEventsValue || ''}
-                    onChange={(e) => setCommunity({ ...community, statEventsValue: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Kota</label>
-                  <input
-                    type="text"
-                    placeholder="Contoh: 3"
-                    value={community.statCitiesValue || ''}
-                    onChange={(e) => setCommunity({ ...community, statCitiesValue: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Prestasi</label>
-                  <input
-                    type="text"
-                    placeholder="Contoh: 10+"
-                    value={community.statAchievementsValue || ''}
-                    onChange={(e) => setCommunity({ ...community, statAchievementsValue: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* SEO Configuration */}
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center">
-                <Search className="w-5 h-5 mr-2 text-indigo-500" /> SEO (Pencarian Google)
-              </h3>
-              <p className="text-sm text-slate-500 mb-4">Bantu calon member menemukan klub lewat Google dan asisten AI. Boleh dikosongkan.</p>
-              
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Judul di hasil pencarian</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Jakarta Runners — Komunitas Lari di Jakarta"
-                  value={community.seoTitle || ''}
-                  onChange={(e) => setCommunity({ ...community, seoTitle: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                />
-                <p className="text-xs text-slate-500 mt-2">Kosongkan untuk memakai nama klub.</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Deskripsi di hasil pencarian</label>
-                <textarea
-                  rows={3}
-                  placeholder="Contoh: Komunitas lari untuk semua level dengan sesi rutin setiap pekan di Jakarta."
-                  value={community.seoDescription || ''}
-                  onChange={(e) => setCommunity({ ...community, seoDescription: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium resize-none"
-                />
-                <p className="text-xs text-slate-500 mt-2">Ringkasan yang muncul di Google dan saat link dibagikan di WhatsApp/media sosial.</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Kata kunci</label>
-                <input
-                  type="text"
-                    value={community.seoKeywords || ''}
-                    onChange={(e) => setCommunity({ ...community, seoKeywords: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            {/* Payment Details Section */}
-            <div className="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-8 border border-slate-100">
-              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-                <div className="p-2.5 bg-green-50 text-green-600 rounded-xl">
-                  <Globe className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800">Instruksi Pembayaran & QRIS</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">Atur instruksi transfer bank / e-wallet dan unggah QRIS (jika ada) untuk pendaftaran berbayar.</p>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Instruksi Pembayaran</label>
-                  <textarea
-                    value={community.paymentInstructions || ''}
-                    onChange={(e) => setCommunity({ ...community, paymentInstructions: e.target.value })}
-                    placeholder="Contoh:&#10;Silakan transfer ke rekening berikut:&#10;- BCA: 123456789 a/n Kas Komunitas&#10;- Mandiri: 987654321 a/n Kas Komunitas"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all font-medium resize-y min-h-[120px]"
-                  />
-                  <p className="text-xs text-slate-500 mt-2">Instruksi ini akan muncul saat member membeli paket atau memperpanjang membership.</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Upload QRIS (Opsional)</label>
-                  <div className="flex items-start gap-6">
-                    <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center relative group">
-                      {(qrisFile || community.qrisImageUrl) ? (
-                        <>
-                          <img
-                            src={qrisFile ? URL.createObjectURL(qrisFile) : (community.qrisImageUrl || '')}
-                            alt="QRIS Preview"
-                            className="w-full h-full object-contain"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => { setQrisFile(null); setCommunity({ ...community, qrisImageUrl: '' }); }}
-                            className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            Hapus
-                          </button>
-                        </>
-                      ) : (
-                        <ImageIcon className="w-8 h-8 text-slate-300" />
-                      )}
-                    </div>
-                    <div className="flex-1 pt-2">
-                      <label className="cursor-pointer px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-bold rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2 max-w-[200px]">
-                        Pilih Gambar QRIS
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={async (e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              const options = { maxSizeMB: 1, maxWidthOrHeight: 1080, useWebWorker: true };
-                              const compressed = await imageCompression(e.target.files[0], options);
-                              setQrisFile(compressed);
-                            }
-                          }}
-                          className="hidden"
-                        />
-                      </label>
-                      <p className="text-xs text-slate-500 mt-3 leading-relaxed">
-                        Format: JPG, PNG. Maksimal 1MB. Gambar QRIS akan ditampilkan di halaman pembayaran.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          {/* Custom Registration Form Builder */}
-          <div className="pt-8 border-t border-slate-100 space-y-6">
-            <h3 className="text-xl font-bold text-slate-900 flex items-center">
-              <Settings className="w-5 h-5 mr-2 text-indigo-500" /> Pertanyaan Formulir Pendaftaran
-            </h3>
-            <p className="text-sm text-slate-500">Pertanyaan tambahan yang wajib diisi calon member saat mendaftar, misalnya ukuran jersey atau kontak darurat.</p>
-
-            <div className="space-y-4">
-              {customFields.map((field, index) => (
-                <div key={field.id} className="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 relative group">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-2">
-                      <span className="bg-slate-200 text-slate-700 font-bold px-3 py-1 rounded-lg text-xs">
-                        Pertanyaan {index + 1}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => moveField(index, 'up')}
-                        disabled={index === 0}
-                        className="p-1 hover:bg-slate-200 text-slate-500 rounded disabled:opacity-30"
-                      >
-                        ▲
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveField(index, 'down')}
-                        disabled={index === customFields.length - 1}
-                        className="p-1 hover:bg-slate-200 text-slate-500 rounded disabled:opacity-30"
-                      >
-                        ▼
-                      </button>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeCustomField(field.id)}
-                      className="text-rose-500 hover:text-rose-700 font-bold text-sm bg-rose-50 px-3 py-1 rounded-xl"
-                    >
+            <Field label="Foto utama beranda" hint="Foto lebar (landscape), misalnya 1600 × 1000 px. Dikompres otomatis.">
+              {bannerSrc ? (
+                <div className="relative overflow-hidden rounded-2xl border border-[#E6E6E0]">
+                  <img src={bannerSrc} alt="Foto utama" className="aspect-[16/9] w-full object-cover sm:aspect-[21/9]" />
+                  <div className="absolute bottom-3 right-3 flex gap-2">
+                    <FileButton label="Ganti foto" onFile={compressBanner} />
+                    <button type="button" onClick={() => { setBannerFile(null); set({ heroBanner: '' }); }} className={`${ghostBtn} bg-white`}>
                       Hapus
                     </button>
                   </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#E6E6E0] bg-[#F6F6F2] px-4 py-8 text-center">
+                  <ImageIcon className="h-7 w-7 text-slate-300" />
+                  <FileButton label="Pilih foto" onFile={compressBanner} />
+                </div>
+              )}
+            </Field>
+          </Section>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Pertanyaan</label>
+          {/* Beranda */}
+          <Section id="beranda" title="Beranda" desc="Tombol dan angka di bagian atas halaman klub.">
+            <Field label="Teks tombol gabung" hint="Tombol utama untuk mendaftar. Singkat saja, 2–3 kata.">
+              <input type="text" value={community.joinCtaLabel || ''} onChange={(e) => set({ joinCtaLabel: e.target.value })} placeholder="Gabung Klub" className="w-full rounded-xl border border-[#E6E6E0] bg-[#F6F6F2] px-4 py-3 font-medium outline-none transition-colors focus:border-[#111214] focus:bg-white sm:max-w-xs" />
+            </Field>
+            <Field label="Angka statistik" hint="Empat angka di beranda. Kosongkan untuk memakai data asli (misalnya jumlah member).">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {([
+                  ['statMembersValue', 'Member', '150+'],
+                  ['statEventsValue', 'Kegiatan', '45+'],
+                  ['statCitiesValue', 'Kota', '3'],
+                  ['statAchievementsValue', 'Prestasi', '10+'],
+                ] as const).map(([key, lbl, ph]) => (
+                  <label key={key} className="flex flex-col gap-1.5">
+                    <span className="text-xs font-semibold text-slate-500">{lbl}</span>
+                    <input type="text" value={community[key] || ''} onChange={(e) => set({ [key]: e.target.value } as Partial<Community>)} placeholder={ph} className={inputCls} />
+                  </label>
+                ))}
+              </div>
+            </Field>
+          </Section>
+
+          {/* Menu */}
+          <Section id="menu" title="Nama menu" desc="Ganti nama menu di halaman klub. Kosongkan untuk nama bawaan.">
+            <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
+              {([
+                ['menuHomeLabel', 'Menu Beranda', 'Beranda'],
+                ['menuEventsLabel', 'Menu Paket', 'Paket'],
+                ['menuGalleryLabel', 'Menu Galeri', 'Galeri'],
+                ['menuAboutLabel', 'Menu Tentang', 'Tentang'],
+                ['menuContactLabel', 'Menu Kontak', 'Kontak'],
+                ['packagesHeadingLabel', 'Judul halaman Paket', 'Sama dengan Menu Paket'],
+              ] as const).map(([key, lbl, ph]) => (
+                <label key={key} className="flex flex-col gap-1.5">
+                  <span className="text-sm font-bold text-slate-700">{lbl}</span>
+                  <input type="text" value={community[key] || ''} onChange={(e) => set({ [key]: e.target.value } as Partial<Community>)} placeholder={ph} className={inputCls} />
+                </label>
+              ))}
+            </div>
+          </Section>
+
+          {/* Kontak */}
+          <Section id="kontak" title="Kontak" desc="Ditampilkan di halaman Kontak dan tombol Chat WhatsApp.">
+            <Field label="Nomor WhatsApp pengurus">
+              <input type="tel" value={community.whatsappNumber || ''} onChange={(e) => set({ whatsappNumber: e.target.value })} placeholder="081234567890" className={inputCls} />
+            </Field>
+            <Field label="Info kontak lain" hint="Alamat sekretariat, email, media sosial, dan lainnya.">
+              <textarea rows={4} value={community.contactInfo || ''} onChange={(e) => set({ contactInfo: e.target.value })} placeholder={'Sekretariat: Pintu 7 GBK, Senayan\nInstagram: @namaklub'} className={`${inputCls} resize-y`} />
+            </Field>
+          </Section>
+
+          {/* Pendaftaran & pembayaran */}
+          <Section id="pendaftaran" title="Pendaftaran & pembayaran" desc="Cara calon member bergabung dan membayar.">
+            <Field label="Tipe pendaftaran">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {([
+                  ['FREE', 'Gratis', 'Calon member cukup isi formulir, lalu disetujui pengurus. Bayar per paket latihan.'],
+                  ['PAID', 'Berbayar', 'Calon member wajib memilih dan membayar paket membership saat mendaftar.'],
+                ] as const).map(([value, title, desc]) => {
+                  const on = (community.registrationMode || 'FREE') === value;
+                  return (
+                    <label key={value} className={`flex cursor-pointer gap-3 rounded-2xl border p-4 transition-colors ${on ? 'border-[#111214] bg-[#F6F6F2]' : 'border-[#E6E6E0] hover:bg-[#FAFAF7]'}`}>
+                      <input type="radio" name="registrationMode" value={value} checked={on} onChange={() => set({ registrationMode: value })} className="mt-1 h-4 w-4 accent-[#111214]" />
+                      <span className="flex flex-col gap-0.5">
+                        <b className="text-[15px] text-slate-900">{title}</b>
+                        <span className="text-sm leading-snug text-slate-500">{desc}</span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </Field>
+
+            <Field
+              label="Paket membership"
+              hint={paid ? 'Wajib ada minimal satu paket untuk pendaftaran berbayar.' : 'Opsional. Dipakai untuk paket latihan bertanda “Perlu membership”.'}
+            >
+              <div className="overflow-hidden rounded-2xl border border-[#E6E6E0]">
+                {membershipTiers.map((tier) => (
+                  <div key={tier.id} className="flex items-center justify-between gap-3 border-b border-[#EEEEE8] px-4 py-3 last:border-b-0">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-bold text-slate-900">{tier.name}</div>
+                      <div className="text-xs text-slate-500">
+                        {tier.durationDays} hari · Rp {tier.price?.toLocaleString('id-ID')}
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 gap-1">
+                      <button type="button" onClick={() => handleEditTierClick(tier)} className="rounded-lg p-2 text-slate-500 hover:bg-[#F1F1EC]" aria-label={`Edit ${tier.name}`}>
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button type="button" onClick={() => handleDeleteTierRequest(tier.id)} className="rounded-lg p-2 text-rose-500 hover:bg-rose-50" aria-label={`Hapus ${tier.name}`}>
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {membershipTiers.length === 0 && <div className="px-4 py-5 text-center text-sm text-slate-400">Belum ada paket membership.</div>}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingTier(null);
+                    setTierForm({ name: '', durationDays: 30, price: 0 });
+                    setShowTierModal(true);
+                  }}
+                  className="flex w-full items-center justify-center gap-2 border-t border-[#EEEEE8] bg-[#FAFAF7] px-4 py-3 text-sm font-bold text-slate-700 hover:bg-[#F1F1EC]"
+                >
+                  <Plus className="h-4 w-4" /> Tambah paket membership
+                </button>
+              </div>
+            </Field>
+
+            <Field label="Instruksi pembayaran" hint="Muncul saat member membeli paket atau mendaftar berbayar.">
+              <textarea
+                rows={4}
+                value={community.paymentInstructions || ''}
+                onChange={(e) => set({ paymentInstructions: e.target.value })}
+                placeholder={'Transfer ke BCA 123456789 a.n. Kas Klub,\nlalu unggah bukti transfer.'}
+                className={`${inputCls} resize-y`}
+              />
+            </Field>
+
+            <Field label="QRIS (opsional)" hint="Ditampilkan di samping instruksi pembayaran.">
+              <div className="flex items-center gap-4">
+                <span className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#E6E6E0] bg-[#F6F6F2]">
+                  {qrisSrc ? <img src={qrisSrc} alt="QRIS" className="h-full w-full object-contain" /> : <ImageIcon className="h-7 w-7 text-slate-300" />}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <FileButton
+                    label={qrisSrc ? 'Ganti QRIS' : 'Pilih gambar QRIS'}
+                    onFile={async (file) => setQrisFile(await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1080, useWebWorker: true }))}
+                  />
+                  {qrisSrc && (
+                    <button type="button" onClick={() => { setQrisFile(null); set({ qrisImageUrl: '' }); }} className={ghostBtn}>
+                      Hapus
+                    </button>
+                  )}
+                </div>
+              </div>
+            </Field>
+          </Section>
+
+          {/* Formulir pendaftaran */}
+          <Section id="formulir" title="Formulir pendaftaran" desc="Nama, email, dan nomor HP selalu ditanyakan. Tambahkan pertanyaan lain bila perlu, misalnya ukuran jersey atau kontak darurat.">
+            <div className="space-y-3">
+              {customFields.map((field, index) => (
+                <div key={field.id} className="rounded-2xl border border-[#E6E6E0] p-4">
+                  <div className="flex items-start gap-3">
+                    <span className="mt-2.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#F1F1EC] text-xs font-bold text-slate-600">{index + 1}</span>
+                    <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_190px]">
                       <input
                         type="text"
                         required
                         value={field.label}
                         onChange={(e) => updateCustomField(field.id, { label: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-sm"
+                        placeholder="Tulis pertanyaan"
+                        aria-label={`Pertanyaan ${index + 1}`}
+                        className={inputCls}
                       />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Jenis jawaban</label>
                       <select
                         value={field.type}
                         onChange={(e) => updateCustomField(field.id, { type: e.target.value, options: e.target.value === 'select' ? [] : undefined })}
-                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-sm"
+                        aria-label="Jenis jawaban"
+                        className={inputCls}
                       >
                         <option value="text">Teks singkat</option>
                         <option value="textarea">Teks panjang</option>
@@ -884,94 +618,114 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                         <option value="select">Pilihan (dropdown)</option>
                       </select>
                     </div>
-
-                    <div className="flex items-center pt-6">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={field.required}
-                          onChange={(e) => updateCustomField(field.id, { required: e.target.checked })}
-                          className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"
-                        />
-                        <span className="text-sm font-semibold text-slate-700">Wajib diisi</span>
-                      </label>
-                    </div>
                   </div>
 
                   {field.type === 'select' && (
-                    <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
-                      <label className="block text-xs font-bold text-slate-500 uppercase">Pilihan jawaban</label>
-                      <div className="flex flex-wrap gap-2">
-                        {(field.options || []).map((opt, optIndex) => (
-                          <div key={optIndex} className="flex items-center bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl border border-indigo-100 text-sm font-medium">
-                            <input
-                              type="text"
-                              value={opt}
-                              required
-                              onChange={(e) => {
-                                const newOpts = [...(field.options || [])];
-                                newOpts[optIndex] = e.target.value;
-                                updateCustomField(field.id, { options: newOpts });
-                              }}
-                              className="bg-transparent border-0 focus:ring-0 outline-none p-0 font-medium text-sm w-24 text-indigo-900"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newOpts = (field.options || []).filter((_, i) => i !== optIndex);
-                                updateCustomField(field.id, { options: newOpts });
-                              }}
-                              className="ml-2 text-indigo-400 hover:text-indigo-700 font-extrabold"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newOpts = [...(field.options || []), 'Option'];
-                            updateCustomField(field.id, { options: newOpts });
-                          }}
-                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl border border-slate-200 text-xs font-bold"
-                        >
-                          + Tambah pilihan
-                        </button>
-                      </div>
+                    <div className="mt-3 flex flex-wrap gap-2 pl-9">
+                      {(field.options || []).map((opt, optIndex) => (
+                        <span key={optIndex} className="flex items-center rounded-full border border-[#E6E6E0] bg-[#F6F6F2] py-1 pl-3 pr-1.5 text-sm">
+                          <input
+                            type="text"
+                            value={opt}
+                            required
+                            onChange={(e) => {
+                              const newOpts = [...(field.options || [])];
+                              newOpts[optIndex] = e.target.value;
+                              updateCustomField(field.id, { options: newOpts });
+                            }}
+                            aria-label={`Pilihan ${optIndex + 1}`}
+                            className="w-24 border-0 bg-transparent p-0 text-sm font-medium outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => updateCustomField(field.id, { options: (field.options || []).filter((_, i) => i !== optIndex) })}
+                            className="ml-1 rounded-full p-0.5 text-slate-400 hover:bg-white hover:text-slate-700"
+                            aria-label="Hapus pilihan"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </span>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => updateCustomField(field.id, { options: [...(field.options || []), `Pilihan ${(field.options || []).length + 1}`] })}
+                        className="rounded-full border border-dashed border-[#D9D9D2] px-3 py-1 text-sm font-semibold text-slate-600 hover:bg-[#F6F6F2]"
+                      >
+                        + Pilihan
+                      </button>
                     </div>
                   )}
+
+                  <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#EEEEE8] pt-3 pl-9">
+                    <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-slate-700">
+                      <input type="checkbox" checked={field.required} onChange={(e) => updateCustomField(field.id, { required: e.target.checked })} className="h-4 w-4 accent-[#111214]" />
+                      Wajib diisi
+                    </label>
+                    <div className="flex items-center gap-1">
+                      <button type="button" onClick={() => moveField(index, 'up')} disabled={index === 0} className="rounded-lg p-1.5 text-slate-500 hover:bg-[#F1F1EC] disabled:opacity-30" aria-label="Pindah ke atas">
+                        <ArrowUp className="h-4 w-4" />
+                      </button>
+                      <button type="button" onClick={() => moveField(index, 'down')} disabled={index === customFields.length - 1} className="rounded-lg p-1.5 text-slate-500 hover:bg-[#F1F1EC] disabled:opacity-30" aria-label="Pindah ke bawah">
+                        <ArrowDown className="h-4 w-4" />
+                      </button>
+                      <button type="button" onClick={() => removeCustomField(field.id)} className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50" aria-label="Hapus pertanyaan">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
-
-              {customFields.length === 0 && (
-                <div className="text-center py-10 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl text-slate-400 font-medium">
-                  Belum ada pertanyaan tambahan. Calon member hanya mengisi data standar (nama, email, nomor HP).
-                </div>
-              )}
 
               <button
                 type="button"
                 onClick={addCustomField}
-                className="w-full py-4 border-2 border-dashed border-indigo-200 text-indigo-600 hover:border-indigo-400 hover:text-indigo-700 transition-all font-bold rounded-2xl flex items-center justify-center gap-2"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#D9D9D2] py-3.5 text-sm font-bold text-slate-600 hover:bg-[#FAFAF7]"
               >
-                + Tambah pertanyaan
+                <Plus className="h-4 w-4" /> Tambah pertanyaan
               </button>
             </div>
-          </div>
+          </Section>
 
-          <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-8 flex items-center justify-between gap-4 rounded-b-3xl border-t border-[#E6E6E0] bg-white/95 px-4 py-4 backdrop-blur sm:-mx-8 sm:-mb-8 sm:px-8">
-            <p className="hidden text-sm text-slate-500 sm:block">Perubahan baru tampil di halaman klub setelah disimpan.</p>
+          {/* Alamat & SEO */}
+          <Section id="seo" title="Alamat & pencarian" desc="Alamat halaman klub dan tampilannya di Google. Boleh dibiarkan.">
+            <Field label="Alamat halaman" hint="Mengubahnya membuat link lama tidak berlaku lagi.">
+              <div className="flex items-stretch overflow-hidden rounded-xl border border-[#E6E6E0] bg-[#F6F6F2] focus-within:border-[#111214]">
+                <span className="flex items-center border-r border-[#E6E6E0] px-3 text-sm font-semibold text-slate-500">latih.club/</span>
+                <input
+                  type="text"
+                  required
+                  value={community.slug || ''}
+                  onChange={(e) => set({ slug: e.target.value })}
+                  className="min-w-0 flex-1 bg-transparent px-3 py-3 font-medium outline-none"
+                  aria-label="Slug"
+                />
+              </div>
+            </Field>
+            <Field label="Judul di hasil pencarian" hint="Kosongkan untuk memakai nama klub.">
+              <input type="text" value={community.seoTitle || ''} onChange={(e) => set({ seoTitle: e.target.value })} placeholder={`${community.name} — Komunitas di …`} className={inputCls} />
+            </Field>
+            <Field label="Deskripsi di hasil pencarian" hint="Juga muncul saat link dibagikan di WhatsApp.">
+              <textarea rows={3} value={community.seoDescription || ''} onChange={(e) => set({ seoDescription: e.target.value })} className={`${inputCls} resize-y`} />
+            </Field>
+            <Field label="Kata kunci" hint="Pisahkan dengan koma.">
+              <input type="text" value={community.seoKeywords || ''} onChange={(e) => set({ seoKeywords: e.target.value })} placeholder="komunitas lari, lari jakarta" className={inputCls} />
+            </Field>
+          </Section>
+
+          <div className="sticky bottom-0 z-10 -mx-4 flex items-center justify-between gap-4 border-t border-[#E6E6E0] bg-[#F6F6F2]/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-2xl sm:border sm:bg-white/95 sm:px-5">
+            <p className="text-sm text-slate-500">Perubahan tampil setelah disimpan.</p>
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center px-8 py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 text-lg"
+              className="flex shrink-0 items-center rounded-xl bg-[#111214] px-6 py-3 font-bold text-white transition-colors hover:bg-[#2A2C30] disabled:opacity-50"
             >
-              <Save className="w-5 h-5 mr-3" />
-              {saving ? 'Menyimpan…' : 'Simpan pengaturan'}
+              <Save className="mr-2 h-5 w-5" />
+              {saving ? 'Menyimpan…' : 'Simpan'}
             </button>
           </div>
         </form>
       </div>
+
 
       {/* Add / Edit Membership Tier Modal */}
       <ConfirmModal
