@@ -3,8 +3,10 @@ import { getApiUrl } from '../../../../lib/api';
 
 import React, { useEffect, useState } from 'react';
 import { getAuthHeaders } from '../../../../lib/auth';
-import { LayoutDashboard, Users, Wallet, Calendar, AlertCircle, TrendingUp, CreditCard, Activity } from 'lucide-react';
+import { Users, Wallet, Calendar, AlertCircle, TrendingUp, CreditCard, Activity } from 'lucide-react';
 import { SessionWallet } from '../../../../types';
+import PendingTasks from '../../../../components/admin/PendingTasks';
+import { adminDate } from '../../../../components/admin/AdminUI';
 
 interface DashboardStats {
   totalMembers: number;
@@ -61,24 +63,23 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
   }, [communityId]);
 
   if (loading) {
-    return <div className="p-8 flex justify-center text-slate-500 font-bold">Loading dashboard...</div>;
+    return <div className="p-8 flex justify-center text-slate-500 font-bold">Memuat ringkasan…</div>;
   }
 
   if (!stats) {
-    return <div className="p-8 flex justify-center text-red-500 font-bold">Failed to load dashboard data.</div>;
+    return <div className="p-8 flex justify-center text-red-500 font-bold">Gagal memuat data ringkasan.</div>;
   }
 
   return (
-    <div className="max-w-6xl mx-auto pb-12 p-8">
+    <div className="max-w-6xl mx-auto pb-12">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard Komunitas</h1>
-          <p className="mt-2 text-slate-500">Ringkasan analitik finansial, keanggotaan, dan kehadiran.</p>
-        </div>
-        <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
-          <LayoutDashboard className="w-6 h-6 text-indigo-500" />
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Ringkasan</h1>
+          <p className="mt-2 text-slate-500">Hal yang perlu dikonfirmasi, pendapatan, dan kehadiran member.</p>
         </div>
       </div>
+
+      <PendingTasks slug={resolvedParams.slug} communityId={communityId} />
 
       {/* Financial Analytics Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -146,12 +147,12 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
             <h2 className="text-md font-bold text-slate-900 flex items-center border-b border-slate-50 pb-3">
               <Users className="w-4 h-4 mr-2 text-slate-400" />
-              General Stats
+              Member
             </h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100/50 text-center">
                 <span className="text-2xl font-black text-slate-900 block">{stats.totalMembers}</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1 block">Total Member</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1 block">Member terdaftar</span>
               </div>
               <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100/50 text-center">
                 <span className="text-2xl font-black text-slate-900 block">{stats.totalPackageBuyers}</span>
@@ -164,23 +165,23 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
           <div className="bg-white rounded-3xl p-6 border border-rose-200 shadow-sm border-t-4 border-t-rose-500">
             <h2 className="text-md font-bold text-slate-900 mb-4 flex items-center">
               <AlertCircle className="w-4 h-4 mr-2 text-rose-500" />
-              Expiring Soon (30 Hari)
+              Segera berakhir (30 hari)
             </h2>
             <div className="space-y-3">
               {stats.expiringSoon.length === 0 ? (
-                <p className="text-xs font-bold text-slate-400 text-center py-6">Tidak ada sesi kedaluwarsa dekat.</p>
+                <p className="text-xs font-bold text-slate-400 text-center py-6">Tidak ada paket yang segera berakhir.</p>
               ) : (
                 stats.expiringSoon.map((wallet) => (
                   <div key={wallet.id} className="p-3.5 bg-rose-50/50 rounded-2xl border border-rose-100/70">
                     <div className="flex justify-between items-start mb-2">
                       <span className="font-extrabold text-slate-900 text-xs truncate">{wallet.user?.name}</span>
                       <span className="text-[10px] font-black text-rose-700 bg-rose-100 px-2 py-0.5 rounded-md">
-                        Sisa: {wallet.remainingSession} Sesi
+                        Sisa {wallet.remainingSession} sesi
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-[10px] text-slate-500 font-bold mt-2">
                       <span>{wallet.package?.name}</span>
-                      <span className="text-rose-600">Habis: {wallet.expiredDate ? new Date(wallet.expiredDate).toLocaleDateString('id-ID') : '-'}</span>
+                      <span className="text-rose-600">s.d. {adminDate(wallet.expiredDate)}</span>
                     </div>
                   </div>
                 ))
@@ -196,7 +197,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
             <h2 className="text-md font-bold text-slate-900 mb-6 flex items-center">
               <Activity className="w-4 h-4 mr-2 text-indigo-500" />
-              Tren Kunjungan Harian (7 Hari Terakhir)
+              Check-in 7 hari terakhir
             </h2>
             
             <div className="flex items-end justify-between h-48 pt-6 px-4 bg-slate-50 rounded-2xl border border-slate-100/50 relative">
@@ -238,7 +239,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
           {/* Active Wallets Table */}
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-slate-100">
-              <h2 className="text-md font-bold text-slate-900">Member Aktif & Sisa Sesi Kelas</h2>
+              <h2 className="text-md font-bold text-slate-900">Paket aktif & sisa sesi</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -260,7 +261,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                     stats.activeWallets.map((wallet) => (
                       <tr key={wallet.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4">
-                          <div className="font-extrabold text-slate-900 text-xs">{wallet.user?.name || 'Unknown'}</div>
+                          <div className="font-extrabold text-slate-900 text-xs">{wallet.user?.name || 'Tanpa nama'}</div>
                           <div className="text-[10px] font-semibold text-slate-400 mt-0.5">{wallet.user?.email || ''}</div>
                         </td>
                         <td className="px-6 py-4">

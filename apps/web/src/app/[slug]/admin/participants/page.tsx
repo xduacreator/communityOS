@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Search, Users } from 'lucide-react';
 import { getApiUrl } from '../../../../lib/api';
 import { getAuthHeaders } from '../../../../lib/auth';
+import { adminDate, adminDateTime, adminTime, statusLabel } from '../../../../components/admin/AdminUI';
 
 interface SessionParticipant {
   id: string;
@@ -98,8 +99,8 @@ export default function SessionParticipantsPage({ params }: { params: Promise<{ 
     <div className="max-w-6xl mx-auto pb-12 p-4 sm:p-8">
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Peserta Sesi</h1>
-          <p className="mt-2 text-slate-500">Lihat saldo sesi aktif dan lakukan check-in peserta.</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Check-in Peserta</h1>
+          <p className="mt-2 text-slate-500">Peserta dengan paket aktif. Ketuk Check-in saat peserta datang latihan; sisa sesinya otomatis berkurang 1.</p>
         </div>
         <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-slate-200 shadow-sm">
           <Users className="w-5 h-5 text-indigo-600" />
@@ -163,7 +164,7 @@ export default function SessionParticipantsPage({ params }: { params: Promise<{ 
                     <span className="text-slate-400 font-semibold"> / {participant.totalSession}</span>
                   </td>
                   <td className="px-6 py-5 text-slate-600 font-semibold">
-                    {participant.expiredDate ? new Date(participant.expiredDate).toLocaleDateString('id-ID') : '-'}
+                    {adminDate(participant.expiredDate)}
                   </td>
                   <td className="px-6 py-5 text-right">
                     <button

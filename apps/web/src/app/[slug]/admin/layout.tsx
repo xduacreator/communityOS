@@ -4,15 +4,89 @@ import { getApiUrl } from '../../../lib/api';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Shield, Users, Calendar, Settings, LogOut, ArrowLeft, Image, LayoutDashboard, Wallet, CheckSquare, Menu, X, UserPlus, Ticket } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Users,
+  Wallet,
+  UserPlus,
+  Package,
+  ClipboardCheck,
+  History,
+  CalendarDays,
+  Image,
+  Ticket,
+  Settings,
+  LogOut,
+  ExternalLink,
+  Menu,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 import { removeToken, getAuthHeaders } from '../../../lib/auth';
+import { outfit } from '../../../lib/fonts';
+import { initials } from '../../../lib/club';
+import { adminThemeStyle } from '../../../components/admin/AdminUI';
 
-export default function AdminLayout({ 
+interface NavItem {
+  name: string;
+  path: string;
+  icon: LucideIcon;
+}
+
+interface NavGroup {
+  title?: string;
+  items: NavItem[];
+}
+
+const ADMIN_NAV: NavGroup[] = [
+  { items: [{ name: 'Ringkasan', path: '/dashboard', icon: LayoutDashboard }] },
+  {
+    title: 'Member',
+    items: [
+      { name: 'Daftar Member', path: '', icon: Users },
+      { name: 'Pembelian', path: '/wallets', icon: Wallet },
+      { name: 'Pendaftar Tamu', path: '/sessions/guests', icon: UserPlus },
+    ],
+  },
+  {
+    title: 'Latihan',
+    items: [
+      { name: 'Paket & Sesi', path: '/sessions', icon: Package },
+      { name: 'Check-in Peserta', path: '/participants', icon: ClipboardCheck },
+      { name: 'Riwayat Absensi', path: '/attendance', icon: History },
+    ],
+  },
+  {
+    title: 'Konten Klub',
+    items: [
+      { name: 'Event', path: '/events', icon: CalendarDays },
+      { name: 'Galeri', path: '/gallery', icon: Image },
+      { name: 'Voucher & Promo', path: '/vouchers', icon: Ticket },
+    ],
+  },
+  { title: 'Pengaturan', items: [{ name: 'Pengaturan Klub', path: '/settings', icon: Settings }] },
+];
+
+const COACH_NAV: NavGroup[] = [
+  {
+    items: [
+      { name: 'Check-in Peserta', path: '/participants', icon: ClipboardCheck },
+      { name: 'Riwayat Absensi', path: '/attendance', icon: History },
+    ],
+  },
+];
+
+interface ClubInfo {
+  name: string;
+  logo?: string | null;
+}
+
+export default function AdminLayout({
   children,
-  params 
-}: { 
-  children: React.ReactNode,
-  params: Promise<{ slug: string }>
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ slug: string }>;
 }) {
   const resolvedParams = React.use(params);
   const pathname = usePathname();
@@ -20,6 +94,8 @@ export default function AdminLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [panelRole, setPanelRole] = useState<'COMMUNITY_ADMIN' | 'COACH'>('COMMUNITY_ADMIN');
+  const [userName, setUserName] = useState('');
+  const [club, setClub] = useState<ClubInfo | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -30,7 +106,8 @@ export default function AdminLayout({
         const userRes = await fetch(`${getApiUrl()}/auth/me`, { headers: { ...headers } });
         if (!userRes.ok) throw new Error('Unauthorized');
         const userData = await userRes.json();
-        
+        if (isMounted) setUserName(userData.name || '');
+
         if (userData.isSuperAdmin) {
           if (isMounted) {
             setPanelRole('COMMUNITY_ADMIN');
@@ -44,7 +121,7 @@ export default function AdminLayout({
           router.push(`/${resolvedParams.slug}/dashboard`);
           return;
         }
-        
+
         const memData = await memRes.json();
         if (memData && memData.status === 'APPROVED' && memData.role === 'COMMUNITY_ADMIN') {
           if (isMounted) {
@@ -72,162 +149,168 @@ export default function AdminLayout({
       }
     };
     checkAuth();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [resolvedParams.slug, pathname, router]);
+
+  // Club name and logo for the sidebar
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (isMounted && data) setClub({ name: data.name, logo: data.logo });
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, [resolvedParams.slug]);
 
   const handleLogout = () => {
     removeToken();
     router.push('/login');
   };
 
+  const shell = `${outfit.className} min-h-screen bg-[#F6F6F2] text-[#111214]`;
+
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-          <div className="text-slate-400 font-bold tracking-widest uppercase text-xs">Authenticating...</div>
+      <div className={`${shell} flex items-center justify-center`} style={adminThemeStyle}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-11 w-11 animate-spin rounded-full border-4 border-[#E6E6E0] border-t-[#111214]" />
+          <div className="text-sm font-semibold text-[#55585E]">Memeriksa akses…</div>
         </div>
       </div>
     );
   }
 
-  const adminNavItems = [
-    { name: 'Dashboard', href: `/${resolvedParams.slug}/admin/dashboard`, icon: LayoutDashboard },
-    { name: 'Members', href: `/${resolvedParams.slug}/admin`, icon: Users },
-    { name: 'Pembelian', href: `/${resolvedParams.slug}/admin/wallets`, icon: Wallet },
-    { name: 'Peserta Sesi', href: `/${resolvedParams.slug}/admin/participants`, icon: Users },
-    { name: 'Attendance', href: `/${resolvedParams.slug}/admin/attendance`, icon: CheckSquare },
-    { name: 'Sessions', href: `/${resolvedParams.slug}/admin/sessions`, icon: Calendar },
-    { name: 'Guests', href: `/${resolvedParams.slug}/admin/sessions/guests`, icon: UserPlus },
-    { name: 'Vouchers & Promo', href: `/${resolvedParams.slug}/admin/vouchers`, icon: Ticket },
-    { name: 'Gallery', href: `/${resolvedParams.slug}/admin/gallery`, icon: Image },
-    { name: 'Settings', href: `/${resolvedParams.slug}/admin/settings`, icon: Settings },
-  ];
-  const coachNavItems = [
-    { name: 'Peserta Sesi', href: `/${resolvedParams.slug}/admin/participants`, icon: Users },
-    { name: 'Riwayat Absensi', href: `/${resolvedParams.slug}/admin/attendance`, icon: CheckSquare },
-  ];
-  const navItems = panelRole === 'COACH' ? coachNavItems : adminNavItems;
+  const base = `/${resolvedParams.slug}/admin`;
+  const groups = panelRole === 'COACH' ? COACH_NAV : ADMIN_NAV;
+  const isActive = (path: string) => {
+    const href = base + path;
+    if (pathname === href) return true;
+    // Sub-pages (create/detail) keep their section highlighted, except the
+    // guest list, which has its own entry under /sessions
+    if (path === '' || path === '/sessions') return false;
+    return pathname?.startsWith(`${href}/`) ?? false;
+  };
+  const clubName = club?.name || resolvedParams.slug;
+  const roleLabel = panelRole === 'COACH' ? 'Panel coach' : 'Panel admin';
+
+  const clubMark = (size: number) => (
+    <span
+      className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#111214] font-extrabold text-white"
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.36) }}
+    >
+      {club?.logo ? <img src={club.logo} alt="" className="h-full w-full object-cover" /> : initials(clubName)}
+    </span>
+  );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Mobile Menu Backdrop */}
+    <div className={`${shell} flex`} style={adminThemeStyle}>
+      {/* Mobile menu backdrop */}
       {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 md:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
+        <div className="fixed inset-0 z-30 bg-[#111214]/40 md:hidden" onClick={() => setIsMobileMenuOpen(false)} />
       )}
 
-      {/* Sidebar - One UI Style */}
-      <aside className={`w-72 bg-white grid grid-rows-[auto_1fr_auto] fixed top-0 left-0 h-[100dvh] z-40 border-r border-slate-100 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ${
-        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-      }`}>
-        <div className="h-20 flex items-center px-8 border-b border-slate-50 relative">
-          {/* Mobile Close Button */}
-          <button 
-            className="absolute top-6 right-6 p-2 bg-slate-100 rounded-full text-slate-500 md:hidden"
+      {/* Sidebar */}
+      <aside
+        className={`fixed left-0 top-0 z-40 flex h-[100dvh] w-[264px] flex-col border-r border-[#E6E6E0] bg-white transition-transform duration-300 ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
+        <div className="flex items-center gap-3 border-b border-[#EEEEE8] px-5 py-4">
+          {clubMark(40)}
+          <div className="flex min-w-0 flex-1 flex-col">
+            <b className="truncate text-[15px] leading-tight">{clubName}</b>
+            <span className="text-xs font-semibold text-[#8A8C90]">{roleLabel}</span>
+          </div>
+          <button
+            className="rounded-full bg-[#F1F1EC] p-2 text-[#55585E] md:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="Tutup menu"
           >
-            <X className="w-5 h-5" />
+            <X className="h-4 w-4" />
           </button>
-
-          <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center mr-3">
-            <Shield className="w-5 h-5 text-indigo-600" />
-          </div>
-          <span className="text-xl font-extrabold tracking-tight text-slate-900">
-            {panelRole === 'COACH' ? 'Coach Panel' : 'Admin Panel'}
-          </span>
         </div>
 
-        
-        <div className="overflow-y-auto">
-          <div className="py-8 px-6 space-y-2">
-            <div className="px-3 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-4">
-              Manage /{resolvedParams.slug}
+        <nav className="flex-1 overflow-y-auto px-3 py-3" aria-label="Menu admin">
+          {groups.map((group, gi) => (
+            <div key={gi} className={gi > 0 ? 'mt-4' : ''}>
+              {group.title && (
+                <div className="px-3 pb-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[#8A8C90]">{group.title}</div>
+              )}
+              <div className="flex flex-col gap-0.5">
+                {group.items.map((item) => {
+                  const active = isActive(item.path);
+                  return (
+                    <Link
+                      key={item.path}
+                      href={base + item.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      aria-current={active ? 'page' : undefined}
+                      className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14.5px] transition-colors ${
+                        active ? 'bg-[#111214] font-bold text-white' : 'font-semibold text-[#3A3C40] hover:bg-[#F1F1EC]'
+                      }`}
+                    >
+                      <item.icon className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-white' : 'text-[#8A8C90]'}`} strokeWidth={2.1} />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link 
-                  key={item.name} 
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center px-4 py-4 rounded-2xl transition-all duration-200 group ${
-                    isActive 
-                      ? 'bg-indigo-50 text-indigo-700 font-bold' 
-                      : 'text-slate-500 hover:bg-slate-50 font-semibold hover:text-slate-900'
-                  }`}
-                >
-                  <div className={`p-2 rounded-xl mr-3 transition-colors ${
-                    isActive ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600'
-                  }`}>
-                    <item.icon className="w-4 h-4" />
-                  </div>
-                  <span className="text-[15px]">{item.name}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+          ))}
+        </nav>
 
-        <div className="p-6 border-t border-slate-50 space-y-2">
-          <Link 
+        <div className="flex flex-col gap-0.5 border-t border-[#EEEEE8] px-3 py-3">
+          <a
             href={`/${resolvedParams.slug}`}
-            className="flex items-center w-full px-4 py-4 text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold rounded-2xl transition-colors group"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14.5px] font-semibold text-[#3A3C40] hover:bg-[#F1F1EC]"
           >
-            <div className="p-2 rounded-xl bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600 mr-3 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-            </div>
-            <span className="text-[15px]">View Site</span>
-          </Link>
-          <button 
+            <ExternalLink className="h-[18px] w-[18px] text-[#8A8C90]" strokeWidth={2.1} />
+            Lihat halaman klub
+          </a>
+          <button
             onClick={handleLogout}
-            className="flex items-center w-full px-4 py-4 text-slate-500 hover:bg-red-50 hover:text-red-600 font-semibold rounded-2xl transition-colors group"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[14.5px] font-semibold text-[#3A3C40] hover:bg-red-50 hover:text-red-600"
           >
-            <div className="p-2 rounded-xl bg-slate-100 text-slate-400 group-hover:bg-red-100 group-hover:text-red-500 mr-3 transition-colors">
-              <LogOut className="w-4 h-4" />
-            </div>
-            <span className="text-[15px]">Logout</span>
+            <LogOut className="h-[18px] w-[18px] text-[#8A8C90]" strokeWidth={2.1} />
+            Keluar
           </button>
         </div>
-
-
-
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 md:ml-72 flex flex-col min-h-screen w-full overflow-hidden">
-        {/* Top Header */}
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-10">
-          <div className="flex items-center md:hidden">
-            <button 
-              className="p-2 mr-3 bg-white rounded-xl shadow-sm border border-slate-200/60 text-slate-700"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-            <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center">
-              <Shield className="w-5 h-5 text-indigo-600" />
-            </div>
+      {/* Main content */}
+      <main className="flex min-h-screen w-full min-w-0 flex-1 flex-col md:ml-[264px]">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-[#E6E6E0] bg-[#F6F6F2]/90 px-4 backdrop-blur-md sm:px-8">
+          <button
+            className="rounded-xl border border-[#E6E6E0] bg-white p-2 text-[#111214] md:hidden"
+            onClick={() => setIsMobileMenuOpen(true)}
+            aria-label="Buka menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <div className="flex min-w-0 items-center gap-2.5 md:hidden">
+            {clubMark(32)}
+            <b className="truncate text-[15px]">{clubName}</b>
           </div>
-          
-          <div className="flex items-center ml-auto space-x-4">
-            <div className="flex items-center bg-slate-50 pl-2 pr-4 py-2 rounded-[2rem] border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                {panelRole === 'COACH' ? 'C' : 'A'}
-              </div>
-              <span className="ml-3 text-sm font-bold text-slate-700 hidden sm:block">
-                {panelRole === 'COACH' ? 'Community Coach' : 'Community Admin'}
-              </span>
-            </div>
+          <div className="ml-auto flex items-center gap-2.5 rounded-full border border-[#E6E6E0] bg-white py-1.5 pl-1.5 pr-1.5 sm:pr-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#111214] text-xs font-bold text-white">
+              {initials(userName || (panelRole === 'COACH' ? 'Coach' : 'Admin'))}
+            </span>
+            <span className="hidden flex-col leading-tight sm:flex">
+              <b className="max-w-[180px] truncate text-sm">{userName || 'Pengurus'}</b>
+              <span className="text-[11px] font-semibold text-[#8A8C90]">{panelRole === 'COACH' ? 'Coach' : 'Admin klub'}</span>
+            </span>
           </div>
         </header>
 
-        {/* Page Content */}
-        <div className="flex-1 p-4 sm:p-6 md:p-10 bg-slate-50/50 w-full">
-          {children}
-        </div>
+        <div className="w-full min-w-0 flex-1 p-4 sm:p-6 md:p-10">{children}</div>
       </main>
     </div>
   );

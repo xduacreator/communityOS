@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { getAuthHeaders } from '../../../../lib/auth';
 import { Wallet, Search, Filter } from 'lucide-react';
 import { SessionWallet } from '../../../../types';
+import { adminDate, adminDateTime, adminTime, statusLabel } from '../../../../components/admin/AdminUI';
 
 export default function AdminWallets({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = React.use(params);
@@ -68,10 +69,10 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
         throw new Error(err.message || 'Failed to approve wallet');
       }
       
-      alert('Wallet approved successfully!');
+      alert('Pembelian disetujui. Sesi member sudah aktif.');
       fetchData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'An error occurred');
+      alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
     } finally {
       setApprovingId(null);
     }
@@ -94,7 +95,7 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Daftar Pembelian</h1>
-          <p className="mt-2 text-slate-500">Kelola riwayat pembelian paket sesi dan keanggotaan member</p>
+          <p className="mt-2 text-slate-500">Semua pembelian paket. Setujui pembelian berstatus Menunggu setelah transfer dicek.</p>
         </div>
         <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm self-start md:self-auto">
           <Wallet className="w-6 h-6 text-indigo-500" />
@@ -107,7 +108,7 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by name, email, or package..."
+              placeholder="Cari nama, email, atau paket…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-medium text-sm shadow-sm"
@@ -119,13 +120,13 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
             className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors font-bold text-sm text-slate-700 w-full sm:w-auto shadow-sm outline-none"
           >
             <option value="ALL">Semua Status</option>
-            <option value="PENDING">Pending</option>
-            <option value="WAITLIST">Waitlist</option>
-            <option value="ACTIVE">Active</option>
-            <option value="WAITING">Waiting</option>
-            <option value="COMPLETED">Completed</option>
-            <option value="EXPIRED">Expired</option>
-            <option value="FROZEN">Frozen</option>
+            <option value="PENDING">Menunggu</option>
+            <option value="WAITLIST">Waiting list</option>
+            <option value="ACTIVE">Aktif</option>
+            <option value="WAITING">Menunggu jadwal</option>
+            <option value="COMPLETED">Selesai</option>
+            <option value="EXPIRED">Kedaluwarsa</option>
+            <option value="FROZEN">Dibekukan</option>
           </select>
         </div>
 
@@ -134,31 +135,31 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
             <thead>
               <tr className="bg-white">
                 <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Member</th>
-                <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Package Details</th>
-                <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Sessions</th>
+                <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Paket</th>
+                <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Sisa sesi</th>
                 <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Status</th>
-                <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Expiry Date</th>
-                <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-right">Actions</th>
+                <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">Berlaku s.d.</th>
+                <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-500 font-bold">
-                    Loading wallets...
+                    Memuat pembelian…
                   </td>
                 </tr>
               ) : filteredWallets.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-bold">
-                    No purchased packages found.
+                    Belum ada pembelian yang cocok.
                   </td>
                 </tr>
               ) : (
                 filteredWallets.map((wallet) => (
                   <tr key={wallet.id} className="hover:bg-slate-50 transition-colors bg-white">
                     <td className="px-6 py-4">
-                      <div className="font-extrabold text-slate-900">{wallet.participantName || wallet.user?.name || 'Unknown'}</div>
+                      <div className="font-extrabold text-slate-900">{wallet.participantName || wallet.user?.name || 'Tanpa nama'}</div>
                       <div className="text-xs font-semibold text-slate-500 mt-1">
                         {wallet.participantName ? `Pax dari ${wallet.user?.name || '-'} · ` : ''}{wallet.user?.email || ''}
                       </div>
@@ -171,7 +172,7 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
                         Rp {wallet.package ? (wallet.isPrivate ? wallet.package.vipPrice : wallet.package.memberPrice)?.toLocaleString('id-ID') : 0}
                       </div>
                       <div className="text-[11px] font-semibold text-slate-400 mt-1 uppercase tracking-wider">
-                        Bought: {wallet.purchaseDate ? new Date(wallet.purchaseDate).toLocaleDateString() : 'N/A'}
+                        Dibeli {adminDate(wallet.purchaseDate)}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -194,12 +195,12 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
                         (wallet.walletStatus === 'WAITING' || wallet.walletStatus === 'WAITLIST' || wallet.walletStatus === 'PENDING') ? 'bg-amber-100 text-amber-700' :
                         'bg-slate-100 text-slate-700'
                       }`}>
-                        {wallet.walletStatus}
+                        {statusLabel(wallet.walletStatus === 'WAITING' ? 'WAITING_LIST' : wallet.walletStatus)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-sm font-bold text-slate-700">
-                        {wallet.expiredDate ? new Date(wallet.expiredDate).toLocaleDateString() : 'No Expiry'}
+                        {wallet.expiredDate ? adminDate(wallet.expiredDate) : 'Belum mulai'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -209,7 +210,7 @@ export default function AdminWallets({ params }: { params: Promise<{ slug: strin
                           disabled={approvingId === wallet.id}
                           className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm disabled:opacity-50"
                         >
-                          {approvingId === wallet.id ? 'Approving...' : 'Approve'}
+                          {approvingId === wallet.id ? 'Menyimpan…' : 'Setujui'}
                         </button>
                       )}
                     </td>

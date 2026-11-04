@@ -35,7 +35,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
   const fetchData = async () => {
     try {
       const res = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
-      if (!res.ok) throw new Error('Community not found');
+      if (!res.ok) throw new Error('Klub tidak ditemukan');
       const data = await res.json() as Community;
       setCommunity(data);
       if (data.registrationFields) {
@@ -86,7 +86,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
           headers: { 'Content-Type': 'application/json', ...headers },
           body: JSON.stringify(payload),
         });
-        if (!res.ok) throw new Error('Failed to update membership tier');
+        if (!res.ok) throw new Error('Gagal menyimpan paket membership');
       } else {
         // Create
         const res = await fetch(getApiUrl() + '/membership-tier', {
@@ -94,7 +94,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
           headers: { 'Content-Type': 'application/json', ...headers },
           body: JSON.stringify(payload),
         });
-        if (!res.ok) throw new Error('Failed to create membership tier');
+        if (!res.ok) throw new Error('Gagal membuat paket membership');
       }
 
       // Refresh list
@@ -133,7 +133,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
         method: 'DELETE',
         headers,
       });
-      if (!res.ok) throw new Error('Failed to delete membership tier');
+      if (!res.ok) throw new Error('Gagal menghapus paket membership');
 
       // Refresh list
       const tiersRes = await fetch(`${getApiUrl()}/membership-tier?communityId=${community.id}`, { headers });
@@ -156,7 +156,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
       headers: getAuthHeaders(),
       body: formData,
     });
-    if (!res.ok) throw new Error('Failed to upload file');
+    if (!res.ok) throw new Error('Gagal mengunggah file');
     const data = await res.json();
     return data.url;
   };
@@ -221,8 +221,8 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to update settings');
-      alert('Settings updated successfully!');
+      if (!res.ok) throw new Error('Gagal menyimpan pengaturan');
+      alert('Pengaturan tersimpan. Perubahan langsung tampil di halaman klub.');
       
       // If slug changed, we need to redirect
       if (community.slug !== resolvedParams.slug) {
@@ -238,7 +238,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
   const addCustomField = () => {
     const newField = {
       id: 'field_' + Math.random().toString(36).substr(2, 9),
-      label: 'New Field',
+      label: 'Pertanyaan baru',
       type: 'text',
       required: false,
       options: [],
@@ -268,39 +268,36 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
     <div className="flex items-center justify-center h-[60vh]">
       <div className="animate-pulse flex flex-col items-center">
         <div className="w-12 h-12 bg-indigo-200 rounded-full mb-4"></div>
-        <div className="text-slate-400 font-medium">Loading Settings...</div>
+        <div className="text-slate-400 font-medium">Memuat pengaturan…</div>
       </div>
     </div>
   );
 
   if (error) return <div className="p-8 text-center text-red-500 bg-red-50 m-8 rounded-2xl">{error}</div>;
 
-  if (!community) return <div className="p-8 text-center text-slate-500 font-bold">Community not found.</div>;
+  if (!community) return <div className="p-8 text-center text-slate-500 font-bold">Klub tidak ditemukan.</div>;
 
   return (
     <div className="max-w-5xl mx-auto pb-12">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Community Settings</h1>
-          <p className="mt-2 text-slate-500">Manage your community&apos;s public profile</p>
-        </div>
-        <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
-          <Settings className="w-6 h-6 text-indigo-500" />
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Pengaturan Klub</h1>
+          <p className="mt-2 text-slate-500">Semua isi halaman klub: profil, tampilan, menu, pembayaran, dan formulir pendaftaran.</p>
         </div>
       </div>
 
-      <div className="bg-white shadow-sm rounded-3xl border border-slate-200 overflow-hidden">
-        <form onSubmit={handleSave} className="p-8 space-y-10">
+      <div className="bg-white shadow-sm rounded-3xl border border-slate-200">
+        <form onSubmit={handleSave} className="p-4 sm:p-8 space-y-10">
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             {/* General Info */}
             <div className="space-y-6">
               <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center">
-                 <Type className="w-5 h-5 mr-2 text-indigo-500" /> General Information
+                 <Type className="w-5 h-5 mr-2 text-indigo-500" /> Informasi Umum
               </h3>
               
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Community Name</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Nama klub</label>
                 <input
                   type="text"
                   required
@@ -311,7 +308,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Tagline (Subtext)</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Tagline</label>
                 <input
                   type="text"
                   placeholder="e.g. Komunitas Pecinta Alam Indonesia"
@@ -319,11 +316,11 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                   onChange={(e) => setCommunity({ ...community, tagline: e.target.value })}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                 />
-                <p className="text-xs text-slate-500 mt-2">Short text displayed under your community name (on mobile header).</p>
+                <p className="text-xs text-slate-500 mt-2">Kalimat pendek di bawah nama klub di beranda.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">URL Slug</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Alamat halaman (slug)</label>
                 <input
                   type="text"
                   required
@@ -331,20 +328,20 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                   onChange={(e) => setCommunity({ ...community, slug: e.target.value })}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                 />
-                <p className="text-xs text-slate-500 mt-2">This is the path used to access your community (e.g., /my-community)</p>
+                <p className="text-xs text-slate-500 mt-2">Bagian akhir alamat halaman klub, misalnya latih.club/nama-klub. Hati-hati: mengubahnya membuat link lama tidak berlaku.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Tipe Pendaftaran Anggota</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Tipe pendaftaran member</label>
                 <select
                   value={community.registrationMode || 'FREE'}
                   onChange={(e) => setCommunity({ ...community, registrationMode: e.target.value })}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-700"
                 >
-                  <option value="FREE">Pendaftaran Gratis (Free Registration)</option>
-                  <option value="PAID">Pendaftaran Berbayar (Paid Membership Tier Upfront)</option>
+                  <option value="FREE">Gratis — daftar dulu, bayar per paket</option>
+                  <option value="PAID">Berbayar — wajib beli membership saat daftar</option>
                 </select>
-                <p className="text-xs text-slate-400 mt-2">Diferensiasi tipe join apakah calon member bisa langsung daftar gratis atau wajib berlangganan di awal.</p>
+                <p className="text-xs text-slate-400 mt-2">Gratis: calon member cukup isi formulir. Berbayar: calon member wajib memilih dan membayar paket membership di bawah.</p>
               </div>
 
               {community.registrationMode === 'PAID' && (
@@ -411,35 +408,35 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
             {/* Profile Info */}
             <div className="space-y-6">
               <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center">
-                <Info className="w-5 h-5 mr-2 text-indigo-500" /> Profile Details
+                <Info className="w-5 h-5 mr-2 text-indigo-500" /> Isi Halaman Klub
               </h3>
               
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Welcome Message</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Label kecil di atas nama klub</label>
                 <input
                   type="text"
                   value={community.welcomeMessage || ''}
                   onChange={(e) => setCommunity({ ...community, welcomeMessage: e.target.value })}
-                  placeholder="Welcome to"
+                  placeholder="Contoh: Pendaftaran member dibuka"
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                 />
-                <p className="text-xs text-slate-500 mt-2">The text displayed above the community name on the profile page.</p>
+                <p className="text-xs text-slate-500 mt-2">Tampil sebagai label kecil di atas judul beranda.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Tombol Gabung (Join CTA)</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Teks tombol gabung</label>
                 <input
                   type="text"
                   value={community.joinCtaLabel || ''}
                   onChange={(e) => setCommunity({ ...community, joinCtaLabel: e.target.value })}
-                  placeholder="Gabung Komunitas"
+                  placeholder="Gabung Klub"
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                 />
-                <p className="text-xs text-slate-500 mt-2">Teks yang ditampilkan pada tombol utama untuk mendaftar atau gabung.</p>
+                <p className="text-xs text-slate-500 mt-2">Teks tombol utama untuk mendaftar. Usahakan singkat, maksimal 2–3 kata.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Short Description</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Deskripsi singkat</label>
                 <textarea
                   rows={2}
                   value={community.shortDescription || ''}
@@ -447,18 +444,18 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                   placeholder="Komunitas yang menghubungkan orang, berbagi pengetahuan..."
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium resize-none"
                 />
-                <p className="text-xs text-slate-500 mt-2">Teks singkat yang akan tampil di halaman utama (Home) Landing Profile.</p>
+                <p className="text-xs text-slate-500 mt-2">Satu-dua kalimat di beranda, di bawah tagline.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Full Description (About)</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Tentang klub</label>
                 <textarea
                   rows={4}
                   value={community.about || ''}
                   onChange={(e) => setCommunity({ ...community, about: e.target.value })}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium resize-none"
                 />
-                <p className="text-xs text-slate-500 mt-2">Teks penjelasan lengkap yang akan tampil di tab About.</p>
+                <p className="text-xs text-slate-500 mt-2">Cerita lengkap klub, tampil di halaman Tentang.</p>
               </div>
 
               <div>
@@ -469,22 +466,22 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                   rows={4}
                   value={community.contactInfo || ''}
                   onChange={(e) => setCommunity({ ...community, contactInfo: e.target.value })}
-                  placeholder="e.g. Email: hello@community.com&#10;Phone: +62 812...&#10;Address: Jakarta"
+                  placeholder="Contoh:&#10;Sekretariat: Pintu 7 GBK, Senayan&#10;Instagram: @namaklub"
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium resize-y min-h-[120px]"
                 />
-                <p className="text-xs text-slate-500 mt-2">Enter any contact details (email, phone, address). This will be shown on the Contact tab.</p>
+                <p className="text-xs text-slate-500 mt-2">Alamat, email, media sosial, dan lainnya. Tampil di halaman Kontak.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">WhatsApp Number</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Nomor WhatsApp</label>
                 <input
                   type="text"
                   value={community.whatsappNumber || ''}
                   onChange={(e) => setCommunity({ ...community, whatsappNumber: e.target.value })}
-                  placeholder="e.g. 6281234567890 (Gunakan kode negara tanpa +)"
+                  placeholder="Contoh: 081234567890"
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                 />
-                <p className="text-xs text-slate-500 mt-2">Will be displayed as a clickable wa.me link on the Contact tab.</p>
+                <p className="text-xs text-slate-500 mt-2">Dipakai untuk tombol Chat WhatsApp di halaman klub.</p>
               </div>
             </div>
           </div>
@@ -493,11 +490,11 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
             {/* Branding */}
             <div className="space-y-6">
               <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center">
-                <ImageIcon className="w-5 h-5 mr-2 text-indigo-500" /> Branding
+                <ImageIcon className="w-5 h-5 mr-2 text-indigo-500" /> Logo & Warna
               </h3>
               
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Logo Upload</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Logo klub</label>
                 {(logoFile || community.logo) && (
                   <img 
                     src={logoFile ? URL.createObjectURL(logoFile) : (community.logo || undefined)} 
@@ -515,11 +512,11 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                   }}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                 />
-                <p className="text-xs text-slate-500 mt-2">Recommended size: 256x256px</p>
+                <p className="text-xs text-slate-500 mt-2">Gambar persegi, minimal 256 × 256 px. Juga dipakai sebagai loader dan kartu member.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Primary Color Theme</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Warna utama</label>
                 <div className="flex items-center gap-4">
                   <input
                     type="color"
@@ -528,14 +525,14 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                     className="w-14 h-14 p-1 bg-white border border-slate-200 rounded-xl cursor-pointer"
                   />
                   <div className="text-xs text-slate-500">
-                    <p className="font-semibold text-slate-700 mb-1">Pick a custom color</p>
-                    <p>This color will be applied to the public community profile.</p>
+                    <p className="font-semibold text-slate-700 mb-1">Pilih warna klub</p>
+                    <p>Dipakai untuk tombol dan aksen di halaman klub. Warna teks menyesuaikan otomatis supaya tetap terbaca.</p>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Hero Banner Upload</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Foto utama beranda</label>
                 {(bannerFile || community.heroBanner) && (
                   <div className="relative mb-4">
                     <img 
@@ -586,70 +583,70 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
             {/* Menu Labels */}
             <div className="space-y-6">
               <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center">
-                <Settings className="w-5 h-5 mr-2 text-indigo-500" /> Custom Menu Labels
+                <Settings className="w-5 h-5 mr-2 text-indigo-500" /> Nama Menu
               </h3>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Home Menu</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Menu Beranda</label>
                   <input
                     type="text"
                     value={community.menuHomeLabel || ''}
                     onChange={(e) => setCommunity({ ...community, menuHomeLabel: e.target.value })}
-                    placeholder="home"
+                    placeholder="Beranda"
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Events Menu</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Menu Paket</label>
                   <input
                     type="text"
                     value={community.menuEventsLabel || ''}
                     onChange={(e) => setCommunity({ ...community, menuEventsLabel: e.target.value })}
-                    placeholder="events"
+                    placeholder="Paket"
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Gallery Menu</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Menu Galeri</label>
                   <input
                     type="text"
                     value={community.menuGalleryLabel || ''}
                     onChange={(e) => setCommunity({ ...community, menuGalleryLabel: e.target.value })}
-                    placeholder="gallery"
+                    placeholder="Galeri"
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">About Menu</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Menu Tentang</label>
                   <input
                     type="text"
                     value={community.menuAboutLabel || ''}
                     onChange={(e) => setCommunity({ ...community, menuAboutLabel: e.target.value })}
-                    placeholder="about"
+                    placeholder="Tentang"
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Contact Menu</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Menu Kontak</label>
                   <input
                     type="text"
                     value={community.menuContactLabel || ''}
                     onChange={(e) => setCommunity({ ...community, menuContactLabel: e.target.value })}
-                    placeholder="contact"
+                    placeholder="Kontak"
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Packages Heading (Microsite)</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Judul halaman Paket</label>
                   <input
                     type="text"
                     value={community.packagesHeadingLabel || ''}
                     onChange={(e) => setCommunity({ ...community, packagesHeadingLabel: e.target.value })}
-                    placeholder="Available Session Packages"
+                    placeholder="Paket"
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                   />
-                  <p className="text-xs text-slate-500 mt-2">Title displayed above the packages list on the community profile.</p>
+                  <p className="text-xs text-slate-500 mt-2">Judul besar di atas daftar paket. Kosongkan untuk memakai nama Menu Paket.</p>
                 </div>
               </div>
             </div>
@@ -657,15 +654,15 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
             {/* Statistics */}
             <div className="space-y-6">
               <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center">
-                <BarChart2 className="w-5 h-5 mr-2 text-indigo-500" /> Statistics Display (Vanity Metrics)
+                <BarChart2 className="w-5 h-5 mr-2 text-indigo-500" /> Angka Statistik di Beranda
               </h3>
-              <p className="text-sm text-slate-500 mb-4">These values will be shown on your community&apos;s floating stats bar. Leave blank to use defaults or real data where applicable.</p>
+              <p className="text-sm text-slate-500 mb-4">Empat angka di beranda klub. Kosongkan untuk memakai data asli (misalnya jumlah member).</p>
               
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Members Display (e.g. &quot;1,250+&quot;)</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Member</label>
                 <input
                   type="text"
-                  placeholder="e.g. 5,000+"
+                  placeholder="Contoh: 150+"
                   value={community.statMembersValue || ''}
                   onChange={(e) => setCommunity({ ...community, statMembersValue: e.target.value })}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
@@ -674,30 +671,30 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Events Display</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Kegiatan</label>
                   <input
                     type="text"
-                    placeholder="e.g. 45+"
+                    placeholder="Contoh: 45+"
                     value={community.statEventsValue || ''}
                     onChange={(e) => setCommunity({ ...community, statEventsValue: e.target.value })}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Cities Display</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Kota</label>
                   <input
                     type="text"
-                    placeholder="e.g. 12"
+                    placeholder="Contoh: 3"
                     value={community.statCitiesValue || ''}
                     onChange={(e) => setCommunity({ ...community, statCitiesValue: e.target.value })}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Achievements</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Prestasi</label>
                   <input
                     type="text"
-                    placeholder="e.g. 20+"
+                    placeholder="Contoh: 10+"
                     value={community.statAchievementsValue || ''}
                     onChange={(e) => setCommunity({ ...community, statAchievementsValue: e.target.value })}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
@@ -709,36 +706,36 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
             {/* SEO Configuration */}
             <div className="space-y-6">
               <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center">
-                <Search className="w-5 h-5 mr-2 text-indigo-500" /> SEO & Search Configuration
+                <Search className="w-5 h-5 mr-2 text-indigo-500" /> SEO (Pencarian Google)
               </h3>
-              <p className="text-sm text-slate-500 mb-4">Make your community page easily discoverable by Search Engines and AI Search bots (like ChatGPT, Claude, Gemini).</p>
+              <p className="text-sm text-slate-500 mb-4">Bantu calon member menemukan klub lewat Google dan asisten AI. Boleh dikosongkan.</p>
               
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">SEO Title</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Judul di hasil pencarian</label>
                 <input
                   type="text"
-                  placeholder="e.g. Official Community of Tech Enthusiasts"
+                  placeholder="Contoh: Jakarta Runners — Komunitas Lari di Jakarta"
                   value={community.seoTitle || ''}
                   onChange={(e) => setCommunity({ ...community, seoTitle: e.target.value })}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium"
                 />
-                <p className="text-xs text-slate-500 mt-2">Will appear as the page title in search results. Defaults to your community name.</p>
+                <p className="text-xs text-slate-500 mt-2">Kosongkan untuk memakai nama klub.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">SEO Description</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Deskripsi di hasil pencarian</label>
                 <textarea
                   rows={3}
-                  placeholder="e.g. Join the largest gathering of tech enthusiasts. Share ideas, attend events, and grow together."
+                  placeholder="Contoh: Komunitas lari untuk semua level dengan sesi rutin setiap pekan di Jakarta."
                   value={community.seoDescription || ''}
                   onChange={(e) => setCommunity({ ...community, seoDescription: e.target.value })}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-medium resize-none"
                 />
-                <p className="text-xs text-slate-500 mt-2">A short summary snippet shown in search results or when shared on social media.</p>
+                <p className="text-xs text-slate-500 mt-2">Ringkasan yang muncul di Google dan saat link dibagikan di WhatsApp/media sosial.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Keywords</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Kata kunci</label>
                 <input
                   type="text"
                     value={community.seoKeywords || ''}
@@ -824,9 +821,9 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
           {/* Custom Registration Form Builder */}
           <div className="pt-8 border-t border-slate-100 space-y-6">
             <h3 className="text-xl font-bold text-slate-900 flex items-center">
-              <Settings className="w-5 h-5 mr-2 text-indigo-500" /> Custom Registration Fields
+              <Settings className="w-5 h-5 mr-2 text-indigo-500" /> Pertanyaan Formulir Pendaftaran
             </h3>
-            <p className="text-sm text-slate-500">Configure what additional information members must provide when they request to join this community.</p>
+            <p className="text-sm text-slate-500">Pertanyaan tambahan yang wajib diisi calon member saat mendaftar, misalnya ukuran jersey atau kontak darurat.</p>
 
             <div className="space-y-4">
               {customFields.map((field, index) => (
@@ -834,7 +831,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
                       <span className="bg-slate-200 text-slate-700 font-bold px-3 py-1 rounded-lg text-xs">
-                        Field #{index + 1}
+                        Pertanyaan {index + 1}
                       </span>
                       <button
                         type="button"
@@ -858,13 +855,13 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                       onClick={() => removeCustomField(field.id)}
                       className="text-rose-500 hover:text-rose-700 font-bold text-sm bg-rose-50 px-3 py-1 rounded-xl"
                     >
-                      Delete
+                      Hapus
                     </button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Field Label</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Pertanyaan</label>
                       <input
                         type="text"
                         required
@@ -875,16 +872,16 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Input Type</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Jenis jawaban</label>
                       <select
                         value={field.type}
                         onChange={(e) => updateCustomField(field.id, { type: e.target.value, options: e.target.value === 'select' ? [] : undefined })}
                         className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-sm"
                       >
-                        <option value="text">Text (Single Line)</option>
-                        <option value="textarea">Text Area (Multi Line)</option>
-                        <option value="number">Number</option>
-                        <option value="select">Dropdown Select</option>
+                        <option value="text">Teks singkat</option>
+                        <option value="textarea">Teks panjang</option>
+                        <option value="number">Angka</option>
+                        <option value="select">Pilihan (dropdown)</option>
                       </select>
                     </div>
 
@@ -896,14 +893,14 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                           onChange={(e) => updateCustomField(field.id, { required: e.target.checked })}
                           className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"
                         />
-                        <span className="text-sm font-semibold text-slate-700">Required Field</span>
+                        <span className="text-sm font-semibold text-slate-700">Wajib diisi</span>
                       </label>
                     </div>
                   </div>
 
                   {field.type === 'select' && (
                     <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
-                      <label className="block text-xs font-bold text-slate-500 uppercase">Dropdown Options</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase">Pilihan jawaban</label>
                       <div className="flex flex-wrap gap-2">
                         {(field.options || []).map((opt, optIndex) => (
                           <div key={optIndex} className="flex items-center bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl border border-indigo-100 text-sm font-medium">
@@ -938,7 +935,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                           }}
                           className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl border border-slate-200 text-xs font-bold"
                         >
-                          + Add Option
+                          + Tambah pilihan
                         </button>
                       </div>
                     </div>
@@ -948,7 +945,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
 
               {customFields.length === 0 && (
                 <div className="text-center py-10 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl text-slate-400 font-medium">
-                  No custom fields added yet. Calon member will only fill out standard registration info.
+                  Belum ada pertanyaan tambahan. Calon member hanya mengisi data standar (nama, email, nomor HP).
                 </div>
               )}
 
@@ -957,19 +954,20 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                 onClick={addCustomField}
                 className="w-full py-4 border-2 border-dashed border-indigo-200 text-indigo-600 hover:border-indigo-400 hover:text-indigo-700 transition-all font-bold rounded-2xl flex items-center justify-center gap-2"
               >
-                + Add Custom Field
+                + Tambah pertanyaan
               </button>
             </div>
           </div>
 
-          <div className="pt-8 mt-8 border-t border-slate-100 flex justify-end">
+          <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-8 flex items-center justify-between gap-4 rounded-b-3xl border-t border-[#E6E6E0] bg-white/95 px-4 py-4 backdrop-blur sm:-mx-8 sm:-mb-8 sm:px-8">
+            <p className="hidden text-sm text-slate-500 sm:block">Perubahan baru tampil di halaman klub setelah disimpan.</p>
             <button
               type="submit"
               disabled={saving}
               className="flex items-center px-8 py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 text-lg"
             >
               <Save className="w-5 h-5 mr-3" />
-              {saving ? 'Saving...' : 'Save Settings'}
+              {saving ? 'Menyimpan…' : 'Simpan pengaturan'}
             </button>
           </div>
         </form>
@@ -1008,7 +1006,7 @@ export default function AdminSettings({ params }: { params: Promise<{ slug: stri
                 <input 
                   type="text" 
                   required
-                  placeholder="e.g., Bronze Membership, Silver, Gold"
+                  placeholder="Contoh: Membership Bulanan"
                   value={tierForm.name}
                   onChange={(e) => setTierForm({ ...tierForm, name: e.target.value })}
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm font-semibold"
