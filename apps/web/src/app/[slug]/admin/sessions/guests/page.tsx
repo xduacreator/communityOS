@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { getAuthHeaders } from '../../../../../lib/auth';
 import { Users, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { adminDate, adminDateTime, adminTime, statusLabel } from '../../../../../components/admin/AdminUI';
 
 interface GuestRegistration {
   id: string;
@@ -31,13 +32,13 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
 
     try {
       const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
-      if (!commRes.ok) throw new Error('Community not found');
+      if (!commRes.ok) throw new Error('Klub tidak ditemukan');
       const commData = await commRes.json();
 
       const guestRes = await fetch(`${getApiUrl()}/guest-registrations/community/${commData.id}`, {
         headers: { ...headers },
       });
-      if (!guestRes.ok) throw new Error('Failed to fetch guest registrations');
+      if (!guestRes.ok) throw new Error('Gagal memuat pendaftar tamu');
       const guestData = await guestRes.json();
       
       setGuests(guestData);
@@ -71,14 +72,14 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
         },
         body: JSON.stringify({ status }),
       });
-      if (!res.ok) throw new Error('Failed to update status');
+      if (!res.ok) throw new Error('Gagal mengubah status');
       fetchData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error");
+      alert(err instanceof Error ? err.message : "Terjadi kesalahan");
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
+  if (loading) return <div className="p-8 text-center font-medium text-slate-400">Memuat pendaftar tamu…</div>;
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
 
   return (
@@ -92,8 +93,8 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
             <Users className="w-6 h-6 text-indigo-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Pendaftar Umum</h1>
-            <p className="text-sm font-semibold text-slate-500">Kelola kehadiran peserta non-member untuk acara umum</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Pendaftar Tamu</h1>
+            <p className="text-sm font-semibold text-slate-500">Non-member yang mendaftar paket umum lewat halaman klub. Setujui setelah pembayaran dicek.</p>
           </div>
         </div>
       </div>
@@ -114,7 +115,7 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
               {guests.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-slate-400 font-semibold">
-                    Belum ada pendaftar umum.
+                    Belum ada pendaftar tamu.
                   </td>
                 </tr>
               ) : (
@@ -135,7 +136,7 @@ export default function AdminGuestsPage({ params }: { params: Promise<{ slug: st
                     </td>
                     <td className="py-4 px-6">
                       <div className="text-sm font-bold text-slate-700">{guest.package?.name}</div>
-                      <div className="text-xs text-slate-400">{new Date(guest.createdAt).toLocaleDateString('id-ID')}</div>
+                      <div className="text-xs text-slate-400">{adminDate(guest.createdAt)}</div>
                     </td>
                     <td className="py-4 px-6">
                       <span className={`inline-flex px-3 py-1 text-[11px] font-black rounded-lg uppercase tracking-wider ${

@@ -7,15 +7,10 @@ import {
   Activity,
   CreditCard,
   CheckCircle2,
-  Clock,
-  ShieldAlert,
-  Search,
   Plus,
   QrCode,
   X,
   CheckCircle,
-  UserPlus,
-  AlertTriangle,
   Image as ImageIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -29,6 +24,7 @@ import {
   SessionWallet,
   CommunityMember,
 } from "../../../../types";
+import { statusLabel } from '../../../../components/admin/AdminUI';
 
 export default function SessionsManagementPage({
   params,
@@ -37,7 +33,7 @@ export default function SessionsManagementPage({
 }) {
   const resolvedParams = React.use(params);
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("packages");
 
   const [community, setCommunity] = useState<Community | null>(null);
   const [packages, setPackages] = useState<SessionPackage[]>([]);
@@ -73,7 +69,7 @@ export default function SessionsManagementPage({
   const handleUpdateWalletStatus = async (id: string) => {
     if (
       !confirm(
-        "Apakah Anda yakin ingin meng-approve peserta waitlist ini? Statusnya akan menjadi ACTIVE.",
+        "Setujui peserta ini? Paketnya akan menjadi aktif.",
       )
     )
       return;
@@ -89,7 +85,7 @@ export default function SessionsManagementPage({
       }
       fetchData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error approving wallet");
+      alert(err instanceof Error ? err.message : "Gagal menyetujui");
     }
   };
 
@@ -102,7 +98,7 @@ export default function SessionsManagementPage({
       const commRes = await fetch(
         `${getApiUrl()}/communities/${resolvedParams.slug}`,
       );
-      if (!commRes.ok) throw new Error("Community not found");
+      if (!commRes.ok) throw new Error("Klub tidak ditemukan");
       const comm = await commRes.json();
       setCommunity(comm);
 
@@ -179,7 +175,7 @@ export default function SessionsManagementPage({
       headers: getAuthHeaders(),
       body: fd,
     });
-    if (!res.ok) throw new Error("Failed to upload image");
+    if (!res.ok) throw new Error("Gagal mengunggah gambar");
     const data = await res.json();
     return data.url;
   };
@@ -206,7 +202,7 @@ export default function SessionsManagementPage({
             communityId: community.id,
           }),
         });
-        if (!actRes.ok) throw new Error("Failed to create Activity");
+        if (!actRes.ok) throw new Error("Gagal membuat aktivitas");
         const actData = await actRes.json();
         actId = actData.id;
       }
@@ -225,7 +221,7 @@ export default function SessionsManagementPage({
             activityId: actId,
           }),
         });
-        if (!catRes.ok) throw new Error("Failed to create Category");
+        if (!catRes.ok) throw new Error("Gagal membuat kategori");
         const catData = await catRes.json();
         catId = catData.id;
       }
@@ -300,7 +296,7 @@ export default function SessionsManagementPage({
         fetchPackages(community.id);
       }
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Error");
+      alert(e instanceof Error ? e.message : "Terjadi kesalahan");
     } finally {
       setSubmitting(false);
     }
@@ -336,11 +332,11 @@ export default function SessionsManagementPage({
         throw new Error(err.message || "Failed to check in");
       }
 
-      alert("Check-in successful!");
+      alert("Check-in berhasil. Sisa sesi member sudah dikurangi 1.");
       setCheckinForm({ userId: "", packageId: "", remarks: "" });
       fetchWallets(community.id); // Refresh wallets
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Error checking in");
+      alert(err instanceof Error ? err.message : "Gagal check-in");
     } finally {
       setCheckinSubmitting(false);
     }
@@ -370,36 +366,6 @@ export default function SessionsManagementPage({
     setIsModalOpen(true);
   };
 
-  const stats = [
-    {
-      title: "Today's Check-ins",
-      value: "0",
-      subtitle: "Pending integration",
-      icon: CheckCircle2,
-      color: "from-emerald-500 to-teal-400",
-    },
-    {
-      title: "Active Wallets",
-      value: "0",
-      subtitle: "Pending integration",
-      icon: CreditCard,
-      color: "from-blue-600 to-cyan-500",
-    },
-    {
-      title: "Packages Available",
-      value: packages.length.toString(),
-      subtitle: "Active",
-      icon: Activity,
-      color: "from-violet-600 to-purple-500",
-    },
-    {
-      title: "Expired / Frozen",
-      value: "0",
-      subtitle: "Requires attention",
-      icon: Clock,
-      color: "from-rose-500 to-orange-400",
-    },
-  ];
 
   if (loading)
     return (
@@ -413,18 +379,22 @@ export default function SessionsManagementPage({
   return (
     <div className="w-full max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header - One UI Style: Large and Bold */}
-      <div className="pt-4 pb-2">
-        <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 mb-3">
-          Sessions & Packages
+      <div>
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-2">
+          Paket & Sesi
         </h1>
-        <p className="text-lg text-slate-500 font-medium">
-          Manage activities, session wallets, and attendances globally.
+        <p className="text-slate-500">
+          Atur paket latihan yang dijual di halaman klub, lihat paket aktif member, dan lakukan check-in manual.
         </p>
       </div>
 
       {/* Tabs */}
       <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
-        {["overview", "packages", "wallets", "quick actions"].map((tab) => (
+        {([
+          ["packages", "Paket"],
+          ["wallets", "Paket aktif member"],
+          ["quick actions", "Check-in manual"],
+        ] as const).map(([tab, tabLabel]) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -434,94 +404,10 @@ export default function SessionsManagementPage({
                 : "bg-white text-slate-500 hover:bg-slate-50 border border-slate-200/60"
             }`}
           >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tabLabel}
           </button>
         ))}
       </div>
-
-      {/* Overview Tab Content */}
-      {activeTab === "overview" && (
-        <div className="space-y-8">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-[2rem] p-6 shadow-xl shadow-slate-200/40 border border-slate-100/50 hover:-translate-y-1 transition-transform duration-300"
-              >
-                <div className="flex justify-between items-start mb-6">
-                  <div
-                    className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg opacity-90`}
-                  >
-                    <stat.icon className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-slate-500 font-bold text-sm mb-1">
-                    {stat.title}
-                  </h3>
-                  <div className="text-4xl font-black text-slate-900 tracking-tight mb-2">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm font-semibold text-slate-400">
-                    {stat.subtitle}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Quick Actions */}
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100/50 col-span-1">
-              <h2 className="text-2xl font-extrabold text-slate-900 mb-6">
-                Quick Actions
-              </h2>
-              <div className="space-y-4">
-                <button className="w-full flex items-center p-4 rounded-3xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors font-bold group">
-                  <div className="w-10 h-10 rounded-2xl bg-indigo-200/50 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                    <QrCode className="w-5 h-5" />
-                  </div>
-                  Scan Check-in
-                </button>
-                <button className="w-full flex items-center p-4 rounded-3xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors font-bold group">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-200/50 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                    <CreditCard className="w-5 h-5" />
-                  </div>
-                  Sell Package
-                </button>
-                <button className="w-full flex items-center p-4 rounded-3xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors font-bold group">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-200/50 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                    <ShieldAlert className="w-5 h-5" />
-                  </div>
-                  Freeze Wallet
-                </button>
-                <Link
-                  href={`/${resolvedParams.slug}/admin/sessions/guests`}
-                  className="w-full flex items-center p-4 rounded-3xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors font-bold group"
-                >
-                  <div className="w-10 h-10 rounded-2xl bg-blue-200/50 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                    <UserPlus className="w-5 h-5" />
-                  </div>
-                  Guest Registrations
-                </Link>
-              </div>
-            </div>
-
-            {/* Recent Check-ins */}
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 border border-slate-100/50 col-span-1 lg:col-span-2">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-extrabold text-slate-900">
-                  Live Attendances (WIP)
-                </h2>
-              </div>
-              <div className="py-12 text-center text-slate-400 font-medium bg-slate-50 rounded-3xl border border-slate-100">
-                No recent check-ins found.
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Packages Tab Content */}
       {activeTab === "packages" && (
@@ -529,10 +415,10 @@ export default function SessionsManagementPage({
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
             <div>
               <h2 className="text-2xl font-extrabold text-slate-900 mb-1">
-                Session Packages
+                Paket Latihan
               </h2>
               <p className="text-slate-500 font-medium">
-                Manage all available packages for sale.
+                Paket yang bisa dibeli member dan tamu di halaman klub.
               </p>
             </div>
             <button
@@ -562,31 +448,31 @@ export default function SessionsManagementPage({
               className="flex items-center px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20"
             >
               <Plus className="w-5 h-5 mr-2" />
-              New Package
+              Paket Baru
             </button>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[680px] text-left border-collapse">
               <thead>
                 <tr>
                   <th className="pb-4 font-bold text-slate-400 text-sm uppercase tracking-wider border-b border-slate-100">
-                    Package Name
+                    Nama paket
                   </th>
                   <th className="pb-4 font-bold text-slate-400 text-sm uppercase tracking-wider border-b border-slate-100">
-                    Activity
+                    Aktivitas
                   </th>
                   <th className="pb-4 font-bold text-slate-400 text-sm uppercase tracking-wider border-b border-slate-100">
-                    Sessions
+                    Sesi
                   </th>
                   <th className="pb-4 font-bold text-slate-400 text-sm uppercase tracking-wider border-b border-slate-100">
-                    Valid Days
+                    Masa berlaku
                   </th>
                   <th className="pb-4 font-bold text-slate-400 text-sm uppercase tracking-wider border-b border-slate-100">
-                    Price (Reg / Private)
+                    Harga (reguler / privat)
                   </th>
                   <th className="pb-4 font-bold text-slate-400 text-sm uppercase tracking-wider border-b border-slate-100 text-right">
-                    Actions
+                    Aksi
                   </th>
                 </tr>
               </thead>
@@ -620,7 +506,7 @@ export default function SessionsManagementPage({
                         </div>
                         {pkg.vipPrice ? (
                           <div className="text-sm font-bold text-amber-500">
-                            Private: Rp {pkg.vipPrice.toLocaleString("id-ID")}
+                            Privat: Rp {pkg.vipPrice.toLocaleString("id-ID")}
                           </div>
                         ) : null}
                       </td>
@@ -640,7 +526,7 @@ export default function SessionsManagementPage({
                       colSpan={6}
                       className="py-12 text-center text-slate-400 font-medium"
                     >
-                      No packages found. Create one to get started.
+                      Belum ada paket. Buat paket pertama supaya member bisa membeli sesi latihan.
                     </td>
                   </tr>
                 )}
@@ -657,10 +543,10 @@ export default function SessionsManagementPage({
             <QrCode className="w-12 h-12 text-indigo-500" />
           </div>
           <h2 className="text-2xl font-extrabold text-slate-900 mb-2">
-            Manual Check-in
+            Check-in Manual
           </h2>
           <p className="text-slate-500 font-medium mb-8 text-center max-w-md">
-            Select a member to manually deduct a session from their active
+            Pilih member untuk mengurangi 1 sesi dari paket aktifnya secara manual
             wallet.
           </p>
 
@@ -670,7 +556,7 @@ export default function SessionsManagementPage({
           >
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">
-                Select Member
+                Pilih member
               </label>
               <select
                 required
@@ -680,7 +566,7 @@ export default function SessionsManagementPage({
                 }
                 className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-900 transition-all outline-none"
               >
-                <option value="">-- Choose Member --</option>
+                <option value="">— Pilih member —</option>
                 {members.map((m) => (
                   <option key={m.userId} value={m.userId}>
                     {m.user?.name} ({m.user?.email})
@@ -690,7 +576,7 @@ export default function SessionsManagementPage({
             </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">
-                Select Package (Optional)
+                Pilih paket (opsional)
               </label>
               <select
                 value={checkinForm.packageId}
@@ -699,7 +585,7 @@ export default function SessionsManagementPage({
                 }
                 className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-900 transition-all outline-none"
               >
-                <option value="">-- Auto-select Active Wallet --</option>
+                <option value="">— Otomatis pakai paket aktif —</option>
                 {(checkinForm.userId
                   ? packages.filter((p) =>
                       wallets.some(
@@ -719,7 +605,7 @@ export default function SessionsManagementPage({
             </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">
-                Remarks
+                Catatan
               </label>
               <input
                 type="text"
@@ -727,7 +613,7 @@ export default function SessionsManagementPage({
                 onChange={(e) =>
                   setCheckinForm({ ...checkinForm, remarks: e.target.value })
                 }
-                placeholder="Manual check-in by Admin..."
+                placeholder="Contoh: check-in manual oleh admin"
                 className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
               />
             </div>
@@ -748,10 +634,10 @@ export default function SessionsManagementPage({
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
             <div>
               <h2 className="text-2xl font-extrabold text-slate-900 mb-1">
-                Active Session Wallets
+                Paket Aktif Member
               </h2>
               <p className="text-slate-500 font-medium">
-                View all active wallets of members.
+                Semua paket member yang sedang berjalan atau menunggu.
               </p>
             </div>
           </div>
@@ -763,16 +649,16 @@ export default function SessionsManagementPage({
                     Member
                   </th>
                   <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                    Package
+                    Paket
                   </th>
                   <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">
                     Status
                   </th>
                   <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                    Remaining
+                    Sisa
                   </th>
                   <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                    Expiry Date
+                    Berlaku s.d.
                   </th>
                   <th className="px-6 py-5 text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100 text-right">
                     Aksi
@@ -808,7 +694,7 @@ export default function SessionsManagementPage({
                                 : "bg-slate-100 text-slate-700"
                           }`}
                         >
-                          {w.walletStatus}
+                          {statusLabel(w.walletStatus === "WAITING" ? "WAITING_LIST" : w.walletStatus)}
                         </span>
                       </td>
                       <td className="px-6 py-5 font-bold text-slate-900">
@@ -826,10 +712,10 @@ export default function SessionsManagementPage({
                           <button
                             onClick={() => handleUpdateWalletStatus(w.id)}
                             className="px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors inline-flex items-center gap-2"
-                            title="Approve"
+                            title="Setujui"
                           >
                             <CheckCircle className="w-4 h-4" />
-                            Approve
+                            Setujui
                           </button>
                         )}
                       </td>
@@ -841,7 +727,7 @@ export default function SessionsManagementPage({
                       colSpan={6}
                       className="py-12 text-center text-slate-400 font-medium"
                     >
-                      No active wallets found.
+                      Belum ada paket aktif.
                     </td>
                   </tr>
                 )}
@@ -859,11 +745,11 @@ export default function SessionsManagementPage({
               <div>
                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">
                   {editPackageId
-                    ? "Edit Session Package"
-                    : "Create Session Package"}
+                    ? "Edit Paket"
+                    : "Buat Paket Baru"}
                 </h3>
                 <p className="text-sm font-medium text-slate-500 mt-1">
-                  Define activity, category, and pricing details.
+                  Atur aktivitas, kategori, sesi, dan harga.
                 </p>
               </div>
               <button
@@ -888,7 +774,7 @@ export default function SessionsManagementPage({
                     {/* Activity Field */}
                     <div className="space-y-3">
                       <label className="text-sm font-bold text-slate-700 flex justify-between items-center">
-                        Activity
+                        Aktivitas
                         <button
                           type="button"
                           onClick={() =>
@@ -921,7 +807,7 @@ export default function SessionsManagementPage({
                           }
                           className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 transition-all shadow-sm hover:border-slate-300"
                         >
-                          <option value="">Select Activity</option>
+                          <option value="">Pilih aktivitas</option>
                           {activities.map((a) => (
                             <option key={a.id} value={a.id}>
                               {a.name}
@@ -932,7 +818,7 @@ export default function SessionsManagementPage({
                         <input
                           type="text"
                           required
-                          placeholder="e.g. Basket, Renang"
+                          placeholder="Contoh: Lari, Basket, Renang"
                           value={formData.activityName}
                           onChange={(e) =>
                             setFormData({
@@ -948,7 +834,7 @@ export default function SessionsManagementPage({
                     {/* Category Field */}
                     <div className="space-y-3">
                       <label className="text-sm font-bold text-slate-700 flex justify-between items-center">
-                        Category / Level
+                        Kategori / level
                         {formData.activityMode === "select" && (
                           <button
                             type="button"
@@ -983,7 +869,7 @@ export default function SessionsManagementPage({
                           className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed transition-all shadow-sm hover:border-slate-300"
                           disabled={!formData.activityId}
                         >
-                          <option value="">Select Category</option>
+                          <option value="">Pilih kategori</option>
                           {selectedActivity?.categories?.map((c) => (
                             <option key={c.id} value={c.id}>
                               {c.name}
@@ -994,7 +880,7 @@ export default function SessionsManagementPage({
                         <input
                           type="text"
                           required
-                          placeholder="e.g. Starter (5-8 yrs), Pro"
+                          placeholder="Contoh: Umum, Junior (10–15 th)"
                           value={formData.categoryName}
                           onChange={(e) =>
                             setFormData({
@@ -1017,7 +903,7 @@ export default function SessionsManagementPage({
                   <div className="space-y-5">
                     <div className="space-y-3">
                       <label className="text-sm font-bold text-slate-700">
-                        Package Name
+                        Nama paket
                       </label>
                       <input
                         type="text"
@@ -1033,14 +919,14 @@ export default function SessionsManagementPage({
 
                     <div className="space-y-3">
                       <label className="text-sm font-bold text-slate-700 flex items-center justify-between">
-                        Description{" "}
+                        Deskripsi{" "}
                         <span className="text-xs text-slate-400 font-semibold">
-                          Optional
+                          Opsional
                         </span>
                       </label>
                       <textarea
                         rows={3}
-                        placeholder="Package benefits, terms, etc."
+                        placeholder="Isi paket, jadwal, syarat, dan lainnya"
                         value={formData.description}
                         onChange={(e) =>
                           setFormData({
@@ -1054,9 +940,9 @@ export default function SessionsManagementPage({
 
                     <div className="space-y-3">
                       <label className="text-sm font-bold text-slate-700 flex items-center justify-between">
-                        Package Image (Header){" "}
+                        Gambar paket{" "}
                         <span className="text-xs text-slate-400 font-semibold">
-                          Optional
+                          Opsional
                         </span>
                       </label>
                       <div className="p-4 border-2 border-dashed border-slate-200 rounded-2xl bg-white hover:bg-slate-50 transition-colors">
@@ -1073,7 +959,7 @@ export default function SessionsManagementPage({
                             />
                             <div className="absolute inset-0 bg-slate-900/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <span className="text-white font-bold text-sm bg-slate-900/60 px-4 py-2 rounded-full">
-                                Change Image
+                                Ganti gambar
                               </span>
                             </div>
                           </div>
@@ -1094,7 +980,7 @@ export default function SessionsManagementPage({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                       <div className="space-y-3">
                         <label className="text-sm font-bold text-slate-700">
-                          Total Sessions
+                          Jumlah sesi
                         </label>
                         <div className="relative">
                           <input
@@ -1156,7 +1042,7 @@ export default function SessionsManagementPage({
                                 quota: e.target.value,
                               })
                             }
-                            placeholder="Unlimited"
+                            placeholder="Tanpa batas"
                             className="w-full pl-5 pr-16 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-black text-indigo-600 transition-all shadow-sm hover:border-slate-300"
                           />
                           <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
@@ -1179,7 +1065,7 @@ export default function SessionsManagementPage({
                                 privateQuota: e.target.value,
                               })
                             }
-                            placeholder="Unlimited"
+                            placeholder="Tanpa batas"
                             className="w-full pl-5 pr-16 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 font-black text-amber-600 transition-all shadow-sm hover:border-slate-300"
                           />
                           <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
@@ -1199,7 +1085,7 @@ export default function SessionsManagementPage({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-3">
                       <label className="text-sm font-bold text-slate-700">
-                        Normal Price
+                        Harga reguler
                       </label>
                       <div className="relative">
                         <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
@@ -1222,9 +1108,9 @@ export default function SessionsManagementPage({
                     </div>
                     <div className="space-y-3">
                       <label className="text-sm font-bold text-slate-700 flex items-center justify-between">
-                        Private Price{" "}
+                        Harga privat{" "}
                         <span className="text-xs text-slate-400 font-semibold">
-                          Optional
+                          Opsional
                         </span>
                       </label>
                       <div className="relative">
@@ -1286,7 +1172,7 @@ export default function SessionsManagementPage({
                   onClick={() => setIsModalOpen(false)}
                   className="px-6 py-3.5 font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-2xl transition-all"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="submit"
@@ -1294,10 +1180,10 @@ export default function SessionsManagementPage({
                   className="px-8 py-3.5 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-500/25 transition-all disabled:opacity-50 hover:-translate-y-0.5 active:translate-y-0"
                 >
                   {submitting
-                    ? "Saving..."
+                    ? "Menyimpan…"
                     : editPackageId
-                      ? "Save Changes"
-                      : "Create Package"}
+                      ? "Simpan perubahan"
+                      : "Buat paket"}
                 </button>
               </div>
             </form>

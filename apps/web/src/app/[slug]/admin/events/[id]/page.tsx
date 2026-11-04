@@ -7,6 +7,7 @@ import { getAuthHeaders } from '../../../../../lib/auth';
 import { ArrowLeft, Users, Calendar, Mail, MapPin, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { Event, EventRegistration } from '../../../../../types';
+import { adminDate, adminDateTime, adminTime } from '../../../../../components/admin/AdminUI';
 
 export default function EventAttendees({ params }: { params: Promise<{ slug: string, id: string }> }) {
   const resolvedParams = React.use(params);
@@ -20,16 +21,16 @@ export default function EventAttendees({ params }: { params: Promise<{ slug: str
       try {
         const headers = getAuthHeaders();
         const eventRes = await fetch(`${getApiUrl()}/events/${resolvedParams.id}`, { headers });
-        if (!eventRes.ok) throw new Error('Event not found');
+        if (!eventRes.ok) throw new Error('Event tidak ditemukan');
         const eventData = await eventRes.json();
         setEvent(eventData);
 
         const attendeesRes = await fetch(`${getApiUrl()}/events/${resolvedParams.id}/attendees`, { headers });
-        if (!attendeesRes.ok) throw new Error('Failed to fetch attendees');
+        if (!attendeesRes.ok) throw new Error('Gagal memuat pendaftar');
         const attendeesData = await attendeesRes.json();
         setAttendees(attendeesData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
       } finally {
         setLoading(false);
       }
@@ -41,7 +42,7 @@ export default function EventAttendees({ params }: { params: Promise<{ slug: str
     <div className="flex items-center justify-center h-[60vh]">
       <div className="animate-pulse flex flex-col items-center">
         <div className="w-12 h-12 bg-indigo-200 rounded-full mb-4"></div>
-        <div className="text-slate-400 font-medium">Loading Attendees...</div>
+        <div className="text-slate-400 font-medium">Memuat pendaftar…</div>
       </div>
     </div>
   );
@@ -59,14 +60,14 @@ export default function EventAttendees({ params }: { params: Promise<{ slug: str
             <ArrowLeft className="w-6 h-6" />
           </Link>
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Attendees</h1>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Pendaftar Event</h1>
             <p className="mt-1 text-slate-500 line-clamp-1">{event?.title}</p>
           </div>
         </div>
         <div className="bg-white px-5 py-3 rounded-2xl border border-slate-200 shadow-sm flex items-center">
           <Users className="w-5 h-5 text-indigo-500 mr-3" />
           <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Registered</div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Terdaftar</div>
             <div className="text-lg font-bold text-slate-900 leading-none mt-1">{attendees.length}</div>
           </div>
         </div>
@@ -80,11 +81,11 @@ export default function EventAttendees({ params }: { params: Promise<{ slug: str
          <div className="md:w-72 space-y-3 bg-slate-50 p-4 rounded-2xl">
             <div className="flex items-center text-sm font-medium text-slate-700">
                <Calendar className="w-4 h-4 mr-2 text-slate-400" />
-               {event?.date ? new Date(event.date).toLocaleDateString() : ''}
+               {event?.date ? adminDate(event.date) : ''}
             </div>
             <div className="flex items-center text-sm font-medium text-slate-700">
                <Clock className="w-4 h-4 mr-2 text-slate-400" />
-               {event?.date ? new Date(event.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
+               {event?.date ? adminTime(event.date) : ''}
             </div>
             <div className="flex items-center text-sm font-medium text-slate-700">
                <MapPin className="w-4 h-4 mr-2 text-slate-400" />
@@ -98,8 +99,8 @@ export default function EventAttendees({ params }: { params: Promise<{ slug: str
           <table className="min-w-full divide-y divide-slate-100">
             <thead className="bg-slate-50/50">
               <tr>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Attendee Details</th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Registration Date</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Pendaftar</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Waktu daftar</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
@@ -111,7 +112,7 @@ export default function EventAttendees({ params }: { params: Promise<{ slug: str
                         {(registration.user?.name || 'U').charAt(0)}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-bold text-slate-900">{registration.user?.name || 'Unknown User'}</div>
+                        <div className="text-sm font-bold text-slate-900">{registration.user?.name || 'Tanpa nama'}</div>
                         <div className="text-sm text-slate-500 flex items-center mt-0.5">
                           <Mail className="w-3 h-3 mr-1" /> {registration.user?.email}
                         </div>
@@ -120,7 +121,7 @@ export default function EventAttendees({ params }: { params: Promise<{ slug: str
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                      <span className="text-sm font-medium text-slate-600">
-                        {new Date(registration.createdAt).toLocaleString()}
+                        {adminDateTime(registration.createdAt)}
                      </span>
                   </td>
                 </tr>
@@ -132,7 +133,7 @@ export default function EventAttendees({ params }: { params: Promise<{ slug: str
                     <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Users className="w-8 h-8 text-slate-300" />
                     </div>
-                    <div className="text-slate-500 font-medium">No one has registered for this event yet.</div>
+                    <div className="text-slate-500 font-medium">Belum ada yang mendaftar ke event ini.</div>
                   </td>
                 </tr>
               )}

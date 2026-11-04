@@ -5,7 +5,8 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuthHeaders } from '../../../../lib/auth';
 import Link from 'next/link';
-import { Calendar, Plus, MapPin, Clock, Users, Trash2 } from 'lucide-react';
+import { Calendar, Plus, MapPin, Clock, Users, Trash2, Pencil } from 'lucide-react';
+import { adminDateTime } from '../../../../components/admin/AdminUI';
 import ConfirmModal from '../../../../components/ui/ConfirmModal';
 
 import { Event, Community } from '../../../../types';
@@ -29,11 +30,11 @@ export default function AdminEvents({ params }: { params: Promise<{ slug: string
       setCommunity(commData);
 
       const eventsRes = await fetch(`${getApiUrl()}/events/community/${commData.id}`);
-      if (!eventsRes.ok) throw new Error('Failed to fetch events');
+      if (!eventsRes.ok) throw new Error('Gagal memuat event');
       const eventsData = await eventsRes.json();
       setEvents(eventsData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
     } finally {
       setLoading(false);
     }
@@ -57,11 +58,11 @@ export default function AdminEvents({ params }: { params: Promise<{ slug: string
         headers,
       });
 
-      if (!res.ok) throw new Error('Failed to delete event');
+      if (!res.ok) throw new Error('Gagal menghapus event');
       setDeleteModalOpen(false);
       fetchData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'An error occurred');
+      alert(err instanceof Error ? err.message : 'Terjadi kesalahan');
     }
   };
 
@@ -69,7 +70,7 @@ export default function AdminEvents({ params }: { params: Promise<{ slug: string
     <div className="flex items-center justify-center h-[60vh]">
       <div className="animate-pulse flex flex-col items-center">
         <div className="w-12 h-12 bg-indigo-200 rounded-full mb-4"></div>
-        <div className="text-slate-400 font-medium">Loading Events...</div>
+        <div className="text-slate-400 font-medium">Memuat event…</div>
       </div>
     </div>
   );
@@ -80,14 +81,14 @@ export default function AdminEvents({ params }: { params: Promise<{ slug: string
     <div className="max-w-6xl mx-auto">
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Events</h1>
-          <p className="mt-2 text-slate-500">Manage activities for {community?.name}</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Event</h1>
+          <p className="mt-2 text-slate-500">Event yang tampil di tab Event dan beranda halaman klub. Member bisa mendaftar langsung dari sana.</p>
         </div>
         <Link 
           href={`/${resolvedParams.slug}/admin/events/create`}
           className="flex items-center justify-center px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all"
         >
-          <Plus className="w-5 h-5 mr-2" /> Create Event
+          <Plus className="w-5 h-5 mr-2" /> Buat Event
         </Link>
       </div>
 
@@ -101,7 +102,8 @@ export default function AdminEvents({ params }: { params: Promise<{ slug: string
                 </div>
                 <button 
                   onClick={() => confirmDelete(event.id, event.title)}
-                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors opacity-0 group-hover:opacity-100"
+                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                  aria-label="Hapus event"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -112,7 +114,7 @@ export default function AdminEvents({ params }: { params: Promise<{ slug: string
               <div className="space-y-2 text-sm font-medium text-slate-600">
                 <div className="flex items-center">
                   <Clock className="w-4 h-4 mr-2 text-slate-400" />
-                  {new Date(event.date).toLocaleString()}
+                  {adminDateTime(event.date)}
                 </div>
                 {event.location && (
                   <div className="flex items-center">
@@ -128,7 +130,13 @@ export default function AdminEvents({ params }: { params: Promise<{ slug: string
                 href={`/${resolvedParams.slug}/admin/events/${event.id}`}
                 className="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center"
               >
-                <Users className="w-4 h-4 mr-1.5" /> View Attendees
+                <Users className="w-4 h-4 mr-1.5" /> Lihat pendaftar
+              </Link>
+              <Link
+                href={`/${resolvedParams.slug}/admin/events/${event.id}/edit`}
+                className="text-sm font-bold text-slate-600 hover:text-slate-900 flex items-center"
+              >
+                <Pencil className="w-4 h-4 mr-1.5" /> Edit
               </Link>
             </div>
           </div>
@@ -139,13 +147,13 @@ export default function AdminEvents({ params }: { params: Promise<{ slug: string
             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-8 h-8 text-slate-300" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">No events found</h3>
-            <p className="text-slate-500 mt-1 mb-6">You haven&apos;t created any events yet.</p>
+            <h3 className="text-lg font-bold text-slate-900">Belum ada event</h3>
+            <p className="text-slate-500 mt-1 mb-6">Buat event pertama klub: fun run, coaching clinic, gathering, dan lainnya.</p>
             <Link 
               href={`/${resolvedParams.slug}/admin/events/create`}
               className="inline-flex items-center justify-center px-6 py-3 bg-indigo-50 text-indigo-700 font-bold rounded-xl hover:bg-indigo-100 transition-all"
             >
-              <Plus className="w-5 h-5 mr-2" /> Create First Event
+              <Plus className="w-5 h-5 mr-2" /> Buat Event Pertama
             </Link>
           </div>
         )}
@@ -153,9 +161,9 @@ export default function AdminEvents({ params }: { params: Promise<{ slug: string
 
       <ConfirmModal 
         isOpen={deleteModalOpen}
-        title="Delete Event"
-        message={`Are you sure you want to delete "${deleteData?.title}"? All registrations will be lost. This action cannot be undone.`}
-        confirmText="Delete Event"
+        title="Hapus event?"
+        message={`Event "${deleteData?.title}" dan semua pendaftarnya akan dihapus. Tindakan ini tidak bisa dibatalkan.`}
+        confirmText="Hapus event"
         isDestructive={true}
         onConfirm={handleDeleteEvent}
         onCancel={() => setDeleteModalOpen(false)}

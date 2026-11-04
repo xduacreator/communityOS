@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuthHeaders } from '../../../lib/auth';
 import { Users, CheckCircle, XCircle, Edit2, Trash2, Mail, Hash } from 'lucide-react';
+import { roleLabel, statusLabel } from '../../../components/admin/AdminUI';
 import ConfirmModal from '../../../components/ui/ConfirmModal';
 import AlertModal from '../../../components/ui/AlertModal';
 
@@ -53,6 +54,8 @@ interface PendingSessionPackage {
 export default function AdminDashboard({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = React.use(params);
   const [members, setMembers] = useState<CommunityMember[]>([]);
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
   const [confirmModalConfig, setConfirmModalConfig] = useState({ isOpen: false, title: '', message: '', confirmText: 'Konfirmasi', onConfirm: () => {} });
   const [alertModalConfig, setAlertModalConfig] = useState({ isOpen: false, type: 'success' as 'success' | 'error', title: '', message: '' });
   const [community, setCommunity] = useState<Community | null>(null);
@@ -78,7 +81,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
 
     try {
       const commRes = await fetch(`${getApiUrl()}/communities/${resolvedParams.slug}`);
-      if (!commRes.ok) throw new Error('Community not found');
+      if (!commRes.ok) throw new Error('Klub tidak ditemukan');
       const commData = await commRes.json();
       setCommunity(commData);
 
@@ -86,7 +89,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
         headers: { ...headers },
       });
 
-      if (!memRes.ok) throw new Error('Failed to fetch members or unauthorized');
+      if (!memRes.ok) throw new Error('Gagal memuat member (pastikan Anda admin klub ini)');
       const memData = await memRes.json();
       setMembers(memData);
 
@@ -135,12 +138,12 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
         body: JSON.stringify({ status: actionData.status, communityId: community?.id }),
       });
 
-      if (!res.ok) throw new Error('Failed to update status');
+      if (!res.ok) throw new Error('Gagal mengubah status');
       
       setModalOpen(false);
       fetchData();
     } catch (err) {
-      setAlertModalConfig({ isOpen: true, type: 'error', title: 'Error', message: err instanceof Error ? err.message : 'An error occurred' });
+      setAlertModalConfig({ isOpen: true, type: 'error', title: 'Gagal', message: err instanceof Error ? err.message : 'Terjadi kesalahan' });
     }
   };
 
@@ -162,12 +165,12 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
         body: JSON.stringify({ communityId: community?.id }),
       });
 
-      if (!res.ok) throw new Error('Failed to delete member');
+      if (!res.ok) throw new Error('Gagal menghapus member');
       
       setDeleteModalOpen(false);
       fetchData();
     } catch (err) {
-      setAlertModalConfig({ isOpen: true, type: 'error', title: 'Error', message: err instanceof Error ? err.message : 'An error occurred' });
+      setAlertModalConfig({ isOpen: true, type: 'error', title: 'Gagal', message: err instanceof Error ? err.message : 'Terjadi kesalahan' });
     }
   };
 
@@ -209,20 +212,30 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error('Failed to update member data');
+      if (!res.ok) throw new Error('Gagal menyimpan data member');
       setEditModalOpen(false);
       fetchData();
     } catch (err) {
-      setAlertModalConfig({ isOpen: true, type: 'error', title: 'Error', message: err instanceof Error ? err.message : 'An error occurred' });
+      setAlertModalConfig({ isOpen: true, type: 'error', title: 'Gagal', message: err instanceof Error ? err.message : 'Terjadi kesalahan' });
     }
   };
 
+
+  // Waiting registrations first, then by name; filtered by the tabs and search box
+  const q = query.trim().toLowerCase();
+  const visibleMembers = members
+    .filter((m) => statusFilter === 'ALL' || m.status === statusFilter)
+    .filter((m) =>
+      !q ||
+      [m.user?.name, m.user?.email, m.membershipNumber].some((v) => (v || '').toLowerCase().includes(q)),
+    )
+    .sort((a, b) => Number(b.status === 'PENDING') - Number(a.status === 'PENDING'));
 
   if (loading) return (
     <div className="flex items-center justify-center h-[60vh]">
       <div className="animate-pulse flex flex-col items-center">
         <div className="w-12 h-12 bg-indigo-200 rounded-full mb-4"></div>
-        <div className="text-slate-400 font-medium">Loading Admin Panel...</div>
+        <div className="text-slate-400 font-medium">Memuat member…</div>
       </div>
     </div>
   );
@@ -232,16 +245,47 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
     <div className="max-w-6xl mx-auto">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Members</h1>
-          <p className="mt-2 text-slate-500">Manage all members of {community?.name}</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Daftar Member</h1>
+          <p className="mt-2 text-slate-500">Setujui pendaftaran baru, atur peran (member, coach, admin), dan lihat data pendaftaran.</p>
         </div>
         <div className="bg-white px-5 py-3 rounded-2xl border border-slate-200 shadow-sm flex items-center">
           <Users className="w-5 h-5 text-indigo-500 mr-3" />
           <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Members</div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total member</div>
             <div className="text-lg font-bold text-slate-900 leading-none mt-1">{members.length}</div>
           </div>
         </div>
+      </div>
+
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter status member">
+          {([
+            ['ALL', 'Semua', members.length],
+            ['PENDING', 'Menunggu', members.filter((m) => m.status === 'PENDING').length],
+            ['APPROVED', 'Disetujui', members.filter((m) => m.status === 'APPROVED').length],
+            ['REJECTED', 'Ditolak', members.filter((m) => m.status === 'REJECTED').length],
+          ] as const).map(([key, label, n]) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={statusFilter === key}
+              onClick={() => setStatusFilter(key)}
+              className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+                statusFilter === key ? 'bg-[#111214] text-white' : 'bg-white text-slate-600 border border-[#E6E6E0] hover:bg-[#F1F1EC]'
+              } ${key === 'PENDING' && n > 0 && statusFilter !== key ? 'border-amber-300 text-amber-700' : ''}`}
+            >
+              {label} <span className="opacity-60">{n}</span>
+            </button>
+          ))}
+        </div>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Cari nama, email, atau no. member…"
+          className="w-full rounded-xl border border-[#E6E6E0] bg-white px-4 py-2.5 text-sm outline-none focus:border-[#111214] sm:w-72"
+        />
       </div>
 
       <div className="bg-white shadow-sm rounded-3xl border border-slate-200 overflow-hidden">
@@ -249,15 +293,15 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
           <table className="min-w-full divide-y divide-slate-100">
             <thead className="bg-slate-50/50">
               <tr>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Member Details</th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Membership #</th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Role</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Member</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">No. member</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Peran</th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+                <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
-              {members.map((member) => (
+              {visibleMembers.map((member) => (
                 <tr key={member.id} className="hover:bg-slate-50 transition-colors group">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -265,7 +309,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                         {(member.user?.name || 'U').charAt(0)}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-bold text-slate-900">{member.user?.name || 'Unknown User'}</div>
+                        <div className="text-sm font-bold text-slate-900">{member.user?.name || 'Tanpa nama'}</div>
                         <div className="text-sm text-slate-500 flex items-center mt-0.5">
                           <Mail className="w-3 h-3 mr-1" /> {member.user?.email}
                         </div>
@@ -275,18 +319,18 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-mono text-slate-600 bg-slate-100 inline-flex items-center px-2 py-1 rounded-lg">
                       <Hash className="w-3 h-3 mr-1 opacity-50" />
-                      {member.membershipNumber || 'Pending'}
+                      {member.membershipNumber || 'Belum ada'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-slate-700 bg-slate-100 px-3 py-1.5 rounded-xl">{member.role}</span>
+                    <span className="text-sm font-medium text-slate-700 bg-slate-100 px-3 py-1.5 rounded-xl">{roleLabel(member.role)}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-3 py-1.5 inline-flex text-xs leading-5 font-bold rounded-xl shadow-sm
                       ${member.status === 'APPROVED' ? 'bg-green-100 text-green-700 border border-green-200' : 
                         member.status === 'REJECTED' ? 'bg-red-100 text-red-700 border border-red-200' : 
                         'bg-amber-100 text-amber-700 border border-amber-200'}`}>
-                      {member.status}
+                      {statusLabel(member.status)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -304,29 +348,31 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                             className="flex items-center px-3 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 rounded-xl transition-colors font-bold text-xs"
                           >
                             <CheckCircle className="w-3.5 h-3.5 mr-1" />
-                            Approve
+                            Setujui
                           </button>
                           <button 
                             onClick={() => confirmAction(member.id, 'REJECTED', member.user?.name || '')}
                             className="flex items-center px-3 py-1.5 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 rounded-xl transition-colors font-bold text-xs"
                           >
                             <XCircle className="w-3.5 h-3.5 mr-1" />
-                            Reject
+                            Tolak
                           </button>
                         </>
                       ) : (
-                        <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex space-x-1">
                           <button 
                             onClick={() => openEditModal(member)}
                             className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
-                            title="Edit Role"
+                            title="Ubah peran & data"
+                            aria-label="Ubah peran & data"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button 
                             onClick={() => confirmDelete(member.id, member.user?.name || '')}
                             className="p-1.5 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                            title="Remove Member"
+                            title="Hapus member"
+                            aria-label="Hapus member"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -337,13 +383,13 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                 </tr>
               ))}
               
-              {members.length === 0 && (
+              {visibleMembers.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-16 text-center">
                     <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Users className="w-8 h-8 text-slate-300" />
                     </div>
-                    <div className="text-slate-500 font-medium">No members found in this community.</div>
+                    <div className="text-slate-500 font-medium">{members.length === 0 ? 'Belum ada member di klub ini.' : 'Tidak ada member yang cocok dengan filter.'}</div>
                   </td>
                 </tr>
               )}
@@ -352,22 +398,22 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
         </div>
       </div>
 
-      {/* Pending Membership Renewals Section */}
-      <div className="bg-white rounded-[2rem] shadow-xl p-8 border border-slate-150 space-y-6 mt-8">
+      {/* Perpanjangan Membership Menunggu Section */}
+      <div id="perpanjangan" className="bg-white rounded-[2rem] p-5 sm:p-8 border border-slate-200 space-y-6 mt-8 scroll-mt-24">
           <div>
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight text-left">Pending Membership Renewals</h2>
-            <p className="text-sm text-slate-500 mt-1 text-left">Verify payment receipts and approve active membership extensions.</p>
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight text-left">Perpanjangan Membership Menunggu</h2>
+            <p className="text-sm text-slate-500 mt-1 text-left">Cek bukti transfer, lalu setujui agar masa membership member diperpanjang.</p>
           </div>
 
           <div className="overflow-x-auto rounded-3xl border border-slate-200">
             <table className="min-w-full divide-y divide-slate-100">
               <thead className="bg-slate-50">
                 <tr>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Member Details</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Requested Tier</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Price (IDR)</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Payment Receipt</th>
-                  <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Member</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Membership</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Nominal</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Bukti transfer</th>
+                  <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-slate-100">
@@ -426,7 +472,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                               setAlertModalConfig({ isOpen: true, type: 'success', title: 'Berhasil', message: 'Perpanjangan membership berhasil disetujui!' });
                               fetchData();
                             } catch (err) {
-                              setAlertModalConfig({ isOpen: true, type: 'error', title: 'Error', message: err instanceof Error ? err.message : 'Terjadi kesalahan' });
+                              setAlertModalConfig({ isOpen: true, type: 'error', title: 'Gagal', message: err instanceof Error ? err.message : 'Terjadi kesalahan' });
                             }
                               }
                             });
@@ -444,7 +490,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                 {pendingRenewals.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center">
-                      <div className="text-slate-400 font-medium text-sm">Tidak ada permintaan perpanjangan membership pending saat ini.</div>
+                      <div className="text-slate-400 font-medium text-sm">Tidak ada perpanjangan membership yang menunggu.</div>
                     </td>
                   </tr>
                 )}
@@ -453,21 +499,21 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
           </div>
         </div>
 
-      {/* Pending Session Packages Section */}
-      <div className="bg-white rounded-[2rem] shadow-xl p-8 border border-slate-150 space-y-6 mt-8">
+      {/* Pending session package purchases */}
+      <div id="paket-menunggu" className="bg-white rounded-[2rem] p-5 sm:p-8 border border-slate-200 space-y-6 mt-8 scroll-mt-24">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight text-left">Pending Session Packages</h2>
-          <p className="text-sm text-slate-500 mt-1 text-left">Verify payment receipts and approve standalone session package purchases.</p>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight text-left">Pembelian Paket Menunggu Konfirmasi</h2>
+          <p className="text-sm text-slate-500 mt-1 text-left">Cek bukti transfer, lalu setujui agar sesi member aktif dan bisa dipakai check-in.</p>
         </div>
 
         <div className="overflow-x-auto rounded-3xl border border-slate-200">
           <table className="min-w-full divide-y divide-slate-100">
             <thead className="bg-slate-50">
               <tr>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Member Details</th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Package</th>
-                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Payment Receipt</th>
-                <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Member</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Paket</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Bukti transfer</th>
+                <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
@@ -534,7 +580,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                             setAlertModalConfig({ isOpen: true, type: 'success', title: 'Berhasil', message: 'Pembelian paket sesi berhasil disetujui!' });
                             fetchData();
                           } catch (err) {
-                            setAlertModalConfig({ isOpen: true, type: 'error', title: 'Error', message: err instanceof Error ? err.message : 'Terjadi kesalahan' });
+                            setAlertModalConfig({ isOpen: true, type: 'error', title: 'Gagal', message: err instanceof Error ? err.message : 'Terjadi kesalahan' });
                           }
                             }
                           });
@@ -552,7 +598,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
               {pendingPackages.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center">
-                    <div className="text-slate-400 font-medium text-sm">Tidak ada permintaan pembelian paket sesi pending saat ini.</div>
+                    <div className="text-slate-400 font-medium text-sm">Tidak ada pembelian paket yang menunggu konfirmasi.</div>
                   </td>
                 </tr>
               )}
@@ -563,9 +609,9 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
 
       <ConfirmModal 
         isOpen={modalOpen}
-        title={actionData?.status === 'APPROVED' ? 'Approve Member' : 'Reject Member'}
-        message={`Are you sure you want to ${actionData?.status.toLowerCase()} ${actionData?.name}?`}
-        confirmText={actionData?.status === 'APPROVED' ? 'Yes, Approve' : 'Yes, Reject'}
+        title={actionData?.status === 'APPROVED' ? 'Setujui pendaftaran?' : 'Tolak pendaftaran?'}
+        message={actionData?.status === 'APPROVED' ? `${actionData?.name} akan menjadi member aktif dan mendapat nomor member.` : `Pendaftaran ${actionData?.name} akan ditolak.`}
+        confirmText={actionData?.status === 'APPROVED' ? 'Ya, setujui' : 'Ya, tolak'}
         isDestructive={actionData?.status === 'REJECTED'}
         onConfirm={handleUpdateStatus}
         onCancel={() => setModalOpen(false)}
@@ -573,9 +619,9 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
 
       <ConfirmModal 
         isOpen={deleteModalOpen}
-        title="Remove Member"
-        message={`Are you sure you want to remove ${deleteData?.name} from the community? This action cannot be undone.`}
-        confirmText="Remove Member"
+        title="Hapus member?"
+        message={`${deleteData?.name} akan dikeluarkan dari klub. Tindakan ini tidak bisa dibatalkan.`}
+        confirmText="Hapus member"
         isDestructive={true}
         onConfirm={handleDeleteMember}
         onCancel={() => setDeleteModalOpen(false)}
@@ -603,12 +649,12 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-[2rem] shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50">
-              <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">Edit Member Role</h3>
-              <p className="text-sm text-slate-500 mt-1">Update role for {editData.name}</p>
+              <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">Ubah Data Member</h3>
+              <p className="text-sm text-slate-500 mt-1">Atur peran dan data pendaftaran {editData.name}</p>
             </div>
             <form onSubmit={handleEditMember} className="p-8 space-y-4 max-h-[70vh] overflow-y-auto">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Name</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Nama</label>
                 <input
                   type="text"
                   value={editData.name}
@@ -630,7 +676,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Role</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Peran</label>
                 <select
                   value={editData.role}
                   onChange={(e) => setEditData({ ...editData, role: e.target.value })}
@@ -638,7 +684,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                 >
                   <option value="MEMBER">Member</option>
                   <option value="COACH">Coach</option>
-                  <option value="COMMUNITY_ADMIN">Community Admin</option>
+                  <option value="COMMUNITY_ADMIN">Admin klub</option>
                 </select>
               </div>
 
@@ -660,10 +706,10 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
               
               <div className="mt-10 flex justify-end">
                 <button type="button" onClick={() => setEditModalOpen(false)} className="px-6 py-3 font-bold text-slate-500 hover:bg-slate-100 rounded-xl mr-4 transition-colors">
-                  Cancel
+                  Batal
                 </button>
                 <button type="submit" className="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/25 transition-all">
-                  Save Changes
+                  Simpan
                 </button>
               </div>
             </form>
@@ -729,14 +775,14 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                       <span className="font-bold text-slate-900">{selectedMember.user?.email || '-'}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm border-b border-slate-100 pb-2">
-                      <span className="font-semibold text-slate-500">Membership Number</span>
+                      <span className="font-semibold text-slate-500">No. member</span>
                       <span className="font-mono bg-slate-200/80 px-2 py-0.5 rounded text-xs text-slate-700 font-bold">
                         {selectedMember.membershipNumber || 'Pending'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-sm border-b border-slate-100 pb-2">
-                      <span className="font-semibold text-slate-500">Role</span>
-                      <span className="font-semibold text-slate-700 bg-slate-200 px-2 py-0.5 rounded text-xs uppercase">{selectedMember.role}</span>
+                      <span className="font-semibold text-slate-500">Peran</span>
+                      <span className="font-semibold text-slate-700 bg-slate-200 px-2 py-0.5 rounded text-xs">{roleLabel(selectedMember.role)}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="font-semibold text-slate-500">Status</span>
@@ -745,7 +791,7 @@ export default function AdminDashboard({ params }: { params: Promise<{ slug: str
                         selectedMember.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
                         'bg-amber-100 text-amber-700'
                       }`}>
-                        {selectedMember.status}
+                        {statusLabel(selectedMember.status)}
                       </span>
                     </div>
                   </div>
