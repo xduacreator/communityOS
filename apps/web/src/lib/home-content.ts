@@ -117,7 +117,7 @@ export const HOME_FAQS = [
     "Tidak. Coach hanya melihat peserta sesi dan riwayat absensi.",
   ],
   [
-    "Bisa pakai domain klub sendiri?",
-    "Bisa — pakai latih.club/namaklub, namaklub.latih.club, atau domain milik klub.",
+    "Alamat halaman klubnya seperti apa?",
+    "latih.club/namaklub, misalnya latih.club/jakartarunners. Link ini yang kamu bagikan ke member untuk daftar, beli paket, dan check-in.",
   ],
 ] as const;
