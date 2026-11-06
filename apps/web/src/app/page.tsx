@@ -238,7 +238,7 @@ export default async function Home() {
           {[
             [Tag, "bg-[#ECE3FF]", "Voucher & promo", "Nominal atau persen, dengan batas kuota."],
             [QrCode, "bg-[#D6FBEF]", "QRIS & transfer", "Member unggah bukti, admin tinggal cek."],
-            [Globe, "bg-[#FFF0A6]", "Domain sendiri", "Subdomain atau domain milik klub."],
+            [Globe, "bg-[#FFF0A6]", "Link klub sendiri", "latih.club/namaklub, siap dibagikan ke member."],
             [Download, "bg-[#DCEBFF]", "Export absensi", "Riwayat kehadiran ke CSV."],
           ].map(([Icon, tint, title, desc]) => {
             const FeatureIcon = Icon as typeof Tag;

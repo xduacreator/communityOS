@@ -50,13 +50,13 @@ async function platformLlms(origin: string) {
 
 > ${name} adalah sistem untuk menjalankan klub dan kelas latihan di Indonesia: pendaftaran member, paket sesi latihan, pembayaran, dan absensi dalam satu tempat. Member senang, coach fokus, owner tenang.
 
-Setiap klub mendapat halaman sendiri (microsite) di ${origin}/namaklub, namaklub.latih.club, atau domain milik klub. Member tidak perlu memasang aplikasi: mereka mendaftar, membeli paket, membayar (QRIS atau transfer), dan check-in dari browser HP. Pendaftaran klub baru dilakukan lewat WhatsApp dengan tim ${name}, tidak bisa daftar mandiri.
+Setiap klub mendapat halaman sendiri (microsite) di ${origin}/namaklub, misalnya ${origin}/jakartarunners. Member tidak perlu memasang aplikasi: mereka mendaftar, membeli paket, membayar (QRIS atau transfer), dan check-in dari browser HP. Pendaftaran klub baru dilakukan lewat WhatsApp dengan tim ${name}, tidak bisa daftar mandiri.
 
 ## Fitur
 
 ${tiles.join("\n")}
 - **Voucher & promo**: potongan nominal atau persen, dengan batas kuota.
-- **Domain sendiri**: subdomain atau domain milik klub.
+- **Link klub sendiri**: latih.club/namaklub, siap dibagikan ke member.
 - **Export absensi**: riwayat kehadiran ke CSV.
 
 ## Tanya jawab
