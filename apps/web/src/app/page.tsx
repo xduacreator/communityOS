@@ -5,7 +5,7 @@ import SiteHeader from "@/components/site/SiteHeader";
 import SiteFooter from "@/components/site/SiteFooter";
 import { formatBlogDate, tintFor, type BlogPostSummary } from "@/lib/blog";
 import { outfit } from "@/lib/fonts";
-import { homeText, whatsappUrl } from "@/lib/home-content";
+import { HOME_FAQS, homeText, whatsappUrl } from "@/lib/home-content";
 import { apiGet } from "@/lib/server-api";
 
 interface ShowcaseCommunity {
@@ -35,29 +35,6 @@ const SPORTS = [
   ["Bela Diri", "bg-[#DCEBFF] -rotate-[1.5deg]"],
   ["Tenis", "bg-[#ECE3FF] rotate-2"],
   ["Kelas Kreatif", "bg-[#111214] text-white -rotate-1"],
-] as const;
-
-const FAQS = [
-  [
-    "Bagaimana cara mendaftarkan klub?",
-    "Hubungi tim Latih.Club lewat WhatsApp. Kami bantu siapkan microsite dan akun admin klubmu, lalu kamu bisa langsung mengatur paket latihan.",
-  ],
-  [
-    "Apakah member perlu install aplikasi?",
-    "Tidak. Member cukup membuka microsite klub dari browser HP — daftar, beli paket, dan check-in dari sana.",
-  ],
-  [
-    "Bagaimana member membayar?",
-    "Lewat QRIS atau transfer sesuai instruksi klub, lalu unggah bukti bayar. Admin menyetujui dan paket langsung aktif.",
-  ],
-  [
-    "Apakah coach bisa melihat data keuangan?",
-    "Tidak. Coach hanya melihat peserta sesi dan riwayat absensi.",
-  ],
-  [
-    "Bisa pakai domain klub sendiri?",
-    "Bisa — pakai latih.club/namaklub, namaklub.latih.club, atau domain milik klub.",
-  ],
 ] as const;
 
 export default async function Home() {
@@ -377,7 +354,7 @@ export default async function Home() {
       <section id="faq" className="mx-auto flex max-w-[1240px] scroll-mt-6 flex-wrap gap-10 px-5 pt-20 sm:px-8 md:pt-28 lg:px-10">
         <h2 className="flex-[1_1_280px] text-4xl font-black leading-none tracking-[-0.035em] md:text-[52px]">Yang sering ditanya</h2>
         <div className="flex min-w-0 flex-[2_1_560px] flex-col gap-2.5">
-          {FAQS.map(([question, answer], index) => (
+          {HOME_FAQS.map(([question, answer], index) => (
             <details key={question} open={index === 0} className="group rounded-[20px] bg-white px-6 py-5 shadow-[0_1px_0_#E6E6E0]">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-bold">
                 {question}

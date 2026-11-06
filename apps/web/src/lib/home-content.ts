@@ -97,3 +97,27 @@ export const HOME_FIELD_GROUPS: {
     ],
   },
 ];
+
+// Landing page FAQ, also listed in /llms.txt
+export const HOME_FAQS = [
+  [
+    "Bagaimana cara mendaftarkan klub?",
+    "Hubungi tim Latih.Club lewat WhatsApp. Kami bantu siapkan microsite dan akun admin klubmu, lalu kamu bisa langsung mengatur paket latihan.",
+  ],
+  [
+    "Apakah member perlu install aplikasi?",
+    "Tidak. Member cukup membuka microsite klub dari browser HP — daftar, beli paket, dan check-in dari sana.",
+  ],
+  [
+    "Bagaimana member membayar?",
+    "Lewat QRIS atau transfer sesuai instruksi klub, lalu unggah bukti bayar. Admin menyetujui dan paket langsung aktif.",
+  ],
+  [
+    "Apakah coach bisa melihat data keuangan?",
+    "Tidak. Coach hanya melihat peserta sesi dan riwayat absensi.",
+  ],
+  [
+    "Bisa pakai domain klub sendiri?",
+    "Bisa — pakai latih.club/namaklub, namaklub.latih.club, atau domain milik klub.",
+  ],
+] as const;

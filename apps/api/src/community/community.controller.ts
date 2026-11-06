@@ -17,6 +17,11 @@ export class CommunityController {
     return this.communityService.findPublicShowcase();
   }
 
+  @Get('public/sitemap')
+  findForSitemap() {
+    return this.communityService.findForSitemap();
+  }
+
   @Get(':slug')
   findBySlug(@Param('slug') slug: string) {
     return this.communityService.findBySlug(slug);
