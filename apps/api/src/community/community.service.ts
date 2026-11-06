@@ -18,6 +18,20 @@ export class CommunityService {
     });
   }
 
+  // Public club pages for sitemap.xml and llms.txt: active clubs only, public fields only
+  async findForSitemap() {
+    return this.prisma.community.findMany({
+      where: { isActive: true },
+      select: {
+        slug: true,
+        name: true,
+        tagline: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
   async findPublicShowcase() {
     return this.prisma.community.findMany({
       where: {
